@@ -21,11 +21,8 @@ cdef class GreenOperator2d:
         if k.shape[0] != self.dim:
             raise IndexError('shape of k must be ({0},)'.format(self.dim))
 
-        if tau.shape[0] != sym:
+        if tau.shape[0] != self.sym:
             raise IndexError('shape of tau must be ({0},)'.format(self.sym))
-
-        check_k(k, self.dim)
-        check_tau(tau, self.sym)
         
         cdef double nx = k[0]
         cdef double ny = k[1]
