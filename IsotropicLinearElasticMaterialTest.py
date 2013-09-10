@@ -46,3 +46,4 @@ def test_cinit_readonly_poisson_ratio():
     """nu attribute is read-only"""
     mat = Material(1., 0.3, 3)
     mat.nu = 0.0
+
