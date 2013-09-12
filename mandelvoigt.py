@@ -32,9 +32,10 @@ class MandelVoigt:
         _check_index(index, self.sym)
         return self._to_multi_index[index]
 
-    def ravel_multi_index(self, multi_index):
-        _check_multi_index(multi_index, self.dim)
-        return self._to_index[multi_index[0]][multi_index[1]]
+    def ravel_multi_index(self, i, j):
+        _check_index(i, self.dim)
+        _check_index(j, self.dim)
+        return self._to_index[i][j]
         
 mandel_voigt_2d = MandelVoigt(2)
 mandel_voigt_3d = MandelVoigt(3)

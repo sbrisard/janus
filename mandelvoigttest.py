@@ -53,22 +53,22 @@ def test_unravel_invalid_index():
         yield do_test_unravel_invalid_index, index, dim
 
 @nottest
-def do_test_ravel_multi_index(multi_index, expected, dim):
+def do_test_ravel_multi_index(i, j, expected, dim):
     mv = mandelvoigt.get_instance(dim)
-    actual = mv.ravel_multi_index(multi_index)
+    actual = mv.ravel_multi_index(i, j)
     assert expected == actual
 
 def test_ravel_multi_index_2d():
     dim = 2
     multi_indices = [(0, 0), (1, 1), (0, 1), (1, 0)]
     expecteds = [0, 1, 2, 2]
-    for multi_index, expected in zip(multi_indices, expecteds):
-        yield do_test_ravel_multi_index, multi_index, expected, dim
+    for (i, j), expected in zip(multi_indices, expecteds):
+        yield do_test_ravel_multi_index, i, j, expected, dim
 
 def test_ravel_multi_index_3d():
     dim = 3
     multi_indices = [(0, 0), (1, 1), (2, 2), (1, 2), (2, 1),
                      (2, 0), (0, 2), (0, 1), (1, 0)]
     expecteds = [0, 1, 2, 3, 3, 4, 4, 5, 5]
-    for multi_index, expected in zip(multi_indices, expecteds):
-        yield do_test_ravel_multi_index, multi_index, expected, dim
+    for (i, j), expected in zip(multi_indices, expecteds):
+        yield do_test_ravel_multi_index, i, j, expected, dim
