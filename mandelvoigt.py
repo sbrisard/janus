@@ -1,3 +1,6 @@
+import numpy as np
+
+SQRT_2 = np.sqrt(2.)
 
 def _check_index(i, dim):
     if i < 0 or i >= dim:
@@ -36,6 +39,21 @@ class MandelVoigt:
         _check_index(i, self.dim)
         _check_index(j, self.dim)
         return self._to_index[i][j]
+
+    def create_array(self, coeff, *args):
+        a = np.empty((self.sym, self.sym), dtype=np.float64)
+        for ij in range(self.sym):
+            i, j = self.unravel_index(ij)
+            for kl in range(self.sym):
+                k, l = self.unravel_index(kl)
+                a_ijkl = coeff(i, j, k, l, *args)
+                if ij >= self.dim and kl >= self.dim:
+                    a_ijkl *= 2.
+                elif ij >= self.dim or kl >= self.dim:
+                    a_ijkl *= SQRT_2
+                a[ij, kl] = a_ijkl
+        return a
+
         
 mandel_voigt_2d = MandelVoigt(2)
 mandel_voigt_3d = MandelVoigt(3)

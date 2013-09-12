@@ -72,3 +72,10 @@ def test_ravel_multi_index_3d():
     expecteds = [0, 1, 2, 3, 3, 4, 4, 5, 5]
     for (i, j), expected in zip(multi_indices, expecteds):
         yield do_test_ravel_multi_index, i, j, expected, dim
+
+def test_create_array_3d():
+    # TODO finish test
+    mv = mandelvoigt.get_instance(3)
+    coeff = lambda i, j, k, l : 1.
+    a = mv.create_array(coeff)
+    print(a)
