@@ -11,3 +11,9 @@ cdef class IsotropicLinearElasticMaterial:
         else:
             raise ValueError('Parameter dim must be 2 or 3.')
 
+    def __repr__(self):
+        return ('IsotropicLinearElasticMaterial'
+                '(g={0}, nu={1}, dim={2})').format(self.g,
+                                                   self.nu,
+                                                   self.dim)
+
