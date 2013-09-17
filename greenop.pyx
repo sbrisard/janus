@@ -64,6 +64,17 @@ cdef class GreenOperator2d:
 
     @boundscheck(False)
     cdef void update(self, double[:] k):
+        """`update(k)`
+    
+        Compute the coefficients of the underlying matrix for the
+        specified value of the wave vector.
+
+        Parameters
+        ----------
+        k : array_like
+            Wave-vector.
+        
+        """
         # The following tests are necessary, since bounds checks are removed.
         if k.shape[0] != self.dim:
             raise IndexError('shape of k must be ({0},)'.format(self.dim))
@@ -190,6 +201,18 @@ cdef class GreenOperator3d:
 
     @boundscheck(False)
     cdef void update(self, double[:] k):
+        """`update(k)`
+    
+        Compute the coefficients of the underlying matrix for the
+        specified value of the wave vector.
+
+        Parameters
+        ----------
+        k : array_like
+            Wave-vector.
+        
+        """
+
         # The following tests are necessary, since bounds checks are removed.
         if k.shape[0] != self.dim:
             raise IndexError('shape of k must be ({0},)'.format(self.dim))
