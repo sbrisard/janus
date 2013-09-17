@@ -145,6 +145,44 @@ cdef class GreenOperator2d:
 
         return eps
 
+    @boundscheck(False)
+    def asmatrix(self, double[:] k, double[:, :] g=None):
+        """asmatrix(k, g=None)
+        
+        Return the matrix representation of the Green operator for the
+        specified wave vector. Uses the Mandel-Voigt convention.
+        
+        Parameters
+        ----------
+        k : array_like
+            Wave-vector.
+        g : array_like, optional
+            Matrix, to be updated.
+
+        Returns
+        -------
+        g : array_like
+            Matrix of the Green operator.
+        """
+
+        if g is not None:
+            if g.shape[0] != self.sym or g.shape[1] != self.sym:
+                raise IndexError('shape of g must be ({0}, {0})'
+                                 .format(self.sym, self.sym))
+        else:
+            g = np.matrix((self.sym, self.sym), dtype=np.float64)
+        self.update(k)
+        g[0, 0] = self.m00
+        g[0, 1] = self.m01
+        g[0, 2] = self.m02
+        g[1, 0] = self.m01
+        g[1, 1] = self.m11
+        g[1, 2] = self.m12
+        g[2, 0] = self.m02
+        g[2, 1] = self.m12
+        g[2, 2] = self.m22
+        return g
+
 cdef class GreenOperator3d:
 
     """This class defines the periodic Green operator for 3d elasticity.
@@ -257,6 +295,7 @@ cdef class GreenOperator3d:
             kxky = s * kx * ky
 
             self.m00 = kxkx * (self.daux1 - self.daux2 * kxkx)
+            #print(self.m00)
             self.m11 = kyky * (self.daux1 - self.daux2 * kyky)
             self.m22 = kzkz * (self.daux1 - self.daux2 * kzkz)
             self.m33 = 2. * (self.daux3 * (kyky + kzkz)
@@ -329,3 +368,68 @@ cdef class GreenOperator3d:
         eps[5] = (self.m05 * tau[0] + self.m15 * tau[1] + self.m25 * tau[2]
                   + self.m35 * tau[3] + self.m45 * tau[4] + self.m55 * tau[5])
         return eps
+
+    @boundscheck(False)
+    def asmatrix(self, double[:] k, double[:, :] g=None):
+        """asmatrix(k, g=None)
+        
+        Return the matrix representation of the Green operator for the
+        specified wave vector. Uses the Mandel-Voigt convention.
+        
+        Parameters
+        ----------
+        k : array_like
+            Wave-vector.
+        g : array_like, optional
+            Matrix, to be updated.
+
+        Returns
+        -------
+        g : array_like
+            Matrix of the Green operator.
+        """
+        
+        if g is not None:
+            if g.shape[0] != self.sym or g.shape[1] != self.sym:
+                raise IndexError('shape of g must be ({0}, {0})'
+                                 .format(self.sym, self.sym))
+        else:
+            g = np.matrix((self.sym, self.sym), dtype=np.float64)
+        self.update(k)
+        g[0, 0] = self.m00
+        g[0, 1] = self.m01
+        g[0, 2] = self.m02
+        g[0, 3] = self.m03
+        g[0, 4] = self.m04
+        g[0, 5] = self.m05
+        g[1, 0] = self.m01
+        g[1, 1] = self.m11
+        g[1, 2] = self.m12
+        g[1, 3] = self.m13
+        g[1, 4] = self.m14
+        g[1, 5] = self.m15
+        g[2, 0] = self.m02
+        g[2, 1] = self.m12
+        g[2, 2] = self.m22
+        g[2, 3] = self.m23
+        g[2, 4] = self.m24
+        g[2, 5] = self.m25
+        g[3, 0] = self.m03
+        g[3, 1] = self.m13
+        g[3, 2] = self.m23
+        g[3, 3] = self.m33
+        g[3, 4] = self.m34
+        g[3, 5] = self.m35
+        g[4, 0] = self.m04
+        g[4, 1] = self.m14
+        g[4, 2] = self.m24
+        g[4, 3] = self.m34
+        g[4, 4] = self.m44
+        g[4, 5] = self.m45
+        g[5, 0] = self.m05
+        g[5, 1] = self.m15
+        g[5, 2] = self.m25
+        g[5, 3] = self.m35
+        g[5, 4] = self.m45
+        g[5, 5] = self.m55
+        return g
