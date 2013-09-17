@@ -9,7 +9,7 @@ cdef class IsotropicLinearElasticMaterial:
         elif dim == 3:
             self.k = 2. / 3. * (1. + nu) / (1. - 2. * nu) * g
         else:
-            raise ValueError('Parameter dim must be 2 or 3.')
+            raise ValueError('dim must be 2 or 3 (was {0})'.format(dim))
 
     def __repr__(self):
         return ('IsotropicLinearElasticMaterial'
