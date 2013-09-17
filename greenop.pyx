@@ -34,10 +34,7 @@ cdef class GreenOperator2d:
         self.daux4 = 0.5 / mu
 
     @boundscheck(False)
-    cpdef double[::1] apply(self,
-                            double[::1] k,
-                            double[::1] tau,
-                            double[::1] eps):
+    cpdef double[:] apply(self, double[:] k, double[:] tau, double[:] eps):
 
         # The following tests are necessary, since bounds checks are removed.
         if k.shape[0] != self.dim:
