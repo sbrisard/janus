@@ -3,11 +3,13 @@ from numpy import cos
 from numpy import sin
 
 from nose.tools import assert_almost_equal
+from nose.tools import assert_equal
 from nose.tools import nottest
 
 import mandelvoigt
 from matprop import IsotropicLinearElasticMaterial as Material
 from greenop import GreenOperator2d
+from greenop import GreenOperator3d
 
 def delta(i, j):
     if i == j:
@@ -30,7 +32,12 @@ def do_test_apply(k, mat):
     n = k / np.sqrt(sum(k**2))
     expected = green_matrix(n,  mat)
     sym = (mat.dim * (mat.dim + 1)) // 2
-    green = GreenOperator2d(mat)
+    if mat.dim == 2:
+        green = GreenOperator2d(mat)
+    elif mat.dim == 3:
+        green = GreenOperator3d(mat)
+    else:
+        raise ValueError()
     actual = np.empty((sym,), np.float64)
 
     for j in range(sym):
@@ -55,9 +62,6 @@ def test_apply_2d():
         for theta in k_angles:
             yield do_test_apply, vec(k, theta), mat
 
-if __name__ == '__main__':
-    test_apply_2d_1()
-
 def test_apply_3d():
     mat = Material(0.7, 0.3, 3)
     norms = [2.5, 3.5]
@@ -75,3 +79,25 @@ def test_apply_3d():
         for theta in thetas:
             for phi in phis:
                 yield do_test_apply, vec(k, theta, phi), mat
+
+@nottest
+def do_test_apply_null_wave_vector(dim):
+    mat = Material(0.7, 0.3, dim)
+    if dim == 2:
+        green = GreenOperator2d(mat)
+    elif dim == 3:
+        green = GreenOperator3d(mat)
+    k = np.zeros((dim,), dtype=np.float)
+    sym = (dim * (dim + 1)) // 2
+    for i in range(sym):
+        tau = np.zeros((sym,), dtype=np.float)
+        tau[i] = 1.
+        eps = green.apply(k, tau)
+        for j in range(sym):
+            msg = 'coefficient [{0}, {1}]'.format(i, j)
+            assert_equal(eps[j], 0., msg=msg)
+
+def test_apply_null_wave_vector():
+    dims = [2, 3]
+    for dim in dims:
+        yield do_test_apply_null_wave_vector, dim
