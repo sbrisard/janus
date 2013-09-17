@@ -64,7 +64,10 @@ cdef class GreenOperator2d:
     @boundscheck(False)
     cpdef double[:] apply(self, double[:] k, double[:] tau,
                           double[:] eps = None):
-        """ Apply the Green operator to the specified prestress.
+        """
+        `apply(k, tau, eps = None)`
+                          
+        Apply the Green operator to the specified prestress.
 
         Parameters
         ----------
