@@ -5,6 +5,7 @@ from numpy import sin
 from nose.tools import assert_almost_equal
 from nose.tools import assert_equal
 from nose.tools import nottest
+from nose.tools import raises
 
 import mandelvoigt as mv
 from matprop import IsotropicLinearElasticMaterial as Material
@@ -115,3 +116,41 @@ def test_asarray():
         mat = Material(MU, NU, dim)
         for k in wave_vectors(dim):
             yield do_test_asarray, k, mat
+
+@raises(ValueError)
+def test_init_2d_invalid_dimension():
+    GreenOperator2d(Material(MU, NU, 3))
+
+@raises(ValueError)
+def test_init_3d_invalid_dimension():
+    GreenOperator3d(Material(MU, NU, 2))
+
+@nottest
+@raises(IndexError)
+def do_test_apply_invalid_params(green, k, tau, eps):
+    green.apply(k, tau, eps)
+    
+def test_apply_invalid_params():
+    g2 = create_green_operator(Material(MU, NU, 2))
+    @raises(IndexError)
+    def apply2(k, tau, eps):
+        return g2.apply(k, tau, eps)
+
+    g3 = create_green_operator(Material(MU, NU, 3))
+    @raises(IndexError)
+    def apply3(k, tau, eps):
+        return g3.apply(k, tau, eps)
+    
+    k2 = np.array([0., 0.])
+    k3 = np.array([0., 0., 0.])
+    tau3 = np.array([0., 0., 0.])
+    tau6 = np.array([0., 0., 0., 0., 0., 0.])
+    eps3 = np.array([0., 0., 0.])
+    eps6 = np.array([0., 0., 0., 0., 0., 0.])
+    all_apply = [apply2, apply2, apply2, apply3, apply3, apply3]
+    all_k = [k3, k2, k2, k2, k3, k3]
+    all_tau = [tau3, tau6, tau3, tau6, tau3, tau6]
+    all_eps = [eps3, eps3, eps6, eps6, eps6, eps3]
+
+    for f, k, tau, eps in zip(all_apply, all_k, all_tau, all_eps):
+        yield f, k, tau, eps

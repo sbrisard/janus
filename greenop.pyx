@@ -76,10 +76,6 @@ cdef class GreenOperator2d:
             Wave-vector.
         
         """
-        # The following tests are necessary, since bounds checks are removed.
-        if k.shape[0] != self.dim:
-            raise IndexError('shape of k must be ({0},)'.format(self.dim))
-
         cdef double kx = k[0]
         cdef double ky = k[1]
         cdef double kxkx = kx * kx
@@ -129,13 +125,18 @@ cdef class GreenOperator2d:
             The result of the linear operation `Gamma(k) : tau`.
         """
 
-        # The following tests are necessary, since bounds checks are removed.
+        if k.shape[0] != self.dim:
+            msg = 'shape of k must be ({0},) [was ({1},)]'
+            raise IndexError(msg.format(self.dim, k.shape[0]))
+
         if tau.shape[0] != self.sym:
-            raise IndexError('shape of tau must be ({0},)'.format(self.sym))
+            msg = 'shape of tau must be ({0},) [was ({1},)]'
+            raise IndexError(msg.format(self.sym, tau.shape[0]))
 
         if eps is not None:
             if eps.shape[0] != self.sym:
-                raise IndexError('shape of eps must be ({0},)'.format(self.sym))
+                msg = 'shape of eps must be ({0},) [was ({1},)]'
+                raise IndexError(msg.format(self.sym, eps.shape[0]))
         else:
             eps = array(shape=(self.sym,), itemsize=sizeof(double), format='d')
 
@@ -165,6 +166,9 @@ cdef class GreenOperator2d:
         g : array_like
             Matrix of the Green operator.
         """
+        if k.shape[0] != self.dim:
+            msg = 'shape of k must be ({0},) [was ({1},)]'
+            raise IndexError(msg.format(self.dim, k.shape[0]))
 
         if g is not None:
             if g.shape[0] != self.sym or g.shape[1] != self.sym:
@@ -255,10 +259,6 @@ cdef class GreenOperator3d:
         
         """
 
-        # The following tests are necessary, since bounds checks are removed.
-        if k.shape[0] != self.dim:
-            raise IndexError('shape of k must be ({0},)'.format(self.dim))
-
         cdef double kx = k[0]
         cdef double ky = k[1]
         cdef double kz = k[2]
@@ -299,7 +299,6 @@ cdef class GreenOperator3d:
             kxky = s * kx * ky
 
             self.m00 = kxkx * (self.daux1 - self.daux2 * kxkx)
-            #print(self.m00)
             self.m11 = kyky * (self.daux1 - self.daux2 * kyky)
             self.m22 = kzkz * (self.daux1 - self.daux2 * kzkz)
             self.m33 = 2. * (self.daux3 * (kyky + kzkz)
@@ -348,13 +347,18 @@ cdef class GreenOperator3d:
             The result of the linear operation `Gamma(k) : tau`.
         """
 
-        # The following tests are necessary, since bounds checks are removed.
+        if k.shape[0] != self.dim:
+            msg = 'shape of k must be ({0},) [was ({1},)]'
+            raise IndexError(msg.format(self.dim, k.shape[0]))
+
         if tau.shape[0] != self.sym:
-            raise IndexError('shape of tau must be ({0},)'.format(self.sym))
+            msg = 'shape of tau must be ({0},) [was ({1},)]'
+            raise IndexError(msg.format(self.sym, tau.shape[0]))
 
         if eps is not None:
             if eps.shape[0] != self.sym:
-                raise IndexError('shape of eps must be ({0},)'.format(self.sym))
+                msg = 'shape of eps must be ({0},) [was ({1},)]'
+                raise IndexError(msg.format(self.sym, eps.shape[0]))
         else:
             eps = array(shape=(self.sym,), itemsize=sizeof(double), format='d')
 
@@ -393,6 +397,10 @@ cdef class GreenOperator3d:
             Matrix of the Green operator.
         """
         
+        if k.shape[0] != self.dim:
+            msg = 'shape of k must be ({0},) [was ({1},)]'
+            raise IndexError(msg.format(self.dim, k.shape[0]))
+
         if g is not None:
             if g.shape[0] != self.sym or g.shape[1] != self.sym:
                 raise IndexError('shape of g must be ({0}, {0})'
