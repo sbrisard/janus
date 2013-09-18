@@ -141,12 +141,12 @@ def test_apply_invalid_params():
     def apply3(k, tau, eps):
         return g3.apply(k, tau, eps)
     
-    k2 = np.array([0., 0.])
-    k3 = np.array([0., 0., 0.])
-    tau3 = np.array([0., 0., 0.])
-    tau6 = np.array([0., 0., 0., 0., 0., 0.])
-    eps3 = np.array([0., 0., 0.])
-    eps6 = np.array([0., 0., 0., 0., 0., 0.])
+    k2 = np.empty((2,), dtype=np.float64)
+    k3 = np.empty((3,), dtype=np.float64)
+    tau3 = np.empty((3,), dtype=np.float64)
+    tau6 = np.empty((6,), dtype=np.float64)
+    eps3 = np.empty((3,), dtype=np.float64)
+    eps6 = np.empty((6,), dtype=np.float64)
     all_apply = [apply2, apply2, apply2, apply3, apply3, apply3]
     all_k = [k3, k2, k2, k2, k3, k3]
     all_tau = [tau3, tau6, tau3, tau6, tau3, tau6]
@@ -154,3 +154,27 @@ def test_apply_invalid_params():
 
     for f, k, tau, eps in zip(all_apply, all_k, all_tau, all_eps):
         yield f, k, tau, eps
+
+def test_asarray_invalid_params():
+    g2 = create_green_operator(Material(MU, NU, 2))
+    @raises(IndexError)
+    def asarray2(k, arr):
+        return g2.asarray(k, arr)
+
+    g3 = create_green_operator(Material(MU, NU, 3))
+    @raises(IndexError)
+    def asarray3(k, arr):
+        return g3.asarray(k, arr)
+    
+    k2 = np.empty((2,))
+    k3 = np.empty((3,))
+    arr3x3 = np.empty((3, 3), dtype=np.float64)
+    arr6x6 = np.empty((6, 6), dtype=np.float64)
+    arr3x6 = np.empty((3, 6), dtype=np.float64)
+    arr6x3 = np.empty((6, 3), dtype=np.float64)
+    all_asarray = [asarray2, asarray2, asarray2, asarray3, asarray3, asarray3]
+    all_k = [k3, k2, k2, k2, k3, k3]
+    all_arr = [arr3x3, arr6x3, arr3x6, arr6x6, arr6x3, arr3x6]
+
+    for asarray, k, arr in zip(all_asarray, all_k, all_arr):
+        yield asarray, k, arr
