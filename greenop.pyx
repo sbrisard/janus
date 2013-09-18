@@ -1,7 +1,5 @@
-import numpy as np
-cimport numpy as np
-
 from cython cimport boundscheck
+from cython.view cimport array
 from libc.math cimport sqrt
 
 from matprop cimport IsotropicLinearElasticMaterial as Material
@@ -136,7 +134,7 @@ cdef class GreenOperator2d:
             if eps.shape[0] != self.sym:
                 raise IndexError('shape of eps must be ({0},)'.format(self.sym))
         else:
-            eps = np.empty((self.sym,), dtype = np.float64)
+            eps = array(shape=(self.sym,), itemsize=sizeof(double), format='d')
 
         self.update(k)
         eps[0] = self.m00 * tau[0] + self.m01 * tau[1] + self.m02 * tau[2]
@@ -146,10 +144,10 @@ cdef class GreenOperator2d:
         return eps
 
     @boundscheck(False)
-    def asmatrix(self, double[:] k, double[:, :] g=None):
-        """asmatrix(k, g=None)
+    def asarray(self, double[:] k, double[:, :] g=None):
+        """asarray(k, g=None)
         
-        Return the matrix representation of the Green operator for the
+        Return the array representation of the Green operator for the
         specified wave vector. Uses the Mandel-Voigt convention.
         
         Parameters
@@ -170,7 +168,8 @@ cdef class GreenOperator2d:
                 raise IndexError('shape of g must be ({0}, {0})'
                                  .format(self.sym, self.sym))
         else:
-            g = np.matrix((self.sym, self.sym), dtype=np.float64)
+            g = array(shape=(self.sym, self.sym),
+                      itemsize=sizeof(double), format='d')
         self.update(k)
         g[0, 0] = self.m00
         g[0, 1] = self.m01
@@ -352,7 +351,7 @@ cdef class GreenOperator3d:
             if eps.shape[0] != self.sym:
                 raise IndexError('shape of eps must be ({0},)'.format(self.sym))
         else:
-            eps = np.empty((self.sym,), dtype = np.float64)
+            eps = array(shape=(self.sym,), itemsize=sizeof(double), format='d')
 
         self.update(k)
         eps[0] = (self.m00 * tau[0] + self.m01 * tau[1] + self.m02 * tau[2]
@@ -370,10 +369,10 @@ cdef class GreenOperator3d:
         return eps
 
     @boundscheck(False)
-    def asmatrix(self, double[:] k, double[:, :] g=None):
-        """asmatrix(k, g=None)
+    def asarray(self, double[:] k, double[:, :] g=None):
+        """asarray(k, g=None)
         
-        Return the matrix representation of the Green operator for the
+        Return the array representation of the Green operator for the
         specified wave vector. Uses the Mandel-Voigt convention.
         
         Parameters
@@ -394,7 +393,8 @@ cdef class GreenOperator3d:
                 raise IndexError('shape of g must be ({0}, {0})'
                                  .format(self.sym, self.sym))
         else:
-            g = np.matrix((self.sym, self.sym), dtype=np.float64)
+            g = array(shape=(self.sym, self.sym),
+                      itemsize=sizeof(double), format='i')
         self.update(k)
         g[0, 0] = self.m00
         g[0, 1] = self.m01

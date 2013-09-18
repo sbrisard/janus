@@ -69,42 +69,49 @@ def wave_vectors(dim):
     return ret
 
 @nottest
-def do_test_apply(k, mat):
+def do_test_apply(k, mat, in_place):
     expected = green_matrix(k,  mat)
     sym = (mat.dim * (mat.dim + 1)) // 2
     green = create_green_operator(mat)
-    actual = np.empty((sym,), np.float64)
+    if in_place:
+        eps = np.empty((sym,), np.float64)
+    else:
+        eps = None
 
     for j in range(sym):
         tau = np.zeros((sym,), np.float64)
         tau[j] = 1.
-        green.apply(k, tau, actual)
+        actual = green.apply(k, tau, eps)
+        if in_place:
+            msg = 'actual.base and eps should be the same object'
+            assert actual.base is eps, msg
         for i in range(sym):
             msg = 'coefficient [{0}, {1}]'.format(i, j)
             assert_almost_equal(expected[i, j], actual[i],
                                 msg=msg, delta=1.E-15)
 
 def test_apply():
-    for dim in DIMS:
-        mat = Material(MU, NU, dim)
-        for k in wave_vectors(dim):
-            yield do_test_apply, k, mat
+    for in_place in [True, False]:
+        for dim in DIMS:
+            mat = Material(MU, NU, dim)
+            for k in wave_vectors(dim):
+                yield do_test_apply, k, mat, in_place
 
 @nottest
-def do_test_asmatrix(k, mat):
+def do_test_asarray(k, mat):
     expected = green_matrix(k,  mat)
     sym = (mat.dim * (mat.dim + 1)) // 2
     green = create_green_operator(mat)
     actual = np.empty((sym, sym), np.float64)
-    green.asmatrix(k, actual)
+    green.asarray(k, actual)
     for j in range(sym):
         for i in range(sym):
             msg = 'coefficient [{0}, {1}]'.format(i, j)
             assert_almost_equal(expected[i, j], actual[i, j],
                                 msg=msg, delta=1.E-15)
 
-def test_asmatrix():
+def test_asarray():
     for dim in DIMS:
         mat = Material(MU, NU, dim)
         for k in wave_vectors(dim):
-            yield do_test_asmatrix, k, mat
+            yield do_test_asarray, k, mat
