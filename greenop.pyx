@@ -1,4 +1,5 @@
 from cython cimport boundscheck
+from cython cimport cdivision
 from cython.view cimport array
 from libc.math cimport sqrt
 
@@ -47,6 +48,7 @@ cdef class GreenOperator2d:
         double daux1, daux2, daux3, daux4
         double m00, m01, m02, m11, m12, m22
 
+    @cdivision(True)
     def __cinit__(self, Material mat):
         self.dim = 2
         self.sym = 3
@@ -61,6 +63,7 @@ cdef class GreenOperator2d:
         self.daux4 = 0.5 / g
 
     @boundscheck(False)
+    @cdivision(True)
     cdef void update(self, double[:] k):
         """`update(k)`
     
@@ -223,6 +226,7 @@ cdef class GreenOperator3d:
         double m00, m01, m02, m03, m04, m05, m11, m12, m13, m14, m15
         double m22, m23, m24, m25, m33, m34, m35, m44, m45, m55
 
+    @cdivision(True)
     def __cinit__(self, Material mat):
         self.dim = 3
         self.sym = 6
@@ -237,6 +241,7 @@ cdef class GreenOperator3d:
         self.daux4 = 0.5 / g
 
     @boundscheck(False)
+    @cdivision(True)
     cdef void update(self, double[:] k):
         """`update(k)`
     
