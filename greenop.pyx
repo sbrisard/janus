@@ -59,17 +59,23 @@ cdef class GreenOperator:
         self.daux3 = 0.25 / g
         self.daux4 = 0.5 / g
 
-cdef class GreenOperator2d(GreenOperator):
+    cdef inline void check_k(self, double[:] k) except *:
+        cdef str msg = 'shape of k must be ({0},) [was ({1},)]'
+        if k.shape[0] != self.dim:
+            raise IndexError(msg.format(self.dim, k.shape[0]))
 
-    cdef double m00, m01, m02, m11, m12, m22
+    cdef inline void check_tau(self, double[:] tau) except *:
+        cdef str msg = 'shape of tau must be ({0},) [was ({1},)]'
+        if tau.shape[0] != self.sym:
+            raise IndexError(msg.format(self.sym, tau.shape[0]))
 
-    def __cinit__(self, Material mat):
-        if (mat.dim != 2):
-            raise ValueError('plane strain material expected')
+    cdef inline void check_eps(self, double[:] eps) except *:
+        cdef str msg = 'shape of eps must be ({0},) [was ({1},)]'
+        if eps.shape[0] != self.sym:
+            raise IndexError(msg.format(self.sym, eps.shape[0]))
 
-    @boundscheck(False)
-    @cdivision(True)
     cdef void update(self, double[:] k):
+
         """`update(k)`
     
         Compute the coefficients of the underlying matrix for the
@@ -81,6 +87,98 @@ cdef class GreenOperator2d(GreenOperator):
             Wave-vector.
         
         """
+
+        pass
+
+    cdef inline double[:] pre_apply(self, double[:] k, double[:] tau,
+                                    double[:] eps=None):
+    
+        """Perform preliminary checks for `apply`."""
+
+        self.check_k(k)
+        self.check_tau(tau)
+        if eps is not None:
+            self.check_eps(eps)
+        else:
+            eps = array(shape=(self.sym,), itemsize=sizeof(double), format='d')
+        self.update(k)
+        return eps
+
+    cpdef double[:] apply(self, double[:] k, double[:] tau,
+                          double[:] eps = None):
+        """`apply(k, tau, eps = None)`
+                          
+        Apply the Green operator to the specified prestress.
+
+        Parameters
+        ----------
+        k : array_like
+            The wave-vector.
+        tau : array_like
+            The value of the prestress for the specified mode `k`.
+        eps : array_like, optional
+            The result of the operation `Gamma(k) : tau`. Strictly
+            speaking, `eps` is the opposite of a strain.
+
+        Returns
+        -------
+        eps : array_like
+            The result of the linear operation `Gamma(k) : tau`.
+        """
+
+        pass
+    
+    cdef inline pre_asarray(self, double[:] k, double[:, :] g=None):
+
+        """Perform preliminary checks for `apply`."""
+
+        if k.shape[0] != self.dim:
+            msg = 'shape of k must be ({0},) [was ({1},)]'
+            raise IndexError(msg.format(self.dim, k.shape[0]))
+
+        if g is not None:
+            if g.shape[0] != self.sym or g.shape[1] != self.sym:
+                raise IndexError('shape of g must be ({0}, {0})'
+                                 .format(self.sym, self.sym))
+        else:
+            g = array(shape=(self.sym, self.sym),
+                      itemsize=sizeof(double), format='d')
+        self.update(k)
+        return g
+
+    def asarray(self, double[:] k, double[:, :] g=None):
+
+        """asarray(k, g=None)
+        
+        Return the array representation of the Green operator for the
+        specified wave vector. Uses the Mandel-Voigt convention.
+        
+        Parameters
+        ----------
+        k : array_like
+            Wave-vector.
+        g : array_like, optional
+            Matrix, to be updated.
+
+        Returns
+        -------
+        g : array_like
+            Matrix of the Green operator.
+        """
+
+        pass
+                
+cdef class GreenOperator2d(GreenOperator):
+
+    cdef double m00, m01, m02, m11, m12, m22
+
+    def __cinit__(self, Material mat):
+        if (mat.dim != 2):
+            raise ValueError('plane strain material expected')
+
+    @boundscheck(False)
+    @cdivision(True)
+    cdef void update(self, double[:] k):
         cdef double kx = k[0]
         cdef double ky = k[1]
         cdef double kxkx = kx * kx
@@ -109,43 +207,8 @@ cdef class GreenOperator2d(GreenOperator):
     @boundscheck(False)
     cpdef double[:] apply(self, double[:] k, double[:] tau,
                           double[:] eps = None):
-        """
-        `apply(k, tau, eps = None)`
-                          
-        Apply the Green operator to the specified prestress.
 
-        Parameters
-        ----------
-        k : array_like
-            The wave-vector.
-        tau : array_like
-            The value of the prestress for the specified mode `k`.
-        eps : array_like, optional
-            The result of the operation `Gamma(k) : tau`. Strictly
-            speaking, `eps` is the opposite of a strain.
-
-        Returns
-        -------
-        eps : array_like
-            The result of the linear operation `Gamma(k) : tau`.
-        """
-
-        if k.shape[0] != self.dim:
-            msg = 'shape of k must be ({0},) [was ({1},)]'
-            raise IndexError(msg.format(self.dim, k.shape[0]))
-
-        if tau.shape[0] != self.sym:
-            msg = 'shape of tau must be ({0},) [was ({1},)]'
-            raise IndexError(msg.format(self.sym, tau.shape[0]))
-
-        if eps is not None:
-            if eps.shape[0] != self.sym:
-                msg = 'shape of eps must be ({0},) [was ({1},)]'
-                raise IndexError(msg.format(self.sym, eps.shape[0]))
-        else:
-            eps = array(shape=(self.sym,), itemsize=sizeof(double), format='d')
-
-        self.update(k)
+        eps = self.pre_apply(k, tau, eps)
         eps[0] = self.m00 * tau[0] + self.m01 * tau[1] + self.m02 * tau[2]
         eps[1] = self.m01 * tau[0] + self.m11 * tau[1] + self.m12 * tau[2]
         eps[2] = self.m02 * tau[0] + self.m12 * tau[1] + self.m22 * tau[2]
@@ -154,35 +217,8 @@ cdef class GreenOperator2d(GreenOperator):
 
     @boundscheck(False)
     def asarray(self, double[:] k, double[:, :] g=None):
-        """asarray(k, g=None)
-        
-        Return the array representation of the Green operator for the
-        specified wave vector. Uses the Mandel-Voigt convention.
-        
-        Parameters
-        ----------
-        k : array_like
-            Wave-vector.
-        g : array_like, optional
-            Matrix, to be updated.
 
-        Returns
-        -------
-        g : array_like
-            Matrix of the Green operator.
-        """
-        if k.shape[0] != self.dim:
-            msg = 'shape of k must be ({0},) [was ({1},)]'
-            raise IndexError(msg.format(self.dim, k.shape[0]))
-
-        if g is not None:
-            if g.shape[0] != self.sym or g.shape[1] != self.sym:
-                raise IndexError('shape of g must be ({0}, {0})'
-                                 .format(self.sym, self.sym))
-        else:
-            g = array(shape=(self.sym, self.sym),
-                      itemsize=sizeof(double), format='d')
-        self.update(k)
+        self.pre_asarray(k, g)
         g[0, 0] = self.m00
         g[0, 1] = self.m01
         g[0, 2] = self.m02
@@ -285,44 +321,8 @@ cdef class GreenOperator3d(GreenOperator):
 
     @boundscheck(False)
     cpdef double[:] apply(self, double[:] k, double[:] tau,
-                          double[:] eps = None):
-        """
-        `apply(k, tau, eps = None)`
-                          
-        Apply the Green operator to the specified prestress.
-
-        Parameters
-        ----------
-        k : array_like
-            The wave-vector.
-        tau : array_like
-            The value of the prestress for the specified mode `k`.
-        eps : array_like, optional
-            The result of the operation `Gamma(k) : tau`. Strictly
-            speaking, `eps` is the opposite of a strain.
-
-        Returns
-        -------
-        eps : array_like
-            The result of the linear operation `Gamma(k) : tau`.
-        """
-
-        if k.shape[0] != self.dim:
-            msg = 'shape of k must be ({0},) [was ({1},)]'
-            raise IndexError(msg.format(self.dim, k.shape[0]))
-
-        if tau.shape[0] != self.sym:
-            msg = 'shape of tau must be ({0},) [was ({1},)]'
-            raise IndexError(msg.format(self.sym, tau.shape[0]))
-
-        if eps is not None:
-            if eps.shape[0] != self.sym:
-                msg = 'shape of eps must be ({0},) [was ({1},)]'
-                raise IndexError(msg.format(self.sym, eps.shape[0]))
-        else:
-            eps = array(shape=(self.sym,), itemsize=sizeof(double), format='d')
-
-        self.update(k)
+                          double[:] eps=None):
+        eps = self.pre_apply(k, tau, eps)
         eps[0] = (self.m00 * tau[0] + self.m01 * tau[1] + self.m02 * tau[2]
                   + self.m03 * tau[3] + self.m04 * tau[4] + self.m05 * tau[5])
         eps[1] = (self.m01 * tau[0] + self.m11 * tau[1] + self.m12 * tau[2]
@@ -339,36 +339,7 @@ cdef class GreenOperator3d(GreenOperator):
 
     @boundscheck(False)
     def asarray(self, double[:] k, double[:, :] g=None):
-        """asarray(k, g=None)
-        
-        Return the array representation of the Green operator for the
-        specified wave vector. Uses the Mandel-Voigt convention.
-        
-        Parameters
-        ----------
-        k : array_like
-            Wave-vector.
-        g : array_like, optional
-            Matrix, to be updated.
-
-        Returns
-        -------
-        g : array_like
-            Matrix of the Green operator.
-        """
-        
-        if k.shape[0] != self.dim:
-            msg = 'shape of k must be ({0},) [was ({1},)]'
-            raise IndexError(msg.format(self.dim, k.shape[0]))
-
-        if g is not None:
-            if g.shape[0] != self.sym or g.shape[1] != self.sym:
-                raise IndexError('shape of g must be ({0}, {0})'
-                                 .format(self.sym, self.sym))
-        else:
-            g = array(shape=(self.sym, self.sym),
-                      itemsize=sizeof(double), format='i')
-        self.update(k)
+        g = self.pre_asarray(k, g)
         g[0, 0] = self.m00
         g[0, 1] = self.m01
         g[0, 2] = self.m02
