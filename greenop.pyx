@@ -7,7 +7,7 @@ from matprop cimport IsotropicLinearElasticMaterial as Material
 
 cdef double SQRT_TWO = sqrt(2.)
 
-cdef class GreenOperator2d:
+cdef class GreenOperator:
 
     """This class defines the periodic Green operator for 2d (plane
     strain) elasticity.
@@ -46,14 +46,11 @@ cdef class GreenOperator2d:
         readonly Material mat
         int sym
         double daux1, daux2, daux3, daux4
-        double m00, m01, m02, m11, m12, m22
 
     @cdivision(True)
     def __cinit__(self, Material mat):
-        self.dim = 2
-        self.sym = 3
-        if (self.dim != mat.dim):
-            raise ValueError('plane strain material expected')
+        self.dim = mat.dim
+        self.sym = (mat.dim * (mat.dim + 1)) / 2
         self.mat = mat
         cdef double g = mat.g
         cdef double nu = mat.nu
@@ -61,6 +58,14 @@ cdef class GreenOperator2d:
         self.daux2 = 0.5 / (g * (1.0 - nu))
         self.daux3 = 0.25 / g
         self.daux4 = 0.5 / g
+
+cdef class GreenOperator2d(GreenOperator):
+
+    cdef double m00, m01, m02, m11, m12, m22
+
+    def __cinit__(self, Material mat):
+        if (mat.dim != 2):
+            raise ValueError('plane strain material expected')
 
     @boundscheck(False)
     @cdivision(True)
@@ -189,60 +194,15 @@ cdef class GreenOperator2d:
         g[2, 2] = self.m22
         return g
 
-cdef class GreenOperator3d:
-
-    """This class defines the periodic Green operator for 3d elasticity.
-
-    Parameters
-    ----------
-    mat : IsotropicLinearElasticMaterial
-        Reference material.
-
-    Attributes
-    ----------
-    dim : int
-        Dimension of the physical space.
-    mat : IsotropicLinearElasticMaterial
-        Reference material.
-    sym : int
-        Dimension of the space on which this object operates (space of
-        the second-rank, symmetric tensors).
-    daux1 : double
-        Value of `1 / g`, where `g` is the shear modulus of the reference
-        material.
-    daux2 : double
-        Value of `1 / 2 / g / (1 - nu)`, where `g` (resp. `nu`) is the
-        shear modulus (resp. Poisson ratio) of the reference material.
-    daux3 : double
-        Value of `1 / 4 / g`, where `g` is the shear modulus of the
-        reference material.
-    daux4 : double
-        Value of `1 / 2 / g`, where `g` is the shear modulus of the
-        reference material.
-
-    """
+cdef class GreenOperator3d(GreenOperator):
 
     cdef:
-        readonly int dim
-        readonly Material mat
-        int sym
-        double daux1, daux2, daux3, daux4
         double m00, m01, m02, m03, m04, m05, m11, m12, m13, m14, m15
         double m22, m23, m24, m25, m33, m34, m35, m44, m45, m55
 
-    @cdivision(True)
     def __cinit__(self, Material mat):
-        self.dim = 3
-        self.sym = 6
-        if (self.dim != mat.dim):
+        if (mat.dim != 3):
             raise ValueError('3d material expected')
-        self.mat = mat
-        cdef double g = mat.g
-        cdef double nu = mat.nu
-        self.daux1 = 1.0 / g
-        self.daux2 = 0.5 / (g * (1.0 - nu))
-        self.daux3 = 0.25 / g
-        self.daux4 = 0.5 / g
 
     @boundscheck(False)
     @cdivision(True)
