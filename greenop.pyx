@@ -9,44 +9,6 @@ cdef double SQRT_TWO = sqrt(2.)
 
 cdef class GreenOperator:
 
-    """This class defines the periodic Green operator for 2d (plane
-    strain) elasticity.
-
-    Parameters
-    ----------
-    mat : IsotropicLinearElasticMaterial
-        Reference material.
-
-    Attributes
-    ----------
-    dim : int
-        Dimension of the physical space.
-    mat : IsotropicLinearElasticMaterial
-        Reference material.
-    sym : int
-        Dimension of the space on which this object operates (space of
-        the second-rank, symmetric tensors).
-    daux1 : double
-        Value of `1 / g`, where `g` is the shear modulus of the reference
-        material.
-    daux2 : double
-        Value of `1 / 2 / g / (1 - nu)`, where `g` (resp. `nu`) is the
-        shear modulus (resp. Poisson ratio) of the reference material.
-    daux3 : double
-        Value of `1 / 4 / g`, where `g` is the shear modulus of the
-        reference material.
-    daux4 : double
-        Value of `1 / g`, where `g` is the shear modulus of the
-        reference material.
-
-    """
-
-    cdef:
-        readonly int dim
-        readonly Material mat
-        int sym
-        double daux1, daux2, daux3, daux4
-
     @cdivision(True)
     def __cinit__(self, Material mat):
         self.dim = mat.dim
@@ -73,10 +35,42 @@ cdef class GreenOperator:
         cdef str msg = 'shape of eps must be ({0},) [was ({1},)]'
         if eps.shape[0] != self.sym:
             raise IndexError(msg.format(self.sym, eps.shape[0]))
+        
+    cdef inline double[:] pre_apply(self, double[:] k, double[:] tau,
+                                    double[:] eps):
+    
+        """Perform preliminary checks for apply."""
 
+        self.check_k(k)
+        self.check_tau(tau)
+        if eps is not None:
+            self.check_eps(eps)
+        else:
+            eps = array(shape=(self.sym,), itemsize=sizeof(double), format='d')
+        self.update(k)
+        return eps
+
+    cdef inline double[:, :] pre_asarray(self,
+                                         double[:] k,
+                                         double[:, :] g) except *:
+
+        """Perform preliminary checks for asarray."""
+
+        self.check_k(k)
+
+        if g is not None:
+            if g.shape[0] != self.sym or g.shape[1] != self.sym:
+                raise IndexError('shape of g must be ({0}, {0})'
+                                 .format(self.sym, self.sym))
+        else:
+            g = array(shape=(self.sym, self.sym),
+                      itemsize=sizeof(double), format='d')
+        self.update(k)
+        return g
+        
     cdef void update(self, double[:] k):
-
-        """`update(k)`
+    
+        """update(k)
     
         Compute the coefficients of the underlying matrix for the
         specified value of the wave vector.
@@ -90,23 +84,9 @@ cdef class GreenOperator:
 
         pass
 
-    cdef inline double[:] pre_apply(self, double[:] k, double[:] tau,
-                                    double[:] eps=None):
-    
-        """Perform preliminary checks for `apply`."""
-
-        self.check_k(k)
-        self.check_tau(tau)
-        if eps is not None:
-            self.check_eps(eps)
-        else:
-            eps = array(shape=(self.sym,), itemsize=sizeof(double), format='d')
-        self.update(k)
-        return eps
-
     cpdef double[:] apply(self, double[:] k, double[:] tau,
-                          double[:] eps = None):
-        """`apply(k, tau, eps = None)`
+                          double[:] eps=None):
+        """apply(k, tau, eps = None)
                           
         Apply the Green operator to the specified prestress.
 
@@ -125,29 +105,9 @@ cdef class GreenOperator:
         eps : array_like
             The result of the linear operation `Gamma(k) : tau`.
         """
-
         pass
-    
-    cdef inline pre_asarray(self, double[:] k, double[:, :] g=None):
-
-        """Perform preliminary checks for `apply`."""
-
-        if k.shape[0] != self.dim:
-            msg = 'shape of k must be ({0},) [was ({1},)]'
-            raise IndexError(msg.format(self.dim, k.shape[0]))
-
-        if g is not None:
-            if g.shape[0] != self.sym or g.shape[1] != self.sym:
-                raise IndexError('shape of g must be ({0}, {0})'
-                                 .format(self.sym, self.sym))
-        else:
-            g = array(shape=(self.sym, self.sym),
-                      itemsize=sizeof(double), format='d')
-        self.update(k)
-        return g
 
     def asarray(self, double[:] k, double[:, :] g=None):
-
         """asarray(k, g=None)
         
         Return the array representation of the Green operator for the
@@ -165,7 +125,6 @@ cdef class GreenOperator:
         g : array_like
             Matrix of the Green operator.
         """
-
         pass
                 
 cdef class GreenOperator2d(GreenOperator):
