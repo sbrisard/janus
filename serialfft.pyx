@@ -6,6 +6,8 @@ from cython.view cimport array
 cdef int SIZEOF_DOUBLE = sizeof(double)
 cdef int SIZEOF_COMPLEX = 2 * sizeof(double)
 cdef str INVALID_SHAPE_LENGTH = 'length of shape must be {0} (was {1})'
+cdef str INVALID_INPUT_SHAPE = 'shape of input must be {0} [was ({1}, {2})]'
+cdef str INVALID_OUTPUT_SHAPE = 'shape of output must be {0} [was ({1}, {2})]'
 
 cdef int padding(int n):
     if n % 2 == 0:
@@ -46,9 +48,31 @@ cdef class SerialFFT2D:
         fftw_destroy_plan(self.plan_r2c)
 
     @cython.boundscheck(False)
+    cdef inline void check_input(self, double[:, :] a) except *:
+        if a.shape[0] != self.isize0 or a.shape[1] != self.isize1:
+            raise ValueError(INVALID_INPUT_SHAPE.format(self.in_shape,
+                                                        a.shape[0],
+                                                        a.shape[1]))
+
+    @cython.boundscheck(False)
+    cdef inline void check_output(self, double[:, :] a) except *:
+        if a.shape[0] != self.osize0 or a.shape[1] != self.osize1:
+            raise ValueError(INVALID_OUTPUT_SHAPE.format(self.out_shape,
+                                                         a.shape[0],
+                                                         a.shape[1]))
+
+    @cython.boundscheck(False)
     @cython.cdivision(True)
     @cython.wraparound(False)
     cpdef double[:, :] r2c(self, double[:, :] ain, double[:, :] aout = None):
+        self.check_input(ain)
+        if aout is None:
+             aout = array(shape=self.out_shape,
+                         itemsize=SIZEOF_DOUBLE,
+                         format='d')
+        else:
+             self.check_output(aout)
+
         cdef:
             int i0, i1, s0, s1
             double *pbuf, *row, *cell
@@ -69,10 +93,6 @@ cdef class SerialFFT2D:
             pbuf += self.padding
         
         fftw_execute(self.plan_r2c)
-        if aout is None:
-            aout = array(shape=self.out_shape,
-                         itemsize=SIZEOF_DOUBLE,
-                         format='d')
         
         # Copy result from self.buffer to aout
         s0 = aout.strides[0] / SIZEOF_DOUBLE
