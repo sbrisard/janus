@@ -1,5 +1,5 @@
 from fftw cimport *
-
+from cpython cimport bool
 cimport cython
 from cython.view cimport array
 
@@ -64,6 +64,53 @@ cdef class SerialRealFFT2D:
     @cython.boundscheck(False)
     @cython.cdivision(True)
     @cython.wraparound(False)
+    cdef inline copy_to_buffer(self, double[:, :] a, bool add_padding):
+        cdef:
+            int i0, i1, s0, s1, padding
+            double *pbuf, *row, *cell
+        if add_padding:
+            padding = self.padding
+        else:
+            padding = 0
+        s0 = a.strides[0] / SIZEOF_DOUBLE
+        s1 = a.strides[1] / SIZEOF_DOUBLE
+        pbuf = self.buffer
+        row = &a[0, 0]
+        for i0 in range(self.isize0):
+            cell = row 
+            for i1 in range(self.isize1):
+                pbuf[0] = cell[0]
+                pbuf += 1
+                cell += s1
+            row += s0
+            pbuf += self.padding
+
+    @cython.boundscheck(False)
+    @cython.cdivision(True)
+    @cython.wraparound(False)
+    cdef inline copy_from_buffer(self, double[:, :] a, bool add_padding):
+        cdef:
+            int i0, i1, s0, s1, padding
+            double *pbuf, *row, *cell
+        if add_padding:
+            padding = self.padding
+        else:
+            padding = 0
+        s0 = a.strides[0] / SIZEOF_DOUBLE
+        s1 = a.strides[1] / SIZEOF_DOUBLE
+        pbuf = self.buffer
+        row = &a[0, 0]
+        for i0 in range(self.osize0):
+            cell = row
+            for i1 in range(self.osize1):
+                cell[0] = pbuf[0]
+                pbuf += 1
+                cell += s1
+            row += s0
+
+    @cython.boundscheck(False)
+    @cython.cdivision(True)
+    @cython.wraparound(False)
     cpdef double[:, :] r2c(self, double[:, :] ain, double[:, :] aout = None):
         self.check_input(ain)
         if aout is None:
@@ -73,39 +120,9 @@ cdef class SerialRealFFT2D:
         else:
              self.check_output(aout)
 
-        cdef:
-            int i0, i1, s0, s1
-            double *pbuf, *row, *cell
-
-        # Copy ain to self.buffer, using C pointers increments.
-        # Strides are expressed in terms of chars, not doubles.
-        s0 = ain.strides[0] / SIZEOF_DOUBLE
-        s1 = ain.strides[1] / SIZEOF_DOUBLE
-        pbuf = self.buffer
-        row = &ain[0, 0]
-        for i0 in range(self.isize0):
-            cell = row 
-            for i1 in range(self.isize1):
-                pbuf[0] = cell[0]
-                pbuf += 1
-                cell += s1
-            row += s0
-            pbuf += self.padding
-        
+        self.copy_to_buffer(ain, True)
         fftw_execute(self.plan_r2c)
+        self.copy_from_buffer(aout, False)
         
-        # Copy result from self.buffer to aout
-        s0 = aout.strides[0] / SIZEOF_DOUBLE
-        s1 = aout.strides[1] / SIZEOF_DOUBLE
-        pbuf = self.buffer
-        row = &aout[0, 0]
-        for i0 in range(self.osize0):
-            cell = row
-            for i1 in range(self.osize1):
-                cell[0] = pbuf[0]
-                pbuf += 1
-                cell += s1
-            row += s0
-
         return aout
         
