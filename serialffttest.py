@@ -8,11 +8,24 @@ from serialfft import *
 
 def create_fft(shape):
     if len(shape) == 2:
-        return SerialFFT2D(shape)
+        return SerialRealFFT2D(shape)
     elif len(shape) == 3:
-        return SerialFFT3D(shape)
+        return SerialRealFFT3D(shape)
     else:
         raise ValueError()
+
+@nottest
+@raises(ValueError)
+def do_test_create_invalid_dimension(dim):
+    if dim == 2:
+        return SerialRealFFT2D((128, 128, 128))
+    else:
+        return SerialRealFFT3D((128, 128))
+
+def test_create_invalid_dimension():
+    dims = [2]
+    for dim in dims:
+        yield do_test_create_invalid_dimension, dim
 
 @nottest
 def do_test_r2c_2d(shape, inplace, delta):
@@ -41,19 +54,6 @@ def test_r2c_2d():
     for shape, delta in params:
         for inplace in [True, False]:
             yield do_test_r2c_2d, shape, inplace, delta
-
-@nottest
-@raises(ValueError)
-def do_test_invalid_dimension(dim):
-    if dim == 2:
-        return SerialFFT2D((128, 128, 128))
-    else:
-        return SerialFFT3D((128, 128))
-
-def test_invalid_dimension():
-    dims = [2]
-    for dim in dims:
-        yield do_test_invalid_dimension, dim
 
 @nottest
 @raises(ValueError)

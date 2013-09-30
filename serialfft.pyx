@@ -15,7 +15,7 @@ cdef int padding(int n):
     else:
         return 1
 
-cdef class SerialFFT2D:
+cdef class SerialRealFFT2D:
     cdef:
         double *buffer
         fftw_plan plan_r2c
