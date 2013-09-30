@@ -1,7 +1,9 @@
+*~
 *.c
+*.html
 *.pyd
 *.so
-*.html
+*.swp
 __pycache__
 build
 .ipynb_checkpoints
