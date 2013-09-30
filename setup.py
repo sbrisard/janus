@@ -13,8 +13,12 @@ ext_modules = [Extension('matprop',
                          include_dirs=include_dirs),
                Extension('discretegreenop',
                          sources=['discretegreenop.pyx'],
-                         include_dirs=include_dirs)]
-    
+                         include_dirs=include_dirs),
+               Extension('serialfft',
+                         sources=['fftw.pxd', 'serialfft.pyx'],
+                         include_dirs=include_dirs,
+                         libraries=["libfftw3"],),
+              ]    
 setup(name = 'Homogenization through FFT',
       cmdclass = {'build_ext': build_ext},
       ext_modules = ext_modules)
