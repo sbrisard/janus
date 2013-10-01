@@ -5,12 +5,8 @@ from cython.view cimport array
 
 cdef int SIZEOF_DOUBLE = sizeof(double)
 cdef int SIZEOF_COMPLEX = 2 * sizeof(double)
-cdef str INVALID_SHAPE_LENGTH = 'length of shape must be {0} (was {1})'
 cdef str INVALID_REAL_ARRAY_SHAPE = 'shape of real array must be {0} [was ({1}, {2})]'
 cdef str INVALID_COMPLEX_ARRAY_SHAPE = 'shape of complex array must be {0} [was ({1}, {2})]'
-
-cdef int REAL = 0
-cdef int COMPLEX = 1
 
 cdef int padding(int n):
     if n % 2 == 0:
@@ -23,17 +19,13 @@ cdef class SerialRealFFT2D:
         double *buffer
         fftw_plan plan_r2c, plan_c2r
         readonly tuple rshape, cshape
-        int dim
         int padding
         int rsize0, rsize1, csize0, csize1
 
     @cython.boundscheck(False)
-    def __cinit__(self, tuple size not None):
-        self.dim = 2
-        if len(size) != 2:
-            raise ValueError(INVALID_SHAPE_LENGTH.format(self.dim, len(size)))
-        self.rsize0 = size[0]
-        self.rsize1 = size[1]
+    def __cinit__(self, int n0, int n1):
+        self.rsize0 = n0
+        self.rsize1 = n1
         self.rshape = self.rsize0, self.rsize1
         self.csize0 = self.rsize0
         self.csize1 = 2 * (self.rsize1 / 2 + 1)
