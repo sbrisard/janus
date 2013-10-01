@@ -1,5 +1,4 @@
 from fftw cimport *
-from cpython cimport bool
 cimport cython
 from cython.view cimport array
 
@@ -16,11 +15,10 @@ cdef int padding(int n):
 
 cdef class SerialRealFFT2D:
     cdef:
+        int rsize0, rsize1, csize0, csize1, padding
         double *buffer
         fftw_plan plan_r2c, plan_c2r
         readonly tuple rshape, cshape
-        int padding
-        int rsize0, rsize1, csize0, csize1
 
     @cython.boundscheck(False)
     def __cinit__(self, int n0, int n1):
