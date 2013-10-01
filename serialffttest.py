@@ -15,17 +15,19 @@ def create_fft(shape):
         raise ValueError()
 
 @nottest
-def do_test_r2c_2d(shape, inplace, delta):
+def do_test_r2c(shape, inplace, delta):
     fft = create_fft(shape)
     a = 2. * nprnd.rand(*fft.rshape) - 1.
     if inplace:
-        dummy = fft.r2c(a, np.empty(fft.cshape, dtype=np.float64))
+        output = fft.r2c(a, np.empty(fft.cshape, dtype=np.float64))
     else:
-        dummy = fft.r2c(a)
+        output = fft.r2c(a)
 
-    dummy = np.asarray(dummy)
-    actual = dummy[:, 0::2] + 1j * dummy[:, 1::2]
-    expected = npfft.rfft2(a)
+    output = np.asarray(output)
+    output = np.rollaxis(output, output.ndim - 1, 0)
+    actual = output[0::2] + 1j * output[1::2]
+    actual = np.rollaxis(actual, 0, actual.ndim)
+    expected = npfft.rfftn(a)
 
     error = (np.sum(np.absolute(actual - expected))
              / np.sum(np.absolute(expected)))
@@ -33,7 +35,7 @@ def do_test_r2c_2d(shape, inplace, delta):
     assert_less(error, delta)
 
 @nottest
-def do_test_c2r_2d(shape, inplace, delta):
+def do_test_c2r(shape, inplace, delta):
     fft = create_fft(shape)
     expected = 2. * nprnd.rand(*fft.rshape) - 1.
     a = np.asarray(fft.r2c(expected))
@@ -49,15 +51,19 @@ def do_test_c2r_2d(shape, inplace, delta):
 
     assert_less(error, delta)
 
-def test_transform_2d():
+def test_transform():
     params = [((256, 128), 2E-15),
               ((256, 129), 2E-14),
               ((257, 128), 2E-15),
-              ((257, 129), 2E-14)]
-    for do_test in [do_test_r2c_2d, do_test_c2r_2d]:
+              ((257, 129), 2E-14),
+              ((128, 32, 64), 3E-15),
+              ((127, 32, 64), 3E-15),
+              ((128, 31, 64), 3.5E-15),
+              ((128, 32, 63), 3.5E-15),]
+    for do_test in [do_test_r2c, do_test_c2r]:
         for shape, delta in params:
             for inplace in [True, False]:
-                yield do_test_c2r_2d, shape, inplace, delta
+                yield do_test, shape, inplace, delta
 
 @nottest
 @raises(ValueError)
@@ -77,11 +83,14 @@ def test_transform_invalid_params():
     params = [((128, 256), (127, 256), (128, 258)),
               ((128, 256), (128, 255), (128, 258)),
               ((128, 256), (128, 256), (129, 258)),
-              ((128, 256), (128, 256), (128, 259)),]
+              ((128, 256), (128, 256), (128, 259)),
+              ((128, 64, 32), (127, 64, 32), (128, 64, 34)),
+              ((128, 64, 32), (128, 63, 32), (128, 64, 34)),
+              ((128, 64, 32), (128, 64, 31), (128, 64, 34)),
+              ((128, 64, 32), (128, 64, 32), (127, 64, 34)),
+              ((128, 64, 32), (128, 64, 32), (128, 63, 34)),
+              ((128, 64, 32), (128, 64, 32), (128, 64, 33)),]
     for do_test in [do_test_r2c_invalid_params,
                     do_test_c2r_invalid_params]:
         for shape, rshape, cshape in params:
             yield do_test, shape, rshape, cshape
-
-if __name__ == '__main__':
-    do_test_c2r_2d((256, 128), False, 2E-15)
