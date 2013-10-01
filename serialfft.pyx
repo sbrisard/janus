@@ -48,18 +48,18 @@ cdef class SerialRealFFT2D:
         fftw_destroy_plan(self.plan_c2r)
 
     @cython.boundscheck(False)
-    cdef inline void check_real_array(self, double[:, :] a) except *:
-        if a.shape[0] != self.rsize0 or a.shape[1] != self.rsize1:
+    cdef inline void check_real_array(self, double[:, :] r) except *:
+        if r.shape[0] != self.rsize0 or r.shape[1] != self.rsize1:
             raise ValueError(INVALID_REAL_ARRAY_SHAPE.format(self.rshape,
-                                                             a.shape[0],
-                                                             a.shape[1]))
+                                                             r.shape[0],
+                                                             r.shape[1]))
 
     @cython.boundscheck(False)
-    cdef inline void check_complex_array(self, double[:, :] a) except *:
-        if a.shape[0] != self.csize0 or a.shape[1] != self.csize1:
+    cdef inline void check_complex_array(self, double[:, :] c) except *:
+        if c.shape[0] != self.csize0 or c.shape[1] != self.csize1:
             raise ValueError(INVALID_COMPLEX_ARRAY_SHAPE.format(self.cshape,
-                                                                a.shape[0],
-                                                                a.shape[1]))
+                                                                c.shape[0],
+                                                                c.shape[1]))
 
     @cython.boundscheck(False)
     @cython.cdivision(True)
