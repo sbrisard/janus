@@ -32,3 +32,6 @@ cdef extern from "fftw3.h":
     fftw_plan fftw_plan_dft_r2c_2d(int n0, int n1,
                                    double *input, fftw_complex *output,
                                    unsigned flags)
+    fftw_plan fftw_plan_dft_c2r_2d(int n0, int n1,
+                                   fftw_complex *input, double *output,
+                                   unsigned flags)
