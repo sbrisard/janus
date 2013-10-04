@@ -1,4 +1,3 @@
-#from libc.stddef cimport ptrdiff_t
 cimport cython
 
 from fftw cimport *
