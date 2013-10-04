@@ -15,11 +15,11 @@ def create_serial_fft(shape):
     else:
         raise ValueError()
 
-def create_parallel_fft(shape):
+def create_parallel_fft(shape, comm):
     if len(shape) == 2:
-        return ParallelRealFFT2D(*shape)
+        return ParallelRealFFT2D(*shape, comm=comm)
     elif len(shape) == 3:
-        return SerialRealFFT3D(*shape)
+        return ParallelRealFFT3D(*shape, comm=comm)
     else:
         raise ValueError()
 
@@ -30,7 +30,7 @@ def do_test_r2c(shape):
     rank = comm.rank
 
     init()
-    pfft = ParallelRealFFT2D(*shape)
+    pfft = create_parallel_fft(shape, comm)
 
     # Root process gathers local n0 and offset
     local_sizes = comm.gather(sendobj=(pfft.rshape[0], pfft.offset0), root=root)

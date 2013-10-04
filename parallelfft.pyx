@@ -2,6 +2,7 @@ cimport cython
 
 from fftw cimport *
 from fftw_mpi cimport *
+from mpi4py cimport MPI
 from serialfft cimport RealFFT2D
 from serialfft cimport padding
 
@@ -12,10 +13,9 @@ cdef class ParallelRealFFT2D(RealFFT2D):
     cdef readonly ptrdiff_t offset0
 
     @cython.boundscheck(False)
-    def __cinit__(self, ptrdiff_t n0, ptrdiff_t n1):
-        # TODO Pass any MPI communicator
+    def __cinit__(self, ptrdiff_t n0, ptrdiff_t n1, MPI.Comm comm):
         cdef ptrdiff_t size = 2 * fftw_mpi_local_size_2d(n0, n1 / 2 + 1,
-                                                          mpi.MPI_COMM_WORLD,
+                                                          comm.ob_mpi,
                                                           &self.rsize0,
                                                           &self.offset0) 
         self.rsize1 = n1
