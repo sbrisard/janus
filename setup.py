@@ -13,11 +13,6 @@ include_dirs = [numpy.get_include(),
 
 library_dirs = ['C:\\opt\\Microsoft_HPC_Pack_2012\\Lib\\i386']
 
-if get_platform() in ('win32', 'win-amd64'):
-    libfftw3 = 'libfftw3'
-else:
-    libfftw3 = 'fftw3'
-
 ext_modules = [Extension('matprop',
                          sources=['matprop.pxd', 'matprop.pyx'],
                          include_dirs=include_dirs),
@@ -31,7 +26,7 @@ ext_modules = [Extension('matprop',
                          sources=['fftw.pxd', 'serialfft.pyx'],
                          library_dirs=library_dirs,
                          include_dirs=include_dirs,
-                         libraries=[libfftw3],),
+                         libraries=['fftw3'],),
                ]
 
 if not(get_platform() in ('win32', 'win-amd64')):
