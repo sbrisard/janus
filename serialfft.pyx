@@ -9,7 +9,7 @@ cdef str INVALID_COMPLEX_ARRAY_SHAPE = 'shape of complex array must be {0} [was 
 
 cdef class RealFFT2D:
     @cython.boundscheck(False)
-    def __cinit__(self, int n0, int n1):
+    def __cinit__(self, ptrdiff_t n0, ptrdiff_t n1):
         self.shape = n0, n1
         
     def __dealloc__(self):

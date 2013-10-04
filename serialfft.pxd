@@ -1,3 +1,4 @@
+from libc.stddef cimport ptrdiff_t
 from fftw cimport *
 
 cdef inline int padding(int n):
@@ -8,7 +9,8 @@ cdef inline int padding(int n):
 
 cdef class RealFFT2D:
     cdef:
-        int rsize0, rsize1, csize0, csize1, padding
+        int padding
+        ptrdiff_t rsize0, rsize1, csize0, csize1
         double *buffer
         fftw_plan plan_r2c, plan_c2r
         readonly tuple shape, rshape, cshape
