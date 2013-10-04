@@ -13,7 +13,7 @@ cdef class ParallelRealFFT2D(RealFFT2D):
     cdef readonly ptrdiff_t offset0
 
     @cython.boundscheck(False)
-    def __cinit__(self, int n0, int n1):
+    def __cinit__(self, ptrdiff_t n0, ptrdiff_t n1):
         # TODO Pass any MPI communicator
         cdef ptrdiff_t size = 2 * fftw_mpi_local_size_2d(n0, n1 / 2 + 1,
                                                           mpi.MPI_COMM_WORLD,

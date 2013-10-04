@@ -35,9 +35,9 @@ cdef class RealFFT2D:
     @cython.cdivision(True)
     @cython.wraparound(False)
     cdef inline copy_to_buffer(self, double[:, :] a,
-                               int n0, int n1, int padding):
+                               ptrdiff_t n0, ptrdiff_t n1, int padding):
         cdef:
-            int s0, s1, i0, i1
+            ptrdiff_t s0, s1, i0, i1
             double *pbuf, *row, *cell
         s0 = a.strides[0] / SIZEOF_DOUBLE
         s1 = a.strides[1] / SIZEOF_DOUBLE
@@ -56,9 +56,9 @@ cdef class RealFFT2D:
     @cython.cdivision(True)
     @cython.wraparound(False)
     cdef inline copy_from_buffer(self, double[:, :] a,
-                                 int n0, int n1, int padding):
+                                 ptrdiff_t n0, ptrdiff_t n1, int padding):
         cdef:
-            int s0, s1, i0, i1
+            ptrdiff_t s0, s1, i0, i1
             double *pbuf, *row, *cell
         s0 = a.strides[0] / SIZEOF_DOUBLE
         s1 = a.strides[1] / SIZEOF_DOUBLE
@@ -102,7 +102,7 @@ cdef class RealFFT2D:
 cdef class SerialRealFFT2D(RealFFT2D):
 
     @cython.boundscheck(False)
-    def __cinit__(self, int n0, int n1):
+    def __cinit__(self, ptrdiff_t n0, ptrdiff_t n1):
         self.rsize0 = n0
         self.rsize1 = n1
         self.rshape = self.rsize0, self.rsize1

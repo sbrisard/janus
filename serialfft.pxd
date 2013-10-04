@@ -17,7 +17,9 @@ cdef class RealFFT2D:
 
     cdef inline void check_real_array(self, double[:, :] r) except *
     cdef inline void check_complex_array(self, double[:, :] c) except *
-    cdef inline copy_to_buffer(self, double[:, :] a, int n0, int n1, int padding)
-    cdef inline copy_from_buffer(self, double[:, :] a, int n0, int n1, int padding)
+    cdef inline copy_to_buffer(self, double[:, :] a,
+                               ptrdiff_t n0, ptrdiff_t n1, int padding)
+    cdef inline copy_from_buffer(self, double[:, :] a,
+                                 ptrdiff_t n0, ptrdiff_t n1, int padding)
     cpdef double[:, :] r2c(self, double[:, :] r, double[:, :] c=*)
     cpdef double[:, :] c2r(self, double[:, :] c, double[:, :] r=*)
