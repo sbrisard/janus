@@ -14,9 +14,7 @@ Contents:
    :maxdepth: 2
 
    introduction
-   matprop-api
-   greenop-api
-
+   fft-api
 
 Indices and tables
 ==================
