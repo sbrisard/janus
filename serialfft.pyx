@@ -19,7 +19,14 @@ cpdef create_serial_real_fft(ptrdiff_t n0, ptrdiff_t n1):
 
 cpdef create_serial_real_fft_3D(ptrdiff_t n0, ptrdiff_t n1, ptrdiff_t n2):
 
-    cdef _RealFFT3D fft = _RealFFT3D(n0, n1, n2)
+    cdef _RealFFT3D fft = _RealFFT3D(n0, n1, n2, n0, 0)
+    fft.buffer = fftw_alloc_real(fft.csize0 * fft.csize1 * fft.csize2)
+    fft.plan_r2c = fftw_plan_dft_r2c_3d(n0, n1, n2,
+                                        fft.buffer, <fftw_complex *> fft.buffer,
+                                        FFTW_ESTIMATE)
+    fft.plan_c2r = fftw_plan_dft_c2r_3d(n0, n1, n2,
+                                        <fftw_complex *> fft.buffer, fft.buffer,
+                                        FFTW_ESTIMATE)
     return fft
 
 cdef class _RealFFT2D:
@@ -124,35 +131,21 @@ cdef class _RealFFT2D:
         return r
     
 cdef class _RealFFT3D:
-    """
-    cdef:
-        int rsize0, rsize1, rsize2, csize0, csize1, csize2, padding
-        double *buffer
-        fftw_plan plan_r2c, plan_c2r
-        readonly tuple rshape, cshape
-    """
 
     @cython.boundscheck(False)
-    def __cinit__(self, int n0, int n1, int n2):
-        self.rsize0 = n0
+    def __cinit__(self, ptrdiff_t n0, ptrdiff_t n1, ptrdiff_t n2,
+                  ptrdiff_t n0_loc, ptrdiff_t offset0):
+        self.rsize0 = n0_loc
         self.rsize1 = n1
         self.rsize2 = n2
-        self.rshape = self.rsize0, self.rsize1, self.rsize2
-        self.csize0 = self.rsize0
-        self.csize1 = self.rsize1
-        self.csize2 = 2 * (self.rsize2 / 2 + 1)
-        self.cshape = self.csize0, self.csize1, self.csize2
+        self.csize0 = n0_loc
+        self.csize1 = n1
+        self.csize2 = 2 * (n2 / 2 + 1)
+        self.offset0 = offset0
         self.padding = padding(self.rsize2)
-
-        self.buffer = fftw_alloc_real(self.csize0 * self.csize1 * self.csize2)
-        self.plan_r2c = fftw_plan_dft_r2c_3d(n0, n1, n2,
-                                             <double *> self.buffer,
-                                             <fftw_complex *> self.buffer,
-                                             FFTW_ESTIMATE)
-        self.plan_c2r = fftw_plan_dft_c2r_3d(n0, n1, n2,
-                                             <fftw_complex *> self.buffer,
-                                             <double *> self.buffer,
-                                             FFTW_ESTIMATE)
+        self.shape = n0, n1, n2        
+        self.rshape = self.rsize0, self.rsize1, self.rsize2
+        self.cshape = self.csize0, self.csize1, self.csize2
         
     def __dealloc__(self):
         fftw_free(self.buffer)
