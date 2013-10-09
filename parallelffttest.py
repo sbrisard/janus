@@ -4,24 +4,8 @@ import numpy.random as nprnd
 from mpi4py import MPI
 from nose.tools import assert_equal
 from nose.tools import nottest
-from parallelfft import *
-from serialfft import *
-
-def create_serial_fft(shape):
-    if len(shape) == 2:
-        return create_serial_real_fft(*shape)
-    elif len(shape) == 3:
-        return SerialRealFFT3D(*shape)
-    else:
-        raise ValueError()
-
-def create_parallel_fft(shape, comm):
-    if len(shape) == 2:
-        return create_parallel_real_fft(*shape, comm=comm)
-    elif len(shape) == 3:
-        return ParallelRealFFT3D(*shape, comm=comm)
-    else:
-        raise ValueError()
+import serialfft
+import parallelfft
 
 @nottest
 def do_test_r2c(shape):
@@ -29,8 +13,8 @@ def do_test_r2c(shape):
     root = 0
     rank = comm.rank
 
-    init()
-    pfft = create_parallel_fft(shape, comm)
+    parallelfft.init()
+    pfft = parallelfft.create_real(shape, comm)
 
     # Root process gathers local n0 and offset
     local_sizes = comm.gather(sendobj=(pfft.rshape[0], pfft.offset0), root=root)
@@ -50,7 +34,7 @@ def do_test_r2c(shape):
 
     # Root process computes serial FFT
     if rank == root:
-        fft = create_serial_real_fft(*shape)
+        fft = serialfft.create_real(shape)
         actual = np.empty(fft.cshape, dtype=np.float64)
         for cloc, (n0, offset0) in zip(clocs, local_sizes):
             actual[offset0:offset0 + n0] = cloc
@@ -62,3 +46,4 @@ def test_transform():
    shapes = [(31, 15), (31, 16), (32, 15), (32, 16)]
    for shape in shapes:
        yield do_test_r2c, shape
+       
