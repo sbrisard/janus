@@ -10,7 +10,7 @@ cdef inline int padding(int n):
     else:
         return 1
 
-cdef class RealFFT2D:
+cdef class _RealFFT2D:
     cdef:
         int padding
         ptrdiff_t rsize0, rsize1, csize0, csize1

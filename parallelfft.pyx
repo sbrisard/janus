@@ -3,7 +3,7 @@ cimport cython
 from fftw cimport *
 from fftw_mpi cimport *
 from mpi4py cimport MPI
-from serialfft cimport RealFFT2D
+from serialfft cimport _RealFFT2D
 from serialfft cimport padding
 
 def init():
@@ -16,7 +16,7 @@ cpdef create_parallel_real_fft(ptrdiff_t n0, ptrdiff_t n1, MPI.Comm comm):
                                                           &n0_loc,
                                                           &offset0) 
 
-    cdef RealFFT2D fft = RealFFT2D(n0, n1, n0_loc, offset0)
+    cdef _RealFFT2D fft = _RealFFT2D(n0, n1, n0_loc, offset0)
     fft.buffer = fftw_alloc_real(size)
     fft.plan_r2c = fftw_mpi_plan_dft_r2c_2d(n0, n1,
                                                  <double *> fft.buffer,
