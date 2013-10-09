@@ -10,7 +10,7 @@ def create_fft(shape):
     if len(shape) == 2:
         return create_serial_real_fft(*shape)
     elif len(shape) == 3:
-        return SerialRealFFT3D(*shape)
+        return create_serial_real_fft_3D(*shape)
     else:
         raise ValueError()
 

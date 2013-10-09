@@ -5,6 +5,23 @@ cdef int SIZEOF_COMPLEX = 2 * sizeof(double)
 cdef str INVALID_REAL_ARRAY_SHAPE = 'shape of real array must be {0} [was ({1}, {2})]'
 cdef str INVALID_COMPLEX_ARRAY_SHAPE = 'shape of complex array must be {0} [was ({1}, {2})]'
 
+cpdef create_serial_real_fft(ptrdiff_t n0, ptrdiff_t n1):
+
+    cdef _RealFFT2D fft = _RealFFT2D(n0, n1, n0, 0)
+    fft.buffer = fftw_alloc_real(2 * n0 * (n1 / 2 + 1))
+    fft.plan_r2c = fftw_plan_dft_r2c_2d(n0, n1,
+                                        fft.buffer, <fftw_complex *> fft.buffer,
+                                        FFTW_ESTIMATE)
+    fft.plan_c2r = fftw_plan_dft_c2r_2d(n0, n1,
+                                        <fftw_complex *> fft.buffer, fft.buffer,
+                                        FFTW_ESTIMATE)
+    return fft
+
+cpdef create_serial_real_fft_3D(ptrdiff_t n0, ptrdiff_t n1, ptrdiff_t n2):
+
+    cdef _RealFFT3D fft = _RealFFT3D(n0, n1, n2)
+    return fft
+
 cdef class _RealFFT2D:
     @cython.boundscheck(False)
     def __cinit__(self, ptrdiff_t n0, ptrdiff_t n1,
@@ -105,25 +122,15 @@ cdef class _RealFFT2D:
         self.copy_from_buffer(r, self.rsize0, self.rsize1, self.padding)
         
         return r
-
-cpdef create_serial_real_fft(ptrdiff_t n0, ptrdiff_t n1):
-
-    cdef _RealFFT2D fft = _RealFFT2D(n0, n1, n0, 0)
-    fft.buffer = fftw_alloc_real(2 * n0 * (n1 / 2 + 1))
-    fft.plan_r2c = fftw_plan_dft_r2c_2d(n0, n1,
-                                        fft.buffer, <fftw_complex *> fft.buffer,
-                                        FFTW_ESTIMATE)
-    fft.plan_c2r = fftw_plan_dft_c2r_2d(n0, n1,
-                                        <fftw_complex *> fft.buffer, fft.buffer,
-                                        FFTW_ESTIMATE)
-    return fft
     
-cdef class SerialRealFFT3D:
+cdef class _RealFFT3D:
+    """
     cdef:
         int rsize0, rsize1, rsize2, csize0, csize1, csize2, padding
         double *buffer
         fftw_plan plan_r2c, plan_c2r
         readonly tuple rshape, cshape
+    """
 
     @cython.boundscheck(False)
     def __cinit__(self, int n0, int n1, int n2):
@@ -174,7 +181,8 @@ cdef class SerialRealFFT3D:
     @cython.cdivision(True)
     @cython.wraparound(False)
     cdef inline copy_to_buffer(self, double[:, :, :] a,
-                               int n0, int n1, int n2, int padding):
+                               ptrdiff_t n0, ptrdiff_t n1, ptrdiff_t n2,
+                               int padding):
         cdef:
             int s0, s1, s2, i0, i1, i2
             double *pbuf, *pslice, *prow, *pcell
@@ -199,7 +207,8 @@ cdef class SerialRealFFT3D:
     @cython.cdivision(True)
     @cython.wraparound(False)
     cdef inline copy_from_buffer(self, double[:, :, :] a,
-                                 int n0, int n1, int n2, int padding):
+                                 ptrdiff_t n0, ptrdiff_t n1, ptrdiff_t n2,
+                                 int padding):
         cdef:
             int s0, s1, s2, i0, i1, i2
             double *pbuf, *pslice, *prow, *pcell
