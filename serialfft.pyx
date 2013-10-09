@@ -5,11 +5,21 @@ cdef int SIZEOF_COMPLEX = 2 * sizeof(double)
 cdef str INVALID_REAL_ARRAY_SHAPE = 'shape of real array must be {0} [was ({1}, {2})]'
 cdef str INVALID_COMPLEX_ARRAY_SHAPE = 'shape of complex array must be {0} [was ({1}, {2})]'
 
+#@cython.internal
 cdef class RealFFT2D:
     @cython.boundscheck(False)
-    def __cinit__(self, ptrdiff_t n0, ptrdiff_t n1, *args, **kwargs):
+    def __cinit__(self, ptrdiff_t n0, ptrdiff_t n1,
+                  ptrdiff_t n0_loc, ptrdiff_t offset0):
+        self.rsize0 = n0_loc
+        self.rsize1 = n1
+        self.csize0 = n0_loc
+        self.csize1 = 2 * (n1 / 2 + 1)
+        self.offset0 = offset0
+        self.padding = padding(n1)
         self.shape = n0, n1
-        
+        self.rshape = self.rsize0, self.rsize1
+        self.cshape = self.csize0, self.csize1
+
     def __dealloc__(self):
         fftw_free(self.buffer)
         fftw_destroy_plan(self.plan_r2c)
@@ -97,29 +107,18 @@ cdef class RealFFT2D:
         
         return r
 
-cdef class SerialRealFFT2D(RealFFT2D):
+cpdef create_serial_real_fft(ptrdiff_t n0, ptrdiff_t n1):
 
-    @cython.boundscheck(False)
-    def __cinit__(self, ptrdiff_t n0, ptrdiff_t n1):
-        self.rsize0 = n0
-        self.rsize1 = n1
-        self.rshape = self.rsize0, self.rsize1
-        self.csize0 = self.rsize0
-        self.csize1 = 2 * (self.rsize1 / 2 + 1)
-        self.cshape = self.csize0, self.csize1
-        self.padding = padding(self.rsize1)
-
-        self.buffer = fftw_alloc_real(self.csize0 * self.csize1)
-        self.plan_r2c = fftw_plan_dft_r2c_2d(self.rsize0, self.rsize1,
-                                             <double *> self.buffer,
-                                             <fftw_complex *> self.buffer,
-                                             FFTW_ESTIMATE)
-        self.plan_c2r = fftw_plan_dft_c2r_2d(self.rsize0, self.rsize1,
-                                             <fftw_complex *> self.buffer,
-                                             <double *> self.buffer,
-                                             FFTW_ESTIMATE)
-        
-
+    cdef RealFFT2D fft = RealFFT2D(n0, n1, n0, 0)
+    fft.buffer = fftw_alloc_real(2 * n0 * (n1 / 2 + 1))
+    fft.plan_r2c = fftw_plan_dft_r2c_2d(n0, n1,
+                                        fft.buffer, <fftw_complex *> fft.buffer,
+                                        FFTW_ESTIMATE)
+    fft.plan_c2r = fftw_plan_dft_c2r_2d(n0, n1,
+                                        <fftw_complex *> fft.buffer, fft.buffer,
+                                        FFTW_ESTIMATE)
+    return fft
+    
 cdef class SerialRealFFT3D:
     cdef:
         int rsize0, rsize1, rsize2, csize0, csize1, csize2, padding

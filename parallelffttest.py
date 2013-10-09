@@ -9,7 +9,7 @@ from serialfft import *
 
 def create_serial_fft(shape):
     if len(shape) == 2:
-        return SerialRealFFT2D(*shape)
+        return create_serial_real_fft(*shape)
     elif len(shape) == 3:
         return SerialRealFFT3D(*shape)
     else:
@@ -17,7 +17,7 @@ def create_serial_fft(shape):
 
 def create_parallel_fft(shape, comm):
     if len(shape) == 2:
-        return ParallelRealFFT2D(*shape, comm=comm)
+        return create_parallel_real_fft(*shape, comm=comm)
     elif len(shape) == 3:
         return ParallelRealFFT3D(*shape, comm=comm)
     else:
@@ -50,7 +50,7 @@ def do_test_r2c(shape):
 
     # Root process computes serial FFT
     if rank == root:
-        fft = SerialRealFFT2D(*shape)
+        fft = create_serial_real_fft(*shape)
         actual = np.empty(fft.cshape, dtype=np.float64)
         for cloc, (n0, offset0) in zip(clocs, local_sizes):
             actual[offset0:offset0 + n0] = cloc
