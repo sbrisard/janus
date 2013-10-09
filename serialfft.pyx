@@ -1,6 +1,4 @@
-from fftw cimport *
 cimport cython
-from cython.view cimport array
 
 cdef int SIZEOF_DOUBLE = sizeof(double)
 cdef int SIZEOF_COMPLEX = 2 * sizeof(double)
@@ -72,7 +70,7 @@ cdef class RealFFT2D:
                 cell += s1
             row += s0
             pbuf += padding
-
+    
     cpdef double[:, :] r2c(self, double[:, :] r, double[:, :] c = None):
         self.check_real_array(r)
         if c is None:

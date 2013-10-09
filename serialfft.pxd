@@ -1,5 +1,8 @@
-from libc.stddef cimport ptrdiff_t
+cimport cython
+
+from cython.view cimport array
 from fftw cimport *
+from libc.stddef cimport ptrdiff_t
 
 cdef inline int padding(int n):
     if n % 2 == 0:
