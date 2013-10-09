@@ -4,19 +4,11 @@ from nose.tools import raises
 import numpy as np
 import numpy.random as nprnd
 import numpy.fft as npfft
-from serialfft import *
-
-def create_fft(shape):
-    if len(shape) == 2:
-        return create_serial_real_fft(*shape)
-    elif len(shape) == 3:
-        return create_serial_real_fft_3D(*shape)
-    else:
-        raise ValueError()
+import serialfft
 
 @nottest
 def do_test_r2c(shape, inplace, delta):
-    fft = create_fft(shape)
+    fft = serialfft.create_real(shape)
     a = 2. * nprnd.rand(*fft.rshape) - 1.
     if inplace:
         output = fft.r2c(a, np.empty(fft.cshape, dtype=np.float64))
@@ -36,7 +28,7 @@ def do_test_r2c(shape, inplace, delta):
 
 @nottest
 def do_test_c2r(shape, inplace, delta):
-    fft = create_fft(shape)
+    fft = serialfft.create_real(shape)
     expected = 2. * nprnd.rand(*fft.rshape) - 1.
     a = np.asarray(fft.r2c(expected))
     if inplace:
@@ -70,14 +62,14 @@ def test_transform():
 def do_test_r2c_invalid_params(shape, rshape, cshape):
     r = np.empty(rshape, dtype = np.float64)
     c = np.empty(cshape, dtype = np.float64)
-    create_fft(shape).r2c(r, c)
+    serialfft.create_real(shape).r2c(r, c)
 
 @nottest
 @raises(ValueError)
 def do_test_c2r_invalid_params(shape, rshape, cshape):
     c = np.empty(cshape, dtype = np.float64)
     r = np.empty(rshape, dtype = np.float64)
-    create_fft(shape).c2r(c, r)
+    serialfft.create_real(shape).c2r(c, r)
 
 def test_transform_invalid_params():
     params = [((128, 256), (127, 256), (128, 258)),

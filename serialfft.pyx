@@ -5,7 +5,16 @@ cdef int SIZEOF_COMPLEX = 2 * sizeof(double)
 cdef str INVALID_REAL_ARRAY_SHAPE = 'shape of real array must be {0} [was ({1}, {2})]'
 cdef str INVALID_COMPLEX_ARRAY_SHAPE = 'shape of complex array must be {0} [was ({1}, {2})]'
 
-cpdef create_serial_real_fft(ptrdiff_t n0, ptrdiff_t n1):
+def create_real(shape):
+    if len(shape) == 2:
+        return create_real_2D(shape[0], shape[1])
+    elif len(shape) == 3:
+        return create_real_3D(shape[0], shape[1], shape[2])
+    else:
+        msg = 'length of shape can be 2 or 3 (was {0})'
+        raise ValueError(msg.format(len(shape)))
+
+cdef create_real_2D(ptrdiff_t n0, ptrdiff_t n1):
 
     cdef _RealFFT2D fft = _RealFFT2D(n0, n1, n0, 0)
     fft.buffer = fftw_alloc_real(2 * n0 * (n1 / 2 + 1))
@@ -17,7 +26,7 @@ cpdef create_serial_real_fft(ptrdiff_t n0, ptrdiff_t n1):
                                         FFTW_ESTIMATE)
     return fft
 
-cpdef create_serial_real_fft_3D(ptrdiff_t n0, ptrdiff_t n1, ptrdiff_t n2):
+cdef create_real_3D(ptrdiff_t n0, ptrdiff_t n1, ptrdiff_t n2):
 
     cdef _RealFFT3D fft = _RealFFT3D(n0, n1, n2, n0, 0)
     fft.buffer = fftw_alloc_real(fft.csize0 * fft.csize1 * fft.csize2)
