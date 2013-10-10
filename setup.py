@@ -22,8 +22,8 @@ greenop = Extension('greenop',
 discretegreenop = Extension('discretegreenop',
                             sources=['discretegreenop.c'])
 
-fft_serial = Extension('fft.serial.serialfft',
-                       sources=['fft/serial/serialfft.c'],
+fft_serial = Extension('fft.serial._serial_fft',
+                       sources=['fft/serial/_serial_fft.c'],
                        libraries=['fftw3'],)
 
 ext_modules = [matprop, greenop, discretegreenop, fft_serial]
