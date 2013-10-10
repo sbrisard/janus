@@ -13,24 +13,22 @@ include_dirs = [numpy.get_include(),
 
 library_dirs = ['C:\\opt\\Microsoft_HPC_Pack_2012\\Lib\\i386']
 
-ext_modules = [Extension('matprop',
-                         sources=['matprop.pxd', 'matprop.pyx'],
-                         include_dirs=include_dirs),
-               Extension('greenop',
-                         sources=['greenop.pxd', 'greenop.pyx'],
-                         include_dirs=include_dirs),
-               Extension('discretegreenop',
-                         sources=['discretegreenop.pyx'],
-                         include_dirs=include_dirs),
-               Extension('serialfft',
-                         sources=['fftw.pxd',
-                                  'serialfft.pxd',
-                                  'serialfft.pyx'],
-                         library_dirs=library_dirs,
-                         include_dirs=include_dirs,
-                         libraries=['fftw3'],),
-               ]
+matprop = Extension('matprop',
+                    sources=['matprop.c'])
 
+greenop = Extension('greenop',
+                    sources=['greenop.c'])
+
+discretegreenop = Extension('discretegreenop',
+                            sources=['discretegreenop.c'])
+
+fft_serial = Extension('fft.serial.serialfft',
+                       sources=['fft/serial/serialfft.c'],
+                       libraries=['fftw3'],)
+
+ext_modules = [matprop, greenop, discretegreenop, fft_serial]
+
+"""
 if not(get_platform() in ('win32', 'win-amd64')):
     ext_modules.append(
                Extension('parallelfft',
@@ -41,7 +39,7 @@ if not(get_platform() in ('win32', 'win-amd64')):
                          include_dirs=include_dirs,
                          libraries=['fftw3', 'fftw3_mpi']
 ))
+"""
 
 setup(name = 'Homogenization through FFT',
-      cmdclass = {'build_ext': build_ext},
       ext_modules = ext_modules)
