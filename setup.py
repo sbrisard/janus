@@ -22,7 +22,7 @@ discretegreenop = Extension('discretegreenop',
                             sources=['discretegreenop.c'])
 
 fft_serial = Extension('fft.serial._serial_fft',
-                       sources=['fft/serial/_serial_fft.c'],
+                       sources=['src/fft/serial/_serial_fft.c'],
                        libraries=['fftw3'],)
 
 ext_modules = [matprop, greenop, discretegreenop, fft_serial]
@@ -30,9 +30,11 @@ ext_modules = [matprop, greenop, discretegreenop, fft_serial]
 if not(get_platform() in ('win32', 'win-amd64')):
     ext_modules.append(
                Extension('fft.parallel._parallel_fft',
-                         sources=['fft/parallel/_parallel_fft.c'],
+                         sources=['src/fft/parallel/_parallel_fft.c'],
                          libraries=['fftw3', 'fftw3_mpi']
 ))
 
 setup(name = 'Homogenization through FFT',
+      packages=[''],
+      package_dir = {'': 'src'},
       ext_modules = ext_modules)
