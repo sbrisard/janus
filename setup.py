@@ -13,13 +13,13 @@ include_dirs = [numpy.get_include(),
 library_dirs = ['C:\\opt\\Microsoft_HPC_Pack_2012\\Lib\\i386']
 
 matprop = Extension('matprop',
-                    sources=['matprop.c'])
+                    sources=['src/matprop.c'])
 
 greenop = Extension('greenop',
-                    sources=['greenop.c'])
+                    sources=['src/greenop.c'])
 
 discretegreenop = Extension('discretegreenop',
-                            sources=['discretegreenop.c'])
+                            sources=['src/discretegreenop.c'])
 
 fft_serial = Extension('fft.serial._serial_fft',
                        sources=['src/fft/serial/_serial_fft.c'],
