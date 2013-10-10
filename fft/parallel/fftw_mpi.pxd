@@ -1,4 +1,4 @@
-from fftw cimport *
+from fft.serial.fftw cimport *
 from libc.stddef cimport ptrdiff_t
 import mpi4py
 from mpi4py cimport mpi_c

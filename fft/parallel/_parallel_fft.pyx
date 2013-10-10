@@ -1,7 +1,6 @@
-from fftw cimport *
 from fftw_mpi cimport *
-from serialfft cimport _RealFFT2D
-from serialfft cimport _RealFFT3D
+from fft.serial._serial_fft cimport _RealFFT2D
+from fft.serial._serial_fft cimport _RealFFT3D
 
 cpdef init():
     fftw_mpi_init()

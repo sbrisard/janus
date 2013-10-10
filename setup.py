@@ -5,7 +5,6 @@ import os
 from distutils.core import setup
 from distutils.extension import Extension
 from distutils.util import get_platform
-from Cython.Distutils import build_ext
 
 include_dirs = [numpy.get_include(),
                 mpi4py.get_include(),
@@ -28,18 +27,12 @@ fft_serial = Extension('fft.serial._serial_fft',
 
 ext_modules = [matprop, greenop, discretegreenop, fft_serial]
 
-"""
 if not(get_platform() in ('win32', 'win-amd64')):
     ext_modules.append(
-               Extension('parallelfft',
-                         sources=['fftw.pxd',
-                                  'serialfft.pyx',
-                                  'parallelfft.pyx'],
-                         library_dirs=library_dirs,
-                         include_dirs=include_dirs,
+               Extension('fft.parallel._parallel_fft',
+                         sources=['fft/parallel/_parallel_fft.c'],
                          libraries=['fftw3', 'fftw3_mpi']
 ))
-"""
 
 setup(name = 'Homogenization through FFT',
       ext_modules = ext_modules)
