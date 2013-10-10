@@ -1,5 +1,7 @@
 cimport cython
 
+from cython.view cimport array
+
 cdef int SIZEOF_DOUBLE = sizeof(double)
 cdef int SIZEOF_COMPLEX = 2 * sizeof(double)
 cdef str INVALID_REAL_ARRAY_SHAPE = 'shape of real array must be {0} [was ({1}, {2})]'

@@ -1,6 +1,3 @@
-cimport cython
-
-from cython.view cimport array
 from fftw cimport *
 from libc.stddef cimport ptrdiff_t
 
