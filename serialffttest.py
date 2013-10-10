@@ -4,16 +4,16 @@ from nose.tools import raises
 import numpy as np
 import numpy.random as nprnd
 import numpy.fft as npfft
-import serialfft
+import fft.serial
 
 @nottest
 def do_test_r2c(shape, inplace, delta):
-    fft = serialfft.create_real(shape)
-    a = 2. * nprnd.rand(*fft.rshape) - 1.
+    transform = fft.serial.create_real(shape)
+    a = 2. * nprnd.rand(*transform.rshape) - 1.
     if inplace:
-        output = fft.r2c(a, np.empty(fft.cshape, dtype=np.float64))
+        output = transform.r2c(a, np.empty(transform.cshape, dtype=np.float64))
     else:
-        output = fft.r2c(a)
+        output = transform.r2c(a)
 
     output = np.asarray(output)
     output = np.rollaxis(output, output.ndim - 1, 0)
@@ -28,13 +28,13 @@ def do_test_r2c(shape, inplace, delta):
 
 @nottest
 def do_test_c2r(shape, inplace, delta):
-    fft = serialfft.create_real(shape)
-    expected = 2. * nprnd.rand(*fft.rshape) - 1.
-    a = np.asarray(fft.r2c(expected))
+    transform = fft.serial.create_real(shape)
+    expected = 2. * nprnd.rand(*transform.rshape) - 1.
+    a = np.asarray(transform.r2c(expected))
     if inplace:
-        actual = fft.c2r(a, np.empty(fft.rshape, dtype=np.float64))
+        actual = transform.c2r(a, np.empty(transform.rshape, dtype=np.float64))
     else:
-        actual = fft.c2r(a)
+        actual = transform.c2r(a)
     actual = np.asarray(actual)
     expected *= expected.size
 
@@ -62,14 +62,14 @@ def test_transform():
 def do_test_r2c_invalid_params(shape, rshape, cshape):
     r = np.empty(rshape, dtype = np.float64)
     c = np.empty(cshape, dtype = np.float64)
-    serialfft.create_real(shape).r2c(r, c)
+    fft.serial.create_real(shape).r2c(r, c)
 
 @nottest
 @raises(ValueError)
 def do_test_c2r_invalid_params(shape, rshape, cshape):
     c = np.empty(cshape, dtype = np.float64)
     r = np.empty(rshape, dtype = np.float64)
-    serialfft.create_real(shape).c2r(c, r)
+    fft.serial.create_real(shape).c2r(c, r)
 
 def test_transform_invalid_params():
     params = [((128, 256), (127, 256), (128, 258)),
