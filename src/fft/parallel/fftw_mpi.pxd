@@ -3,6 +3,8 @@ from libc.stddef cimport ptrdiff_t
 import mpi4py
 from mpi4py cimport mpi_c
 
+cdef extern from 'mpi-compat.h': pass
+
 cdef extern from 'fftw3-mpi.h' nogil:    
     void fftw_mpi_init()
     ptrdiff_t fftw_mpi_local_size_2d(ptrdiff_t n0,
