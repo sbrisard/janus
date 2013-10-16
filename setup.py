@@ -4,6 +4,7 @@ import os
 
 from distutils.core import setup
 from distutils.extension import Extension
+from distutils.sysconfig import get_config_var
 from distutils.util import get_platform
 
 include_dirs = [numpy.get_include(),
@@ -28,10 +29,17 @@ fft_serial = Extension('fft.serial._serial_fft',
 ext_modules = [matprop, greenop, discretegreenop, fft_serial]
 
 if not(get_platform() in ('win32', 'win-amd64')):
+    # TODO improve this uggly hack
+    gcc = 'gcc'
+    mpicc = '/opt/mpich/bin/mpicc'
+    os.environ['CC'] = get_config_var('CC').replace(gcc, mpicc)
+    os.environ['LDSHARED'] = get_config_var('LDSHARED').replace(gcc, mpicc)
+    
     ext_modules.append(
                Extension('fft.parallel._parallel_fft',
                          sources=['src/fft/parallel/_parallel_fft.c'],
-                         libraries=['fftw3', 'fftw3_mpi']
+                         libraries=['fftw3', 'fftw3_mpi'],
+                         include_dirs = [mpi4py.get_include()],
 ))
 
 setup(name = 'Homogenization through FFT',
