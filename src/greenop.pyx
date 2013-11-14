@@ -303,7 +303,7 @@ cdef class GreenOperator3d(GreenOperator):
         return eps
 
     @boundscheck(False)
-    def asarray(self, double[:] k, double[:, :] g=None):
+    cpdef double[:, :] asarray(self, double[:] k, double[:, :] g=None):
         g = self.pre_asarray(k, g)
         g[0, 0] = self.m00
         g[0, 1] = self.m01

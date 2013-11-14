@@ -69,6 +69,6 @@ cdef class TruncatedGreenOperator:
         self.update(b)
         return self.green.apply(self.k, tau, eps)
 
-    cdef double[:, :] asarray(self, Py_ssize_t[:] b, double[:, :] a):
+    cpdef double[:, :] asarray(self, Py_ssize_t[:] b, double[:, :] a):
         self.update(b)
-        self.green.asmatrix(self.k, a)
+        return self.green.asarray(self.k, a)
