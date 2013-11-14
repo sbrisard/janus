@@ -7,10 +7,10 @@ from nose.tools import assert_equal
 from nose.tools import nottest
 from nose.tools import raises
 
+import greenop
 import mandelvoigt as mv
+
 from matprop import IsotropicLinearElasticMaterial as Material
-from greenop import GreenOperator2d
-from greenop import GreenOperator3d
 
 DIMS = [2, 3]
 MU = 0.7
@@ -37,12 +37,6 @@ def green_matrix(k, mat):
     else:
         n = k / np.sqrt(k2)
         return mv.get_instance(mat.dim).create_array(green_coefficient, n, mat)
-
-def create_green_operator(mat):
-    if mat.dim == 2:
-        return GreenOperator2d(mat)
-    elif mat.dim == 3:
-        return GreenOperator3d(mat)
 
 def wave_vectors(dim):
     norms = [2.5, 3.5]
@@ -73,7 +67,7 @@ def wave_vectors(dim):
 def do_test_apply(k, mat, in_place):
     expected = green_matrix(k,  mat)
     sym = (mat.dim * (mat.dim + 1)) // 2
-    green = create_green_operator(mat)
+    green = greenop.create(mat)
     if in_place:
         eps = np.empty((sym,), np.float64)
     else:
@@ -102,7 +96,7 @@ def test_apply():
 def do_test_asarray(k, mat):
     expected = green_matrix(k,  mat)
     sym = (mat.dim * (mat.dim + 1)) // 2
-    green = create_green_operator(mat)
+    green = greenop.create(mat)
     actual = np.empty((sym, sym), np.float64)
     green.asarray(k, actual)
     for j in range(sym):
@@ -119,11 +113,11 @@ def test_asarray():
 
 @raises(ValueError)
 def test_init_2d_invalid_dimension():
-    GreenOperator2d(Material(MU, NU, 3))
+    greenop.GreenOperator2d(Material(MU, NU, 3))
 
 @raises(ValueError)
 def test_init_3d_invalid_dimension():
-    GreenOperator3d(Material(MU, NU, 2))
+    greenop.GreenOperator3d(Material(MU, NU, 2))
 
 @nottest
 @raises(IndexError)
@@ -131,12 +125,12 @@ def do_test_apply_invalid_params(green, k, tau, eps):
     green.apply(k, tau, eps)
     
 def test_apply_invalid_params():
-    g2 = create_green_operator(Material(MU, NU, 2))
+    g2 = greenop.create(Material(MU, NU, 2))
     @raises(IndexError)
     def apply2(k, tau, eps):
         return g2.apply(k, tau, eps)
 
-    g3 = create_green_operator(Material(MU, NU, 3))
+    g3 = greenop.create(Material(MU, NU, 3))
     @raises(IndexError)
     def apply3(k, tau, eps):
         return g3.apply(k, tau, eps)
@@ -156,12 +150,12 @@ def test_apply_invalid_params():
         yield f, k, tau, eps
 
 def test_asarray_invalid_params():
-    g2 = create_green_operator(Material(MU, NU, 2))
+    g2 = greenop.create(Material(MU, NU, 2))
     @raises(IndexError)
     def asarray2(k, arr):
         return g2.asarray(k, arr)
 
-    g3 = create_green_operator(Material(MU, NU, 3))
+    g3 = greenop.create(Material(MU, NU, 3))
     @raises(IndexError)
     def asarray3(k, arr):
         return g3.asarray(k, arr)

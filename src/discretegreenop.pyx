@@ -64,7 +64,7 @@ cdef class TruncatedGreenOperator:
                 self.k[i] = s * (bi - ni)
             else:
                 self.k[i] = s * bi
-        
+
     cpdef double[:] apply(self, Py_ssize_t[:] b, double[:] tau, double[:] eps=None):
         self.update(b)
         return self.green.apply(self.k, tau, eps)

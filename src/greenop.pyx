@@ -7,6 +7,12 @@ from matprop cimport IsotropicLinearElasticMaterial as Material
 
 cdef double SQRT_TWO = sqrt(2.)
 
+def create(mat):
+    if mat.dim == 2:
+        return GreenOperator2d(mat)
+    elif mat.dim == 3:
+        return GreenOperator3d(mat)
+
 cdef class GreenOperator:
 
     @cdivision(True)
