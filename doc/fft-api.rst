@@ -1,7 +1,7 @@
 API of module ``fft``
 =====================
 
-.. automodule:: serialfft
+.. automodule:: fft.serial
    :members:
    :undoc-members:
    :show-inheritance:
