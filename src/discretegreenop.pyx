@@ -65,9 +65,24 @@ cdef class TruncatedGreenOperator:
             else:
                 self.k[i] = s * bi
 
-    cpdef double[:] apply(self, Py_ssize_t[:] b, double[:] tau, double[:] eps=None):
+    cpdef double[:] apply_single_freq(self,
+                                      Py_ssize_t[:] b,
+                                      double[:] tau,
+                                      double[:] eta=None):
         self.update(b)
-        return self.green.apply(self.k, tau, eps)
+        return self.green.apply(self.k, tau, eta)
+
+    cpdef double[:, :, :] apply_all_freqs(self,
+                                          double[:, :, :] tau,
+                                          double[:, :, :] eta=None):
+        # TODO Check size of tau and eta
+        """
+        if eta is None:
+            eta = array(shape=,
+                        itemsize=sizeof(double),
+                        format='d')
+        """
+        return eta
 
     cpdef double[:, :] asarray(self, Py_ssize_t[:] b, double[:, :] a=None):
         self.update(b)
