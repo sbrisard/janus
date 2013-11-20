@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to HashTri's documentation!
-===================================
+Welcome to Janus's documentation!
+=================================
 
 A library for the homogenization of periodic microstructures using the FFT method of Moulinec and Suquet (1994, 1998).
 
@@ -15,6 +15,7 @@ Contents:
 
    introduction
    fft-api
+   greenop-api
 
 Indices and tables
 ==================
