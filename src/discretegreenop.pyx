@@ -80,18 +80,29 @@ cdef class TruncatedGreenOperator:
         self.update(b)
         return self.green.apply(self.k, tau, eta)
 
-    cpdef double[:, :, :] apply_all_freqs(self,
-                                          double[:, :, :] tau,
-                                          double[:, :, :] eta=None):
-        # TODO Check size of tau and eta
-        """
-        if eta is None:
-            eta = array(shape=,
-                        itemsize=sizeof(double),
-                        format='d')
-        """
-        return eta
+    def apply_all_freqs(self, tau, eta=None):
+        pass
 
     cpdef double[:, :] asarray(self, Py_ssize_t[:] b, double[:, :] a=None):
         self.update(b)
         return self.green.asarray(self.k, a)
+
+cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
+
+    @boundscheck(False)
+    def apply_all_freqs(self, tau, eta=None):
+        cdef double[:, :, :] tau_mv = tau
+        cdef double[:, :, :] eta_mv = eta
+        cdef int nx = self.shape[1]
+        cdef int ny = self.shape[0]
+        cdef Py_ssize_t b[2]
+        cdef Py_ssize_t b0, b1
+        for b1 in range(ny):
+            b[1] = b1
+            for b0 in range(nx):
+                b[0] = b0
+                self.update(b)
+                self.green.apply(self.k,
+                                 tau_mv[b[1], b[0], :],
+                                 eta_mv[b[1], b[0], :])
+        return eta
