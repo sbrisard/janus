@@ -28,11 +28,13 @@ cdef class GreenOperator:
         self.daux4 = 0.5 / g
 
     cdef inline void check_k(self, double[:] k) except *:
+    # TODO Should probably return a ValueError
         cdef str msg = 'shape of k must be ({0},) [was ({1},)]'
         if k.shape[0] != self.dim:
             raise IndexError(msg.format(self.dim, k.shape[0]))
 
     cdef inline void check_tau(self, double[:] tau) except *:
+    # TODO Should probably return a ValueError
         cdef str msg = 'shape of tau must be ({0},) [was ({1},)]'
         if tau.shape[0] != self.sym:
             raise IndexError(msg.format(self.sym, tau.shape[0]))
