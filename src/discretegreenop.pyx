@@ -10,7 +10,7 @@ from libc.stdlib cimport free
 
 from greenop cimport GreenOperator
 
-cdef str INVALID_SHAPE_MSG = 'length of shape must be {0} (was {1})'
+cdef str INVALID_N_MSG = 'length of n must be {0} (was {1})'
 cdef str INVALID_H_MSG = 'h must be > 0 (was {0})'
 cdef str INVALID_B_MSG = 'shape of b must be ({0},) [was ({1},)]'
 
@@ -18,29 +18,29 @@ cdef class TruncatedGreenOperator:
     cdef readonly GreenOperator green
     cdef readonly double h
     #TODO Make this readable from Python
-    cdef Py_ssize_t *shape
+    cdef Py_ssize_t *n
     cdef double[::1] k
     cdef double two_pi_over_h
 
     @cdivision(True)
-    def __cinit__(self, GreenOperator green, tuple shape not None, double h):
-        cdef Py_ssize_t d = len(shape)
+    def __cinit__(self, GreenOperator green, tuple n not None, double h):
+        cdef Py_ssize_t d = len(n)
         if d != green.mat.dim:
-            raise ValueError(INVALID_SHAPE_MSG.format(green.mat.dim, d))
+            raise ValueError(INVALID_N_MSG.format(green.mat.dim, d))
         if h <= 0.:
             raise ValueError(INVALID_H_MSG.format(h))
         self.green = green
         self.h = h
         self.two_pi_over_h = 2. * M_PI / h
         self.k = array(shape=(d,), itemsize=sizeof(double), format='d')
-        self.shape = <Py_ssize_t *> malloc(d * sizeof(Py_ssize_t))
+        self.n = <Py_ssize_t *> malloc(d * sizeof(Py_ssize_t))
         cdef int i
         for i in range(d):
             #TODO Check for sign of shape[i]
-            self.shape[i] = shape[i]
+            self.n[i] = n[i]
 
     def __dealloc__(self):
-        free(self.shape)
+        free(self.n)
 
     cdef inline void check_b(self, Py_ssize_t[:] b) except *:
     # TODO Improve quality of checks and error messages.
@@ -49,7 +49,7 @@ cdef class TruncatedGreenOperator:
                                                   b.shape[0]))
         cdef Py_ssize_t i, ni, bi
         for i in range(self.green.mat.dim):
-            ni = self.shape[i]
+            ni = self.n[i]
             bi = b[i]
             if (bi < 0) or (bi >= ni):
                 raise ValueError('')
@@ -62,7 +62,7 @@ cdef class TruncatedGreenOperator:
             Py_ssize_t i, ni, bi
             double s
         for i in range(self.green.mat.dim):
-            ni = self.shape[i]
+            ni = self.n[i]
             bi = b[i]
             s = self.two_pi_over_h / <double> ni
             if 2 * bi > ni:
@@ -91,6 +91,7 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
     def apply_all_freqs(self, tau, eta=None):
         cdef double[:, :, :] tau_mv = tau
         cdef double[:, :, :] eta_mv = eta
+        """
         cdef int nx = self.shape[1]
         cdef int ny = self.shape[0]
         cdef Py_ssize_t b[2]
@@ -103,4 +104,5 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
                 self.green.apply(self.k,
                                  tau_mv[b[1], b[0], :],
                                  eta_mv[b[1], b[0], :])
+        """
         return eta
