@@ -10,8 +10,6 @@ from libc.stdlib cimport free
 
 from greenop cimport GreenOperator
 
-cdef double TWO_PI = 2. * M_PI
-
 cdef str INVALID_SHAPE_MSG = 'length of shape must be {0} (was {1})'
 cdef str INVALID_H_MSG = 'h must be > 0 (was {0})'
 cdef str INVALID_B_MSG = 'shape of b must be ({0},) [was ({1},)]'
@@ -33,7 +31,7 @@ cdef class TruncatedGreenOperator:
             raise ValueError(INVALID_H_MSG.format(h))
         self.green = green
         self.h = h
-        self.two_pi_over_h = TWO_PI / h
+        self.two_pi_over_h = 2. * M_PI / h
         self.k = array(shape=(d,), itemsize=sizeof(double), format='d')
         self.shape = <Py_ssize_t *> malloc(d * sizeof(Py_ssize_t))
         cdef int i
