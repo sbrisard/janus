@@ -2,6 +2,8 @@
 #     import sys
 #     sys.path.append('./src/')
 
+# TODO Implement test of apply_single_freq with invalid params.
+
 import discretegreenop
 import greenop
 import itertools
