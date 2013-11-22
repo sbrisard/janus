@@ -1,3 +1,7 @@
+# if __name__ == '__main__':
+#     import sys
+#     sys.path.append('./src/')
+
 import discretegreenop
 import greenop
 import itertools
@@ -51,3 +55,44 @@ def test_asarray():
     for n in shapes:
         for inplace in [True, False]:
             yield do_test_asarray, n, inplace
+
+@nottest
+def do_test_apply_single_freq(n, tau, inplace):
+    dim = len(n)
+    sym = (dim * (dim + 1)) // 2
+    mat = Material(0.75, 0.3, dim)
+
+    n_arr = np.asarray(n)
+    tau_vec = tau.reshape(sym, 1)
+
+    greenc = greenop.create(mat)
+    greend = discretegreenop.TruncatedGreenOperator(greenc, n, 1.0)
+
+    iterables = [range(ni) for ni in n]
+    for b in itertools.product(*iterables):
+        b_arr = np.asarray(b)
+
+        g = np.asmatrix(greend.asarray(b_arr))
+        # expected is by default a matrix, so that it has two dimensions.
+        # First convert to ndarray so as to reshape is to a 1D array.
+        expected = np.asarray(g * tau_vec).reshape((sym,))
+
+        if inplace:
+            base = np.empty_like(expected)
+            actual = greend.apply_single_freq(b_arr, tau, base)
+            assert get_base(actual) is base
+        else:
+            actual = greend.apply_single_freq(b_arr, tau)
+
+        actual = np.asarray(actual)
+        assert_array_max_ulp(expected, actual, 1)
+
+def test_apply_single_freq():
+    shapes = ((8, 8), (8, 16), (8, 8, 8), (8, 16, 32))
+
+    tau = [np.array([0.3, -0.4, 0.5]),
+           np.array([0.1, -0.2, 0.3, -0.4, 0.5, -0.6])]
+
+    for n in shapes:
+        for inplace in [False, True]:
+            yield do_test_apply_single_freq, n, tau[len(n) - 2], inplace
