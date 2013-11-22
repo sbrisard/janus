@@ -1,6 +1,6 @@
-# if __name__ == '__main__':
-#     import sys
-#     sys.path.append('./src/')
+if __name__ == '__main__':
+    import sys
+    sys.path.append('./src/')
 
 # TODO Implement test of apply_single_freq with invalid params.
 
@@ -8,6 +8,7 @@ import discretegreenop
 import greenop
 import itertools
 import numpy as np
+import numpy.random as rnd
 
 from numpy.testing import assert_array_max_ulp
 from matprop import IsotropicLinearElasticMaterial as Material
@@ -98,3 +99,23 @@ def test_apply_single_freq():
     for n in shapes:
         for inplace in [False, True]:
             yield do_test_apply_single_freq, n, tau[len(n) - 2], inplace
+
+if __name__ == '__main__':
+    n = (8, 16)
+    dim = len(n)
+    sym = (dim * (dim + 1)) // 2
+    mat = Material(0.75, 0.3, dim)
+    greenc = greenop.create(mat)
+    greend = discretegreenop.TruncatedGreenOperator2D(greenc, n, 1.0)
+    tau = rnd.rand(n[1], n[0], sym)
+    expected = np.empty_like(tau)
+    actual = np.empty_like(tau)
+    tau[0, 0, 0] = 1.
+    greend.apply_all_freqs(tau, actual)
+
+    b = np.empty((dim,), dtype=np.int32)
+    for b[0] in range(n[0]):
+        for b[1] in range(n[1]):
+            greend.apply_single_freq(b,
+                                     tau[b[1], b[0], :],
+                                     expected[b[1], b[0], :])
