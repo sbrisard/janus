@@ -41,10 +41,10 @@ cdef class GreenOperator:
         cdef str msg = 'shape of eps must be ({0},) [was ({1},)]'
         if eps.shape[0] != self.sym:
             raise IndexError(msg.format(self.sym, eps.shape[0]))
-        
+
     cdef inline double[:] pre_apply(self, double[:] k, double[:] tau,
                                     double[:] eps):
-    
+
         """Perform preliminary checks for apply."""
 
         self.check_k(k)
@@ -73,11 +73,11 @@ cdef class GreenOperator:
                       itemsize=sizeof(double), format='d')
         self.update(k)
         return g
-        
+
     cdef void update(self, double[:] k):
-    
+
         """update(k)
-    
+
         Compute the coefficients of the underlying matrix for the
         specified value of the wave vector.
 
@@ -85,7 +85,7 @@ cdef class GreenOperator:
         ----------
         k : array_like
             Wave-vector.
-        
+
         """
 
         pass
@@ -93,7 +93,7 @@ cdef class GreenOperator:
     cpdef double[:] apply(self, double[:] k, double[:] tau,
                           double[:] eps=None):
         """apply(k, tau, eps = None)
-                          
+
         Apply the Green operator to the specified prestress.
 
         Parameters
@@ -115,10 +115,10 @@ cdef class GreenOperator:
 
     def asarray(self, double[:] k, double[:, :] g=None):
         """asarray(k, g=None)
-        
+
         Return the array representation of the Green operator for the
         specified wave vector. Uses the Mandel-Voigt convention.
-        
+
         Parameters
         ----------
         k : array_like
@@ -132,7 +132,7 @@ cdef class GreenOperator:
             Matrix of the Green operator.
         """
         pass
-                
+
 cdef class GreenOperator2d(GreenOperator):
 
     cdef double m00, m01, m02, m11, m12, m22
@@ -183,7 +183,7 @@ cdef class GreenOperator2d(GreenOperator):
     @boundscheck(False)
     def asarray(self, double[:] k, double[:, :] g=None):
 
-        self.pre_asarray(k, g)
+        g = self.pre_asarray(k, g)
         g[0, 0] = self.m00
         g[0, 1] = self.m01
         g[0, 2] = self.m02
@@ -209,7 +209,7 @@ cdef class GreenOperator3d(GreenOperator):
     @cdivision(True)
     cdef void update(self, double[:] k):
         """`update(k)`
-    
+
         Compute the coefficients of the underlying matrix for the
         specified value of the wave vector.
 
@@ -217,7 +217,7 @@ cdef class GreenOperator3d(GreenOperator):
         ----------
         k : array_like
             Wave-vector.
-        
+
         """
 
         cdef double kx = k[0]
