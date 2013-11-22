@@ -93,12 +93,16 @@ def test_apply():
                 yield do_test_apply, k, mat, in_place
 
 @nottest
-def do_test_asarray(k, mat):
-    expected = green_matrix(k,  mat)
+def do_test_asarray(k, mat, inplace):
     sym = (mat.dim * (mat.dim + 1)) // 2
+    expected = green_matrix(k,  mat)
     green = greenop.create(mat)
-    actual = np.empty((sym, sym), np.float64)
-    green.asarray(k, actual)
+    if inplace:
+        base = np.empty((sym, sym), np.float64)
+        actual = green.asarray(k, base)
+        assert actual.base is base
+    else:
+        actual = green.asarray(k)
     for j in range(sym):
         for i in range(sym):
             msg = 'coefficient [{0}, {1}]'.format(i, j)
@@ -109,7 +113,8 @@ def test_asarray():
     for dim in DIMS:
         mat = Material(MU, NU, dim)
         for k in wave_vectors(dim):
-            yield do_test_asarray, k, mat
+            for inplace in [True, False]:
+                yield do_test_asarray, k, mat, inplace
 
 @raises(ValueError)
 def test_init_2d_invalid_dimension():
@@ -123,7 +128,7 @@ def test_init_3d_invalid_dimension():
 @raises(IndexError)
 def do_test_apply_invalid_params(green, k, tau, eps):
     green.apply(k, tau, eps)
-    
+
 def test_apply_invalid_params():
     g2 = greenop.create(Material(MU, NU, 2))
     @raises(IndexError)
@@ -134,7 +139,7 @@ def test_apply_invalid_params():
     @raises(IndexError)
     def apply3(k, tau, eps):
         return g3.apply(k, tau, eps)
-    
+
     k2 = np.empty((2,), dtype=np.float64)
     k3 = np.empty((3,), dtype=np.float64)
     tau3 = np.empty((3,), dtype=np.float64)
@@ -159,7 +164,7 @@ def test_asarray_invalid_params():
     @raises(IndexError)
     def asarray3(k, arr):
         return g3.asarray(k, arr)
-    
+
     k2 = np.empty((2,))
     k3 = np.empty((3,))
     arr3x3 = np.empty((3, 3), dtype=np.float64)
