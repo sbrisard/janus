@@ -44,13 +44,22 @@ cdef class TruncatedGreenOperator:
     def __dealloc__(self):
         free(self.shape)
 
+    cdef inline void check_b(self, Py_ssize_t[:] b) except *:
+    # TODO Improve quality of checks and error messages.
+        if b.shape[0] != self.green.mat.dim:
+            raise ValueError(INVALID_B_MSG.format(self.green.mat.dim,
+                                                  b.shape[0]))
+        cdef Py_ssize_t i, ni, bi
+        for i in range(self.green.mat.dim):
+            ni = self.shape[i]
+            bi = b[i]
+            if (bi < 0) or (bi >= ni):
+                raise ValueError('')
+
     @boundscheck(False)
     @cdivision(True)
     @wraparound(False)
     cdef void update(self, Py_ssize_t[:] b):
-        if b.shape[0] != self.green.mat.dim:
-            raise IndexError(INVALID_B_MSG.format(self.green.mat.dim,
-                                                  b.shape[0]))
         cdef:
             Py_ssize_t i, ni, bi
             double s
@@ -58,8 +67,6 @@ cdef class TruncatedGreenOperator:
             ni = self.shape[i]
             bi = b[i]
             s = self.two_pi_over_h / <double> ni
-            if (bi < 0) or (bi >= ni):
-                raise ValueError('')
             if 2 * bi > ni:
                 self.k[i] = s * (bi - ni)
             else:
@@ -69,6 +76,7 @@ cdef class TruncatedGreenOperator:
                                       Py_ssize_t[:] b,
                                       double[:] tau,
                                       double[:] eta=None):
+        self.check_b(b)
         self.update(b)
         return self.green.apply(self.k, tau, eta)
 
