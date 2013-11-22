@@ -109,9 +109,9 @@ if __name__ == '__main__':
     greend = discretegreenop.TruncatedGreenOperator2D(greenc, n, 1.0)
     tau = rnd.rand(n[1], n[0], sym)
     expected = np.empty_like(tau)
-    actual = np.empty_like(tau)
+    base = np.empty_like(tau)
     tau[0, 0, 0] = 1.
-    greend.apply_all_freqs(tau, actual)
+    actual = greend.apply_all_freqs(tau, base)
 
     b = np.empty((dim,), dtype=np.int32)
     for b[0] in range(n[0]):
