@@ -14,6 +14,7 @@ Contents:
    :maxdepth: 2
 
    introduction
+   matprop-api
    fft-api
    greenop-api
 
