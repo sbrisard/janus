@@ -3,6 +3,9 @@ from cython cimport cdivision
 from cython.view cimport array
 from libc.math cimport sqrt
 
+from checkarray cimport check_shape_1d
+from checkarray cimport create_or_check_shape_1d
+from checkarray cimport create_or_check_shape_2d
 from matprop cimport IsotropicLinearElasticMaterial as Material
 
 cdef double SQRT_TWO = sqrt(2.)
@@ -26,53 +29,6 @@ cdef class GreenOperator:
         self.daux2 = 0.5 / (g * (1.0 - nu))
         self.daux3 = 0.25 / g
         self.daux4 = 0.5 / g
-
-    cdef inline void check_k(self, double[:] k) except *:
-        cdef str msg = 'shape of k must be ({0},) [was ({1},)]'
-        if k.shape[0] != self.dim:
-            raise ValueError(msg.format(self.dim, k.shape[0]))
-
-    cdef inline void check_tau(self, double[:] tau) except *:
-        cdef str msg = 'shape of tau must be ({0},) [was ({1},)]'
-        if tau.shape[0] != self.sym:
-            raise ValueError(msg.format(self.sym, tau.shape[0]))
-
-    cdef inline void check_eps(self, double[:] eps) except *:
-        cdef str msg = 'shape of eps must be ({0},) [was ({1},)]'
-        if eps.shape[0] != self.sym:
-            raise ValueError(msg.format(self.sym, eps.shape[0]))
-
-    cdef inline double[:] pre_apply(self, double[:] k, double[:] tau,
-                                    double[:] eps):
-
-        """Perform preliminary checks for apply."""
-
-        self.check_k(k)
-        self.check_tau(tau)
-        if eps is not None:
-            self.check_eps(eps)
-        else:
-            eps = array(shape=(self.sym,), itemsize=sizeof(double), format='d')
-        self.update(k)
-        return eps
-
-    cdef inline double[:, :] pre_asarray(self,
-                                         double[:] k,
-                                         double[:, :] g) except *:
-
-        """Perform preliminary checks for asarray."""
-
-        self.check_k(k)
-
-        if g is not None:
-            if g.shape[0] != self.sym or g.shape[1] != self.sym:
-                raise ValueError('shape of g must be ({0}, {0})'
-                                 .format(self.sym, self.sym))
-        else:
-            g = array(shape=(self.sym, self.sym),
-                      itemsize=sizeof(double), format='d')
-        self.update(k)
-        return g
 
     cdef void update(self, double[:] k):
 
@@ -173,7 +129,10 @@ cdef class GreenOperator2d(GreenOperator):
     cpdef double[:] apply(self, double[:] k, double[:] tau,
                           double[:] eps = None):
 
-        eps = self.pre_apply(k, tau, eps)
+        check_shape_1d(k, self.dim)
+        check_shape_1d(tau, self.sym)
+        eps = create_or_check_shape_1d(eps, self.sym)
+        self.update(k)
         eps[0] = self.m00 * tau[0] + self.m01 * tau[1] + self.m02 * tau[2]
         eps[1] = self.m01 * tau[0] + self.m11 * tau[1] + self.m12 * tau[2]
         eps[2] = self.m02 * tau[0] + self.m12 * tau[1] + self.m22 * tau[2]
@@ -183,7 +142,9 @@ cdef class GreenOperator2d(GreenOperator):
     @boundscheck(False)
     def asarray(self, double[:] k, double[:, :] g=None):
 
-        g = self.pre_asarray(k, g)
+        check_shape_1d(k, self.dim)
+        g = create_or_check_shape_2d(g, self.sym, self.sym)
+        self.update(k)
         g[0, 0] = self.m00
         g[0, 1] = self.m01
         g[0, 2] = self.m02
@@ -287,7 +248,11 @@ cdef class GreenOperator3d(GreenOperator):
     @boundscheck(False)
     cpdef double[:] apply(self, double[:] k, double[:] tau,
                           double[:] eps=None):
-        eps = self.pre_apply(k, tau, eps)
+
+        check_shape_1d(k, self.dim)
+        check_shape_1d(tau, self.sym)
+        eps = create_or_check_shape_1d(eps, self.sym)
+        self.update(k)
         eps[0] = (self.m00 * tau[0] + self.m01 * tau[1] + self.m02 * tau[2]
                   + self.m03 * tau[3] + self.m04 * tau[4] + self.m05 * tau[5])
         eps[1] = (self.m01 * tau[0] + self.m11 * tau[1] + self.m12 * tau[2]
@@ -304,7 +269,10 @@ cdef class GreenOperator3d(GreenOperator):
 
     @boundscheck(False)
     cpdef double[:, :] asarray(self, double[:] k, double[:, :] g=None):
-        g = self.pre_asarray(k, g)
+
+        check_shape_1d(k, self.dim)
+        g = create_or_check_shape_2d(g, self.sym, self.sym)
+        self.update(k)        
         g[0, 0] = self.m00
         g[0, 1] = self.m01
         g[0, 2] = self.m02
