@@ -28,21 +28,19 @@ cdef class GreenOperator:
         self.daux4 = 0.5 / g
 
     cdef inline void check_k(self, double[:] k) except *:
-    # TODO Should probably return a ValueError
         cdef str msg = 'shape of k must be ({0},) [was ({1},)]'
         if k.shape[0] != self.dim:
-            raise IndexError(msg.format(self.dim, k.shape[0]))
+            raise ValueError(msg.format(self.dim, k.shape[0]))
 
     cdef inline void check_tau(self, double[:] tau) except *:
-    # TODO Should probably return a ValueError
         cdef str msg = 'shape of tau must be ({0},) [was ({1},)]'
         if tau.shape[0] != self.sym:
-            raise IndexError(msg.format(self.sym, tau.shape[0]))
+            raise ValueError(msg.format(self.sym, tau.shape[0]))
 
     cdef inline void check_eps(self, double[:] eps) except *:
         cdef str msg = 'shape of eps must be ({0},) [was ({1},)]'
         if eps.shape[0] != self.sym:
-            raise IndexError(msg.format(self.sym, eps.shape[0]))
+            raise ValueError(msg.format(self.sym, eps.shape[0]))
 
     cdef inline double[:] pre_apply(self, double[:] k, double[:] tau,
                                     double[:] eps):
@@ -68,7 +66,7 @@ cdef class GreenOperator:
 
         if g is not None:
             if g.shape[0] != self.sym or g.shape[1] != self.sym:
-                raise IndexError('shape of g must be ({0}, {0})'
+                raise ValueError('shape of g must be ({0}, {0})'
                                  .format(self.sym, self.sym))
         else:
             g = array(shape=(self.sym, self.sym),

@@ -125,18 +125,18 @@ def test_init_3d_invalid_dimension():
     greenop.GreenOperator3d(Material(MU, NU, 2))
 
 @nottest
-@raises(IndexError)
+@raises(ValueError)
 def do_test_apply_invalid_params(green, k, tau, eps):
     green.apply(k, tau, eps)
 
 def test_apply_invalid_params():
     g2 = greenop.create(Material(MU, NU, 2))
-    @raises(IndexError)
+    @raises(ValueError)
     def apply2(k, tau, eps):
         return g2.apply(k, tau, eps)
 
     g3 = greenop.create(Material(MU, NU, 3))
-    @raises(IndexError)
+    @raises(ValueError)
     def apply3(k, tau, eps):
         return g3.apply(k, tau, eps)
 
@@ -156,12 +156,12 @@ def test_apply_invalid_params():
 
 def test_asarray_invalid_params():
     g2 = greenop.create(Material(MU, NU, 2))
-    @raises(IndexError)
+    @raises(ValueError)
     def asarray2(k, arr):
         return g2.asarray(k, arr)
 
     g3 = greenop.create(Material(MU, NU, 3))
-    @raises(IndexError)
+    @raises(ValueError)
     def asarray3(k, arr):
         return g3.asarray(k, arr)
 
