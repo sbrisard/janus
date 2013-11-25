@@ -13,6 +13,9 @@ include_dirs = [numpy.get_include(),
 
 library_dirs = ['C:\\opt\\Microsoft_HPC_Pack_2012\\Lib\\i386']
 
+checkarray = Extension('checkarray',
+                       sources=['src/checkarray.c'])
+
 matprop = Extension('matprop',
                     sources=['src/matprop.c'])
 
@@ -24,22 +27,25 @@ discretegreenop = Extension('discretegreenop',
 
 fft_serial = Extension('fft.serial._serial_fft',
                        sources=['src/fft/serial/_serial_fft.c'],
-                       libraries=['fftw3'],)
+                       libraries=['fftw3'],
+                       include_dirs=['/opt/local/include'])
 
-ext_modules = [matprop, greenop, discretegreenop, fft_serial]
+ext_modules = [checkarray, matprop, greenop, discretegreenop, fft_serial]
 
 if not(get_platform() in ('win32', 'win-amd64')):
     # TODO improve this uggly hack
-    gcc = 'gcc'
-    mpicc = '/usr/bin/mpicc'
+    gcc = 'gcc-4.2'
+    #mpicc = '/usr/bin/mpicc'
+    mpicc = 'mpicc'
     os.environ['CC'] = get_config_var('CC').replace(gcc, mpicc)
     os.environ['LDSHARED'] = get_config_var('LDSHARED').replace(gcc, mpicc)
-    
+
     ext_modules.append(
                Extension('fft.parallel._parallel_fft',
                          sources=['src/fft/parallel/_parallel_fft.c'],
                          libraries=['fftw3', 'fftw3_mpi'],
-                         include_dirs = [mpi4py.get_include()],
+                         include_dirs = [mpi4py.get_include(),
+                                         '/opt/local/include'],
 ))
 
 setup(name = 'Homogenization through FFT',
