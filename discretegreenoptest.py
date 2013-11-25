@@ -111,9 +111,7 @@ def do_test_apply_all_freqs(n):
     expected = np.empty_like(tau)
     base = np.empty_like(tau)
     actual = greend.apply_all_freqs(tau, base)
-
-    # TODO This is not cross-platform, should be Py_ssize_t
-    b = np.empty((dim,), dtype=np.int64)
+    b = np.empty((dim,), dtype=np.intp)
     for b[0] in range(n[0]):
         for b[1] in range(n[1]):
             greend.apply_single_freq(b,
@@ -125,6 +123,6 @@ def test_apply_all_freqs():
     shapes = ((8, 8), (8, 16))
     for n in shapes:
         yield do_test_apply_all_freqs, n
-    
+
 if __name__ == '__main__':
     n = (8, 16)
