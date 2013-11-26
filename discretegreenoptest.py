@@ -17,8 +17,8 @@ from nose.tools import raises
 
 # All tests are performed with discrete Green operators based on these
 # grids
-#GRID_SIZES = [(8, 8), (8, 16), (8, 8, 8), (8, 16, 32)]
-GRID_SIZES = [(8, 8), (8, 16)]
+GRID_SIZES = [(8, 8), (8, 16), (8, 8, 8), (8, 16, 32)]
+#GRID_SIZES = [(8, 8), (8, 16)]
 
 def discrete_green_operator(n, h):
     """Create a discrete Green operator with default material constants
@@ -78,6 +78,32 @@ def test_as_array():
     for n in GRID_SIZES:
         for inplace in [True, False]:
             yield do_test_as_array, n, inplace
+
+@nottest
+@raises(ValueError)
+def do_test_as_array_invalid_b_shape(n):
+    b = np.zeros((len(n) + 1,), dtype=np.intp)
+    greend = discrete_green_operator(n, 1.)
+    greend.as_array(b)
+
+def test_as_array_invalid_b_shape():
+    for n in GRID_SIZES:
+        yield do_test_as_array_invalid_b_shape, n
+
+@nottest
+@raises(ValueError)
+def do_test_as_array_invalid_output(dim, shape):
+    n = tuple(itertools.repeat(16, dim))
+    b = np.zeros((dim,), dtype=np.intp)
+    out = np.zeros(shape, dtype=np.float64)
+    discrete_green_operator(n, 1.).as_array(b, out)
+
+def test_as_array_invalid_output():
+    for dim in [2, 3]:
+        sym = (dim * (dim + 1)) // 2
+        shapes = [(sym, sym, sym), (sym + 1, sym), (sym, sym + 1)]
+        for shape in shapes:
+            yield do_test_as_array_invalid_output, dim, shape
 
 """
 @nottest
