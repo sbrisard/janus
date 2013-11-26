@@ -101,7 +101,7 @@ cdef class GreenOperator2d(GreenOperator):
 
     @boundscheck(False)
     @cdivision(True)
-    cdef void _update(self, double kx, double ky):
+    cdef inline void _update(self, double kx, double ky):
         """Compute the coefficients of the underlying matrix for the specified
         value of the wave vector.
 
@@ -185,7 +185,7 @@ cdef class GreenOperator3d(GreenOperator):
 
     @boundscheck(False)
     @cdivision(True)
-    cdef void _update(self, double kx, double ky, double kz):
+    cdef inline void _update(self, double kx, double ky, double kz):
         """Compute the coefficients of the underlying matrix for the
         specified value of the wave vector.
 
