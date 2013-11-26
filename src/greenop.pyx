@@ -181,7 +181,7 @@ cdef class GreenOperator3d(GreenOperator):
 
     def __cinit__(self, Material mat):
         if (mat.dim != 3):
-            raise ValueError('3Dmaterial expected')
+            raise ValueError('3D material expected')
 
     @boundscheck(False)
     @cdivision(True)
