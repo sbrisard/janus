@@ -46,25 +46,23 @@ cdef class GreenOperator:
 
         pass
 
-    cpdef double[:] apply(self, double[:] k, double[:] tau,
-                          double[:] eps=None):
-        """apply(k, tau, eps = None)
+    cpdef double[:] apply(self, double[:] k, double[:] tau, double[:] eta=None):
+        """apply(k, tau, eta=None)
 
         Apply the Green operator to the specified prestress.
 
         Parameters
         ----------
         k : array_like
-            The wave-vector.
+            Wave-vector.
         tau : array_like
-            The value of the prestress for the specified mode `k`.
-        eps : array_like, optional
-            The result of the operation `Gamma(k) : tau`. Strictly
-            speaking, `eps` is the opposite of a strain.
+            Value of the prestress for the specified mode `k`.
+        eta : array_like, optional
+            Result of the operation `Gamma(k) : tau`.
 
         Returns
         -------
-        eps : array_like
+        eta : array_like
             The result of the linear operation `Gamma(k) : tau`.
         """
         pass
@@ -126,18 +124,17 @@ cdef class GreenOperator2d(GreenOperator):
             self.m12 = SQRT_TWO * kxky * (self.daux4 - self.daux2 * kyky)
 
     @boundscheck(False)
-    cpdef double[:] apply(self, double[:] k, double[:] tau,
-                          double[:] eps = None):
+    cpdef double[:] apply(self, double[:] k, double[:] tau, double[:] eta=None):
 
         check_shape_1d(k, self.dim)
         check_shape_1d(tau, self.sym)
-        eps = create_or_check_shape_1d(eps, self.sym)
+        eta = create_or_check_shape_1d(eta, self.sym)
         self.update(k)
-        eps[0] = self.m00 * tau[0] + self.m01 * tau[1] + self.m02 * tau[2]
-        eps[1] = self.m01 * tau[0] + self.m11 * tau[1] + self.m12 * tau[2]
-        eps[2] = self.m02 * tau[0] + self.m12 * tau[1] + self.m22 * tau[2]
+        eta[0] = self.m00 * tau[0] + self.m01 * tau[1] + self.m02 * tau[2]
+        eta[1] = self.m01 * tau[0] + self.m11 * tau[1] + self.m12 * tau[2]
+        eta[2] = self.m02 * tau[0] + self.m12 * tau[1] + self.m22 * tau[2]
 
-        return eps
+        return eta
 
     @boundscheck(False)
     def asarray(self, double[:] k, double[:, :] g=None):
@@ -246,26 +243,25 @@ cdef class GreenOperator3d(GreenOperator):
             self.m45 = 2 * kykz * (self.daux3 - self.daux2 * kxkx)
 
     @boundscheck(False)
-    cpdef double[:] apply(self, double[:] k, double[:] tau,
-                          double[:] eps=None):
+    cpdef double[:] apply(self, double[:] k, double[:] tau, double[:] eta=None):
 
         check_shape_1d(k, self.dim)
         check_shape_1d(tau, self.sym)
-        eps = create_or_check_shape_1d(eps, self.sym)
+        eta = create_or_check_shape_1d(eta, self.sym)
         self.update(k)
-        eps[0] = (self.m00 * tau[0] + self.m01 * tau[1] + self.m02 * tau[2]
+        eta[0] = (self.m00 * tau[0] + self.m01 * tau[1] + self.m02 * tau[2]
                   + self.m03 * tau[3] + self.m04 * tau[4] + self.m05 * tau[5])
-        eps[1] = (self.m01 * tau[0] + self.m11 * tau[1] + self.m12 * tau[2]
+        eta[1] = (self.m01 * tau[0] + self.m11 * tau[1] + self.m12 * tau[2]
                   + self.m13 * tau[3] + self.m14 * tau[4] + self.m15 * tau[5])
-        eps[2] = (self.m02 * tau[0] + self.m12 * tau[1] + self.m22 * tau[2]
+        eta[2] = (self.m02 * tau[0] + self.m12 * tau[1] + self.m22 * tau[2]
                   + self.m23 * tau[3] + self.m24 * tau[4] + self.m25 * tau[5])
-        eps[3] = (self.m03 * tau[0] + self.m13 * tau[1] + self.m23 * tau[2]
+        eta[3] = (self.m03 * tau[0] + self.m13 * tau[1] + self.m23 * tau[2]
                   + self.m33 * tau[3] + self.m34 * tau[4] + self.m35 * tau[5])
-        eps[4] = (self.m04 * tau[0] + self.m14 * tau[1] + self.m24 * tau[2]
+        eta[4] = (self.m04 * tau[0] + self.m14 * tau[1] + self.m24 * tau[2]
                   + self.m34 * tau[3] + self.m44 * tau[4] + self.m45 * tau[5])
-        eps[5] = (self.m05 * tau[0] + self.m15 * tau[1] + self.m25 * tau[2]
+        eta[5] = (self.m05 * tau[0] + self.m15 * tau[1] + self.m25 * tau[2]
                   + self.m35 * tau[3] + self.m45 * tau[4] + self.m55 * tau[5])
-        return eps
+        return eta
 
     @boundscheck(False)
     cpdef double[:, :] asarray(self, double[:] k, double[:, :] g=None):
