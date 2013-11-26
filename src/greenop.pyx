@@ -1,14 +1,12 @@
 from cython cimport boundscheck
 from cython cimport cdivision
 from cython.view cimport array
-from libc.math cimport sqrt
+from libc.math cimport M_SQRT2
 
 from checkarray cimport check_shape_1d
 from checkarray cimport create_or_check_shape_1d
 from checkarray cimport create_or_check_shape_2d
 from matprop cimport IsotropicLinearElasticMaterial as Material
-
-cdef double SQRT_TWO = sqrt(2.)
 
 def create(mat):
     if mat.dim == 2:
@@ -120,8 +118,8 @@ cdef class GreenOperator2d(GreenOperator):
             dummy = -self.daux2 * kxkx * kyky
             self.m01 = dummy
             self.m22 = 2 * (self.daux3 + dummy)
-            self.m02 = SQRT_TWO * kxky * (self.daux4 - self.daux2 * kxkx)
-            self.m12 = SQRT_TWO * kxky * (self.daux4 - self.daux2 * kyky)
+            self.m02 = M_SQRT2 * kxky * (self.daux4 - self.daux2 * kxkx)
+            self.m12 = M_SQRT2 * kxky * (self.daux4 - self.daux2 * kyky)
 
     @boundscheck(False)
     cpdef double[:] apply(self, double[:] k, double[:] tau, double[:] eta=None):
@@ -228,16 +226,16 @@ cdef class GreenOperator3d(GreenOperator):
                              - self.daux2 * kxkx * kyky)
             self.m01 = -self.daux2 * kxkx * kyky
             self.m02 = -self.daux2 * kxkx * kzkz
-            self.m03 = -SQRT_TWO * self.daux2 * kxkx * kykz
-            self.m04 = SQRT_TWO * kzkx * (self.daux4 - self.daux2 * kxkx)
-            self.m05 = SQRT_TWO * kxky * (self.daux4 - self.daux2 * kxkx)
+            self.m03 = -M_SQRT2 * self.daux2 * kxkx * kykz
+            self.m04 = M_SQRT2 * kzkx * (self.daux4 - self.daux2 * kxkx)
+            self.m05 = M_SQRT2 * kxky * (self.daux4 - self.daux2 * kxkx)
             self.m12 = -self.daux2 * kyky * kzkz
-            self.m13 = SQRT_TWO * kykz * (self.daux4 - self.daux2 * kyky)
-            self.m14 = -SQRT_TWO * self.daux2 * kyky * kzkx
-            self.m15 = SQRT_TWO * kxky * (self.daux4 - self.daux2 * kyky)
-            self.m23 = SQRT_TWO * kykz * (self.daux4 - self.daux2 * kzkz)
-            self.m24 = SQRT_TWO * kzkx * (self.daux4 - self.daux2 * kzkz)
-            self.m25 = -SQRT_TWO * self.daux2 * kzkz * kxky
+            self.m13 = M_SQRT2 * kykz * (self.daux4 - self.daux2 * kyky)
+            self.m14 = -M_SQRT2 * self.daux2 * kyky * kzkx
+            self.m15 = M_SQRT2 * kxky * (self.daux4 - self.daux2 * kyky)
+            self.m23 = M_SQRT2 * kykz * (self.daux4 - self.daux2 * kzkz)
+            self.m24 = M_SQRT2 * kzkx * (self.daux4 - self.daux2 * kzkz)
+            self.m25 = -M_SQRT2 * self.daux2 * kzkz * kxky
             self.m34 = 2 * kxky * (self.daux3 - self.daux2 * kzkz)
             self.m35 = 2 * kzkx * (self.daux3 - self.daux2 * kyky)
             self.m45 = 2 * kykz * (self.daux3 - self.daux2 * kxkx)
