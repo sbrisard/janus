@@ -43,7 +43,7 @@ def get_base(a):
         return get_base(a.base)
 
 @nottest
-def do_test_asarray(n, inplace):
+def do_test_as_array(n, inplace):
     mat = Material(0.75, 0.3, len(n))
 
     n_arr = np.asarray(n)
@@ -68,16 +68,16 @@ def do_test_asarray(n, inplace):
 
         if inplace:
             base = np.empty_like(expected)
-            actual = greend.asarray(b_arr, base)
+            actual = greend.as_array(b_arr, base)
             assert get_base(actual) is base
         else:
-            actual = greend.asarray(b_arr)
+            actual = greend.as_array(b_arr)
         assert_array_max_ulp(expected, actual, 1)
 
-def test_asarray():
+def test_as_array():
     for n in GRID_SIZES:
         for inplace in [True, False]:
-            yield do_test_asarray, n, inplace
+            yield do_test_as_array, n, inplace
 
 """
 @nottest
@@ -96,7 +96,7 @@ def do_test_apply_single_freq(n, tau, inplace):
     for b in itertools.product(*iterables):
         b_arr = np.asarray(b)
 
-        g = np.asmatrix(greend.asarray(b_arr))
+        g = np.asmatrix(greend.as_array(b_arr))
         # expected is by default a matrix, so that it has two dimensions.
         # First convert to ndarray so as to reshape is to a 1D array.
         expected = np.asarray(g * tau_vec).reshape((sym,))

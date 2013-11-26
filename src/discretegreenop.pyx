@@ -88,7 +88,7 @@ cdef class TruncatedGreenOperator:
     def apply_all_freqs(self, tau, eta=None):
         pass
 
-    cpdef double[:, :] asarray(self, Py_ssize_t[:] b, double[:, :] out=None):
+    cpdef double[:, :] as_array(self, Py_ssize_t[:] b, double[:, :] out=None):
         self.update(b)
         out = create_or_check_shape_2d(out, self.sym, self.sym)
         self.green.c_as_array(self.k, out)
