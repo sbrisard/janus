@@ -105,7 +105,7 @@ cdef class GreenOperator2D(GreenOperator):
 
     @boundscheck(False)
     @cdivision(True)
-    cdef inline void _update(self, double kx, double ky):
+    cdef inline void _update(self, double *k):
         """Compute the coefficients of the underlying matrix for the specified
         value of the wave vector.
 
@@ -113,12 +113,12 @@ cdef class GreenOperator2D(GreenOperator):
 
         Parameters
         ----------
-        kx : double
-            x-component of the wave-vector.
-        ky : double
-            y-component of the wave-vector.
+        k : pointer to double
+            Components of the wave-vector.
 
         """
+        cdef double kx = k[0]
+        cdef double ky = k[1]
         cdef double kxkx = kx * kx
         cdef double kyky = ky * ky
         cdef double s, kxky
@@ -144,7 +144,7 @@ cdef class GreenOperator2D(GreenOperator):
 
     @boundscheck(False)
     cdef void c_apply(self, double* k, double[:] tau, double[:] eta):
-        self._update(k[0], k[1])
+        self._update(k)
         eta[0] = self.g00 * tau[0] + self.g01 * tau[1] + self.g02 * tau[2]
         eta[1] = self.g01 * tau[0] + self.g11 * tau[1] + self.g12 * tau[2]
         eta[2] = self.g02 * tau[0] + self.g12 * tau[1] + self.g22 * tau[2]
@@ -158,7 +158,7 @@ cdef class GreenOperator2D(GreenOperator):
 
     @boundscheck(False)
     cdef void c_as_array(self, double *k, double[:, :] out):
-        self._update(k[0], k[1])
+        self._update(k)
         out[0, 0] = self.g00
         out[0, 1] = self.g01
         out[0, 2] = self.g02
@@ -188,20 +188,19 @@ cdef class GreenOperator3D(GreenOperator):
 
     @boundscheck(False)
     @cdivision(True)
-    cdef inline void _update(self, double kx, double ky, double kz):
+    cdef inline void _update(self, double *k):
         """Compute the coefficients of the underlying matrix for the
         specified value of the wave vector.
 
         Parameters
         ----------
-        kx : double
-            x-component of the wave-vector.
-        ky : double
-            y-component of the wave-vector.
-        kz : double
-            z-component of the wave-vector.
+        k : pointer to double
+            Components of the wave-vector.
 
         """
+        cdef double kx = k[0]
+        cdef double ky = k[1]
+        cdef double kz = k[2]
         cdef double kxkx = kx * kx
         cdef double kyky = ky * ky
         cdef double kzkz = kz * kz
@@ -265,7 +264,7 @@ cdef class GreenOperator3D(GreenOperator):
 
     @boundscheck(False)
     cdef void c_apply(self, double *k, double[:] tau, double[:] eta):
-        self._update(k[0], k[1], k[2])
+        self._update(k)
         eta[0] = (self.g00 * tau[0] + self.g01 * tau[1] + self.g02 * tau[2]
                   + self.g03 * tau[3] + self.g04 * tau[4] + self.g05 * tau[5])
         eta[1] = (self.g01 * tau[0] + self.g11 * tau[1] + self.g12 * tau[2]
@@ -289,7 +288,7 @@ cdef class GreenOperator3D(GreenOperator):
 
     @boundscheck(False)
     cdef void c_as_array(self, double *k, double[:, :] out):
-        self._update(k[0], k[1], k[2])
+        self._update(k)
         out[0, 0] = self.g00
         out[0, 1] = self.g01
         out[0, 2] = self.g02
