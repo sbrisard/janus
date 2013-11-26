@@ -28,24 +28,6 @@ cdef class GreenOperator:
         self.daux3 = 0.25 / g
         self.daux4 = 0.5 / g
 
-    cdef void update(self, double *k):
-
-        """update(k)
-
-        Compute the coefficients of the underlying matrix for the
-        specified value of the wave vector.
-
-        No checks are performed on the parameters.
-
-        Parameters
-        ----------
-        k : pointer to double
-            Wave-vector.
-
-        """
-        pass
-
-
     cdef void capply(self, double *k, double[:] tau, double[:] eta):
         """apply(k, tau, eta)
 
@@ -119,9 +101,20 @@ cdef class GreenOperator2d(GreenOperator):
 
     @boundscheck(False)
     @cdivision(True)
-    cdef void update(self, double *k):
-        cdef double kx = k[0]
-        cdef double ky = k[1]
+    cdef void _update(self, double kx, double ky):
+        """Compute the coefficients of the underlying matrix for the specified
+        value of the wave vector.
+
+        No checks are performed on the parameters.
+
+        Parameters
+        ----------
+        kx : double
+            x-component of the wave-vector.
+        ky : double
+            y-component of the wave-vector.
+
+        """
         cdef double kxkx = kx * kx
         cdef double kyky = ky * ky
         cdef double s, kxky
@@ -146,28 +139,29 @@ cdef class GreenOperator2d(GreenOperator):
             self.m12 = M_SQRT2 * kxky * (self.daux4 - self.daux2 * kyky)
 
     @boundscheck(False)
-    cdef void capply(self, double* k, double[:] tau, double[:] eta):
-        self.update(k)
+    cdef inline void _capply(self, double kx, double ky,
+                             double[:] tau, double[:] eta):
+        self._update(kx, ky)
         eta[0] = self.m00 * tau[0] + self.m01 * tau[1] + self.m02 * tau[2]
         eta[1] = self.m01 * tau[0] + self.m11 * tau[1] + self.m12 * tau[2]
         eta[2] = self.m02 * tau[0] + self.m12 * tau[1] + self.m22 * tau[2]
+
+    @boundscheck(False)
+    cdef void capply(self, double* k, double[:] tau, double[:] eta):
+        self._capply(k[0], k[1], tau, eta)
 
     def apply(self, double[::1] k, double[:] tau, double[:] eta=None):
         check_shape_1d(k, self.dim)
         check_shape_1d(tau, self.sym)
         eta = create_or_check_shape_1d(eta, self.sym)
-        # TODO Is it the correct way to pass a contiguous memoryview as a
-        # pointer?
-        self.capply(&k[0], tau, eta)
+        self._capply(k[0], k[1], tau, eta)
         return eta
 
     @boundscheck(False)
     def asarray(self, double[::1] k, double[:, :] g=None):
         check_shape_1d(k, self.dim)
         g = create_or_check_shape_2d(g, self.sym, self.sym)
-        # TODO Is it the correct way to pass a contiguous memoryview as a
-        # pointer?
-        self.update(&k[0])
+        self._update(k[0], k[1])
         g[0, 0] = self.m00
         g[0, 1] = self.m01
         g[0, 2] = self.m02
@@ -191,21 +185,20 @@ cdef class GreenOperator3d(GreenOperator):
 
     @boundscheck(False)
     @cdivision(True)
-    cdef void update(self, double *k):
-        """`update(k)`
-
-        Compute the coefficients of the underlying matrix for the
+    cdef void _update(self, double kx, double ky, double kz):
+        """Compute the coefficients of the underlying matrix for the
         specified value of the wave vector.
 
         Parameters
         ----------
-        k : array_like
-            Wave-vector.
+        kx : double
+            x-component of the wave-vector.
+        ky : double
+            y-component of the wave-vector.
+        kz : double
+            z-component of the wave-vector.
 
         """
-        cdef double kx = k[0]
-        cdef double ky = k[1]
-        cdef double kz = k[2]
         cdef double kxkx = kx * kx
         cdef double kyky = ky * ky
         cdef double kzkz = kz * kz
@@ -268,8 +261,9 @@ cdef class GreenOperator3d(GreenOperator):
             self.m45 = 2 * kykz * (self.daux3 - self.daux2 * kxkx)
 
     @boundscheck(False)
-    cdef void capply(self, double *k, double[:] tau, double[:] eta):
-        self.update(k)
+    cdef inline void _capply(self, double kx, double ky, double kz,
+                             double[:] tau, double[:] eta):
+        self._update(kx, ky, kz)
         eta[0] = (self.m00 * tau[0] + self.m01 * tau[1] + self.m02 * tau[2]
                   + self.m03 * tau[3] + self.m04 * tau[4] + self.m05 * tau[5])
         eta[1] = (self.m01 * tau[0] + self.m11 * tau[1] + self.m12 * tau[2]
@@ -284,22 +278,22 @@ cdef class GreenOperator3d(GreenOperator):
                   + self.m35 * tau[3] + self.m45 * tau[4] + self.m55 * tau[5])
 
     @boundscheck(False)
+    cdef void capply(self, double *k, double[:] tau, double[:] eta):
+        self._capply(k[0], k[1], k[2], tau, eta)
+
+    @boundscheck(False)
     def apply(self, double[::1] k, double[:] tau, double[:] eta=None):
         check_shape_1d(k, self.dim)
         check_shape_1d(tau, self.sym)
         eta = create_or_check_shape_1d(eta, self.sym)
-        # TODO Is it the correct way to pass a contiguous memoryview as a
-        # pointer?
-        self.capply(&k[0], tau, eta)
+        self._capply(k[0], k[1], k[2], tau, eta)
         return eta
 
     @boundscheck(False)
     cpdef double[:, :] asarray(self, double[::1] k, double[:, :] g=None):
         check_shape_1d(k, self.dim)
         g = create_or_check_shape_2d(g, self.sym, self.sym)
-        # TODO Is it the correct way to pass a contiguous memoryview as a
-        # pointer?
-        self.update(&k[0])
+        self._update(k[0], k[1], k[2])
         g[0, 0] = self.m00
         g[0, 1] = self.m01
         g[0, 2] = self.m02
