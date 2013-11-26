@@ -1,5 +1,6 @@
 from cython cimport boundscheck
 from cython cimport cdivision
+from cython cimport wraparound
 from cython.view cimport array
 from libc.math cimport M_SQRT2
 
@@ -50,7 +51,7 @@ cdef class GreenOperator:
         """
         pass
 
-    def apply(self, double[:] k, double[:] tau, double[:] eta=None):
+    def apply(self, double[::1] k, double[:] tau, double[:] eta=None):
         """apply(k, tau, eta=None)
 
         Apply the Green operator to the specified prestress.
@@ -73,8 +74,8 @@ cdef class GreenOperator:
 
     cdef void c_as_array(self, double *k, double[:, :] out):
         pass
-    
-    def as_array(self, double[:] k, double[:, :] out=None):
+
+    def as_array(self, double[::1] k, double[:, :] out=None):
         """as_array(k, out=None)
 
         Return the array representation of the Green operator for the
@@ -153,11 +154,11 @@ cdef class GreenOperator2D(GreenOperator):
     cdef void c_apply(self, double* k, double[:] tau, double[:] eta):
         self._c_apply(k[0], k[1], tau, eta)
 
-    def apply(self, double[:] k, double[:] tau, double[:] eta=None):
+    def apply(self, double[::1] k, double[:] tau, double[:] eta=None):
         check_shape_1d(k, self.dim)
         check_shape_1d(tau, self.sym)
         eta = create_or_check_shape_1d(eta, self.sym)
-        self._c_apply(k[0], k[1], tau, eta)
+        self.c_apply(&k[0], tau, eta)
         return eta
 
     @boundscheck(False)
@@ -177,10 +178,10 @@ cdef class GreenOperator2D(GreenOperator):
         self._c_as_array(k[0], k[1], out)
 
     @boundscheck(False)
-    def as_array(self, double[:] k, double[:, :] out=None):
+    def as_array(self, double[::1] k, double[:, :] out=None):
         check_shape_1d(k, self.dim)
         out = create_or_check_shape_2d(out, self.sym, self.sym)
-        self._c_as_array(k[0], k[1], out)
+        self.c_as_array(&k[0], out)
         return out
 
 cdef class GreenOperator3D(GreenOperator):
@@ -292,11 +293,11 @@ cdef class GreenOperator3D(GreenOperator):
         self._c_apply(k[0], k[1], k[2], tau, eta)
 
     @boundscheck(False)
-    def apply(self, double[:] k, double[:] tau, double[:] eta=None):
+    def apply(self, double[::1] k, double[:] tau, double[:] eta=None):
         check_shape_1d(k, self.dim)
         check_shape_1d(tau, self.sym)
         eta = create_or_check_shape_1d(eta, self.sym)
-        self._c_apply(k[0], k[1], k[2], tau, eta)
+        self.c_apply(&k[0], tau, eta)
         return eta
 
     @boundscheck(False)
@@ -344,8 +345,9 @@ cdef class GreenOperator3D(GreenOperator):
         self._c_as_array(k[0], k[1], k[2], out)
 
     @boundscheck(False)
-    def as_array(self, double[:] k, double[:, :] out=None):
+    def as_array(self, double[::1] k, double[:, :] out=None):
         check_shape_1d(k, self.dim)
         out = create_or_check_shape_2d(out, self.sym, self.sym)
-        self._c_as_array(k[0], k[1], k[2], out)
+        self.c_as_array(&k[0], out)
         return out
+
