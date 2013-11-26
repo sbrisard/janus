@@ -290,7 +290,7 @@ cdef class GreenOperator3d(GreenOperator):
         return eta
 
     @boundscheck(False)
-    cpdef double[:, :] asarray(self, double[::1] k, double[:, :] g=None):
+    def asarray(self, double[::1] k, double[:, :] g=None):
         check_shape_1d(k, self.dim)
         g = create_or_check_shape_2d(g, self.sym, self.sym)
         self._update(k[0], k[1], k[2])
