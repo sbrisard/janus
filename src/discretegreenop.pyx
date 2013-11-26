@@ -9,7 +9,6 @@ from libc.stdlib cimport malloc
 from libc.stdlib cimport free
 
 from checkarray cimport create_or_check_shape_2d
-from checkarray cimport check_shape_ssize_t_1D
 from greenop cimport GreenOperator
 
 cdef str INVALID_N_MSG = 'length of n must be {0} (was {1})'
@@ -52,16 +51,16 @@ cdef class TruncatedGreenOperator:
         free(self.k)
 
     cdef inline void check_b(self, Py_ssize_t[:] b) except *:
-    # TODO Improve quality of checks and error messages.
-        if b.shape[0] != self.green.mat.dim:
-            raise ValueError(INVALID_B_MSG.format(self.green.mat.dim,
-                                                  b.shape[0]))
+        if b.shape[0] != self.dim:
+            raise ValueError('invalid shape: expected ({0},), actual ({1},)'
+                             .format(self.dim, b.shape[0]))
         cdef Py_ssize_t i, ni, bi
-        for i in range(self.green.mat.dim):
+        for i in range(self.dim):
             ni = self.n[i]
             bi = b[i]
-            if (bi < 0) or (bi >= ni):
-                raise ValueError('')
+            if (bi < 0) or (bi >= self.n[i]):
+                raise ValueError('index must be >= 0 and < {0} (was {1})'
+                                 .format(ni, bi))
 
     @boundscheck(False)
     @cdivision(True)
@@ -96,7 +95,7 @@ cdef class TruncatedGreenOperator:
         self.green.c_as_array(self.k, out)
 
     def as_array(self, Py_ssize_t[::1] b, double[:, :] out=None):
-        check_shape_ssize_t_1D(b, self.dim)
+        self.check_b(b)
         out = create_or_check_shape_2d(out, self.sym, self.sym)
         self.c_as_array(&b[0], out)
         return out
