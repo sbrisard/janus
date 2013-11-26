@@ -143,16 +143,11 @@ cdef class GreenOperator2D(GreenOperator):
             self.g12 = M_SQRT2 * kxky * (self.daux4 - self.daux2 * kyky)
 
     @boundscheck(False)
-    cdef inline void _c_apply(self, double kx, double ky,
-                              double[:] tau, double[:] eta):
-        self._update(kx, ky)
+    cdef void c_apply(self, double* k, double[:] tau, double[:] eta):
+        self._update(k[0], k[1])
         eta[0] = self.g00 * tau[0] + self.g01 * tau[1] + self.g02 * tau[2]
         eta[1] = self.g01 * tau[0] + self.g11 * tau[1] + self.g12 * tau[2]
         eta[2] = self.g02 * tau[0] + self.g12 * tau[1] + self.g22 * tau[2]
-
-    @boundscheck(False)
-    cdef void c_apply(self, double* k, double[:] tau, double[:] eta):
-        self._c_apply(k[0], k[1], tau, eta)
 
     def apply(self, double[::1] k, double[:] tau, double[:] eta=None):
         check_shape_1d(k, self.dim)
@@ -272,9 +267,8 @@ cdef class GreenOperator3D(GreenOperator):
             self.g45 = 2 * kykz * (self.daux3 - self.daux2 * kxkx)
 
     @boundscheck(False)
-    cdef inline void _c_apply(self, double kx, double ky, double kz,
-                              double[:] tau, double[:] eta):
-        self._update(kx, ky, kz)
+    cdef void c_apply(self, double *k, double[:] tau, double[:] eta):
+        self._update(k[0], k[1], k[2])
         eta[0] = (self.g00 * tau[0] + self.g01 * tau[1] + self.g02 * tau[2]
                   + self.g03 * tau[3] + self.g04 * tau[4] + self.g05 * tau[5])
         eta[1] = (self.g01 * tau[0] + self.g11 * tau[1] + self.g12 * tau[2]
@@ -287,10 +281,6 @@ cdef class GreenOperator3D(GreenOperator):
                   + self.g34 * tau[3] + self.g44 * tau[4] + self.g45 * tau[5])
         eta[5] = (self.g05 * tau[0] + self.g15 * tau[1] + self.g25 * tau[2]
                   + self.g35 * tau[3] + self.g45 * tau[4] + self.g55 * tau[5])
-
-    @boundscheck(False)
-    cdef void c_apply(self, double *k, double[:] tau, double[:] eta):
-        self._c_apply(k[0], k[1], k[2], tau, eta)
 
     @boundscheck(False)
     def apply(self, double[::1] k, double[:] tau, double[:] eta=None):
@@ -350,4 +340,3 @@ cdef class GreenOperator3D(GreenOperator):
         out = create_or_check_shape_2d(out, self.sym, self.sym)
         self.c_as_array(&k[0], out)
         return out
-
