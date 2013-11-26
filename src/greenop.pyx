@@ -28,7 +28,7 @@ cdef class GreenOperator:
         self.daux3 = 0.25 / g
         self.daux4 = 0.5 / g
 
-    cdef void capply(self, double *k, double[:] tau, double[:] eta):
+    cdef void c_apply(self, double *k, double[:] tau, double[:] eta):
         """apply(k, tau, eta)
 
         Apply the Green operator to the specified prestress. C version of the
@@ -142,22 +142,22 @@ cdef class GreenOperator2D(GreenOperator):
             self.g12 = M_SQRT2 * kxky * (self.daux4 - self.daux2 * kyky)
 
     @boundscheck(False)
-    cdef inline void _capply(self, double kx, double ky,
-                             double[:] tau, double[:] eta):
+    cdef inline void _c_apply(self, double kx, double ky,
+                              double[:] tau, double[:] eta):
         self._update(kx, ky)
         eta[0] = self.g00 * tau[0] + self.g01 * tau[1] + self.g02 * tau[2]
         eta[1] = self.g01 * tau[0] + self.g11 * tau[1] + self.g12 * tau[2]
         eta[2] = self.g02 * tau[0] + self.g12 * tau[1] + self.g22 * tau[2]
 
     @boundscheck(False)
-    cdef void capply(self, double* k, double[:] tau, double[:] eta):
-        self._capply(k[0], k[1], tau, eta)
+    cdef void c_apply(self, double* k, double[:] tau, double[:] eta):
+        self._c_apply(k[0], k[1], tau, eta)
 
     def apply(self, double[:] k, double[:] tau, double[:] eta=None):
         check_shape_1d(k, self.dim)
         check_shape_1d(tau, self.sym)
         eta = create_or_check_shape_1d(eta, self.sym)
-        self._capply(k[0], k[1], tau, eta)
+        self._c_apply(k[0], k[1], tau, eta)
         return eta
 
     @boundscheck(False)
@@ -271,8 +271,8 @@ cdef class GreenOperator3D(GreenOperator):
             self.g45 = 2 * kykz * (self.daux3 - self.daux2 * kxkx)
 
     @boundscheck(False)
-    cdef inline void _capply(self, double kx, double ky, double kz,
-                             double[:] tau, double[:] eta):
+    cdef inline void _c_apply(self, double kx, double ky, double kz,
+                              double[:] tau, double[:] eta):
         self._update(kx, ky, kz)
         eta[0] = (self.g00 * tau[0] + self.g01 * tau[1] + self.g02 * tau[2]
                   + self.g03 * tau[3] + self.g04 * tau[4] + self.g05 * tau[5])
@@ -288,15 +288,15 @@ cdef class GreenOperator3D(GreenOperator):
                   + self.g35 * tau[3] + self.g45 * tau[4] + self.g55 * tau[5])
 
     @boundscheck(False)
-    cdef void capply(self, double *k, double[:] tau, double[:] eta):
-        self._capply(k[0], k[1], k[2], tau, eta)
+    cdef void c_apply(self, double *k, double[:] tau, double[:] eta):
+        self._c_apply(k[0], k[1], k[2], tau, eta)
 
     @boundscheck(False)
     def apply(self, double[:] k, double[:] tau, double[:] eta=None):
         check_shape_1d(k, self.dim)
         check_shape_1d(tau, self.sym)
         eta = create_or_check_shape_1d(eta, self.sym)
-        self._capply(k[0], k[1], k[2], tau, eta)
+        self._c_apply(k[0], k[1], k[2], tau, eta)
         return eta
 
     @boundscheck(False)
