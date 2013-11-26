@@ -8,6 +8,7 @@ from libc.math cimport M_PI
 from libc.stdlib cimport malloc
 from libc.stdlib cimport free
 
+from checkarray cimport create_or_check_shape_2d
 from greenop cimport GreenOperator
 
 cdef str INVALID_N_MSG = 'length of n must be {0} (was {1})'
@@ -21,8 +22,7 @@ cdef class TruncatedGreenOperator:
     cdef int sym
     #TODO Make this readable from Python
     cdef Py_ssize_t *n
-    # TODO Define k as a double*
-    cdef double[::1] k
+    cdef double* k
     cdef double two_pi_over_h
 
 
@@ -38,14 +38,15 @@ cdef class TruncatedGreenOperator:
         self.two_pi_over_h = 2. * M_PI / h
         self.sym = (d * (d + 1)) / 2
         self.n = <Py_ssize_t *> malloc(d * sizeof(Py_ssize_t))
+        self.k = <double *> malloc(d * sizeof(double))
         cdef int i
         for i in range(d):
             #TODO Check for sign of shape[i]
             self.n[i] = n[i]
-        self.k = array(shape=(d,), itemsize=sizeof(double), format='d')
 
     def __dealloc__(self):
         free(self.n)
+        free(self.k)
 
     cdef inline void check_b(self, Py_ssize_t[:] b) except *:
     # TODO Improve quality of checks and error messages.
@@ -81,14 +82,17 @@ cdef class TruncatedGreenOperator:
                                       double[:] eta=None):
         self.check_b(b)
         self.update(b)
-        return self.green.apply(self.k, tau, eta)
+        self.green.c_apply(self.k, tau, eta)
+        return eta
 
     def apply_all_freqs(self, tau, eta=None):
         pass
 
-    cpdef double[:, :] asarray(self, Py_ssize_t[:] b, double[:, :] a=None):
+    cpdef double[:, :] asarray(self, Py_ssize_t[:] b, double[:, :] out=None):
         self.update(b)
-        return self.green.asarray(self.k, a)
+        out = create_or_check_shape_2d(out, self.sym, self.sym)
+        self.green.c_as_array(self.k, out)
+        return out
 
 cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
     cdef inline void check_grid_shape(self,
@@ -115,7 +119,7 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
             for b0 in range(n0):
                 b[0] = b0
                 self.update(b)
-                self.green.apply(self.k, tau[b1, b0, :], eta[b1, b0, :])
+                self.green.c_apply(self.k, tau[b1, b0, :], eta[b1, b0, :])
         return eta
 
     def apply_all_freqs(self, tau, eta=None):
@@ -130,4 +134,3 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
                            itemsize=sizeof(double),
                            format='d')
         return self.capply_all_freqs(tau_mv, eta_mv)
-

@@ -64,7 +64,7 @@ def do_test_asarray(n, inplace):
         k[i] = 2. * np.pi * (b_arr[i] - n_arr[i]) / n_arr[i]
         k[~i] = 2. * np.pi * b_arr[~i] / n_arr[~i]
 
-        expected = greenc.asarray(k)
+        expected = greenc.as_array(k)
 
         if inplace:
             base = np.empty_like(expected)
@@ -79,6 +79,7 @@ def test_asarray():
         for inplace in [True, False]:
             yield do_test_asarray, n, inplace
 
+"""
 @nottest
 def do_test_apply_single_freq(n, tau, inplace):
     dim = len(n)
@@ -175,3 +176,4 @@ def test_apply_all_freqs_tau_invalid_shape():
 
 if __name__ == '__main__':
     do_test_apply_all_freqs_tau_invalid_shape((8, 16), (17, 8))
+"""
