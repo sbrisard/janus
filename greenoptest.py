@@ -117,12 +117,12 @@ def test_asarray():
                 yield do_test_asarray, k, mat, inplace
 
 @raises(ValueError)
-def test_init_2d_invalid_dimension():
-    greenop.GreenOperator2d(Material(MU, NU, 3))
+def test_init_2D_invalid_dimension():
+    greenop.GreenOperator2D(Material(MU, NU, 3))
 
 @raises(ValueError)
-def test_init_3d_invalid_dimension():
-    greenop.GreenOperator3d(Material(MU, NU, 2))
+def test_init_3D_invalid_dimension():
+    greenop.GreenOperator3D(Material(MU, NU, 2))
 
 @nottest
 @raises(ValueError)

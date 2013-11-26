@@ -10,9 +10,9 @@ from matprop cimport IsotropicLinearElasticMaterial as Material
 
 def create(mat):
     if mat.dim == 2:
-        return GreenOperator2d(mat)
+        return GreenOperator2D(mat)
     elif mat.dim == 3:
-        return GreenOperator3d(mat)
+        return GreenOperator3D(mat)
 
 cdef class GreenOperator:
 
@@ -91,7 +91,7 @@ cdef class GreenOperator:
         """
         pass
 
-cdef class GreenOperator2d(GreenOperator):
+cdef class GreenOperator2D(GreenOperator):
 
     cdef double g00, g01, g02, g11, g12, g22
 
@@ -173,7 +173,7 @@ cdef class GreenOperator2d(GreenOperator):
         out[2, 2] = self.g22
         return out
 
-cdef class GreenOperator3d(GreenOperator):
+cdef class GreenOperator3D(GreenOperator):
 
     cdef:
         double g00, g01, g02, g03, g04, g05, g11, g12, g13, g14, g15
