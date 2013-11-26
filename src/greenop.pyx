@@ -290,44 +290,44 @@ cdef class GreenOperator3d(GreenOperator):
         return eta
 
     @boundscheck(False)
-    def asarray(self, double[::1] k, double[:, :] g=None):
+    def asarray(self, double[::1] k, double[:, :] out=None):
         check_shape_1d(k, self.dim)
-        g = create_or_check_shape_2d(g, self.sym, self.sym)
+        out = create_or_check_shape_2d(out, self.sym, self.sym)
         self._update(k[0], k[1], k[2])
-        g[0, 0] = self.m00
-        g[0, 1] = self.m01
-        g[0, 2] = self.m02
-        g[0, 3] = self.m03
-        g[0, 4] = self.m04
-        g[0, 5] = self.m05
-        g[1, 0] = self.m01
-        g[1, 1] = self.m11
-        g[1, 2] = self.m12
-        g[1, 3] = self.m13
-        g[1, 4] = self.m14
-        g[1, 5] = self.m15
-        g[2, 0] = self.m02
-        g[2, 1] = self.m12
-        g[2, 2] = self.m22
-        g[2, 3] = self.m23
-        g[2, 4] = self.m24
-        g[2, 5] = self.m25
-        g[3, 0] = self.m03
-        g[3, 1] = self.m13
-        g[3, 2] = self.m23
-        g[3, 3] = self.m33
-        g[3, 4] = self.m34
-        g[3, 5] = self.m35
-        g[4, 0] = self.m04
-        g[4, 1] = self.m14
-        g[4, 2] = self.m24
-        g[4, 3] = self.m34
-        g[4, 4] = self.m44
-        g[4, 5] = self.m45
-        g[5, 0] = self.m05
-        g[5, 1] = self.m15
-        g[5, 2] = self.m25
-        g[5, 3] = self.m35
-        g[5, 4] = self.m45
-        g[5, 5] = self.m55
-        return g
+        out[0, 0] = self.m00
+        out[0, 1] = self.m01
+        out[0, 2] = self.m02
+        out[0, 3] = self.m03
+        out[0, 4] = self.m04
+        out[0, 5] = self.m05
+        out[1, 0] = self.m01
+        out[1, 1] = self.m11
+        out[1, 2] = self.m12
+        out[1, 3] = self.m13
+        out[1, 4] = self.m14
+        out[1, 5] = self.m15
+        out[2, 0] = self.m02
+        out[2, 1] = self.m12
+        out[2, 2] = self.m22
+        out[2, 3] = self.m23
+        out[2, 4] = self.m24
+        out[2, 5] = self.m25
+        out[3, 0] = self.m03
+        out[3, 1] = self.m13
+        out[3, 2] = self.m23
+        out[3, 3] = self.m33
+        out[3, 4] = self.m34
+        out[3, 5] = self.m35
+        out[4, 0] = self.m04
+        out[4, 1] = self.m14
+        out[4, 2] = self.m24
+        out[4, 3] = self.m34
+        out[4, 4] = self.m44
+        out[4, 5] = self.m45
+        out[5, 0] = self.m05
+        out[5, 1] = self.m15
+        out[5, 2] = self.m25
+        out[5, 3] = self.m35
+        out[5, 4] = self.m45
+        out[5, 5] = self.m55
+        return out
