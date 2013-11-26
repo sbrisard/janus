@@ -93,7 +93,7 @@ cdef class GreenOperator:
 
 cdef class GreenOperator2d(GreenOperator):
 
-    cdef double m00, m01, m02, m11, m12, m22
+    cdef double g00, g01, g02, g11, g12, g22
 
     def __cinit__(self, Material mat):
         if (mat.dim != 2):
@@ -119,32 +119,32 @@ cdef class GreenOperator2d(GreenOperator):
         cdef double kyky = ky * ky
         cdef double s, kxky
         if kxkx + kyky == 0.:
-            self.m00 = 0.
-            self.m01 = 0.
-            self.m02 = 0.
-            self.m11 = 0.
-            self.m12 = 0.
-            self.m22 = 0.
+            self.g00 = 0.
+            self.g01 = 0.
+            self.g02 = 0.
+            self.g11 = 0.
+            self.g12 = 0.
+            self.g22 = 0.
         else:
             s = 1.0 / (kxkx + kyky)
             kxkx *= s
             kyky *= s
             kxky = s * kx * ky
-            self.m00 = kxkx * (self.daux1 - self.daux2 * kxkx)
-            self.m11 = kyky * (self.daux1 - self.daux2 * kyky)
+            self.g00 = kxkx * (self.daux1 - self.daux2 * kxkx)
+            self.g11 = kyky * (self.daux1 - self.daux2 * kyky)
             dummy = -self.daux2 * kxkx * kyky
-            self.m01 = dummy
-            self.m22 = 2 * (self.daux3 + dummy)
-            self.m02 = M_SQRT2 * kxky * (self.daux4 - self.daux2 * kxkx)
-            self.m12 = M_SQRT2 * kxky * (self.daux4 - self.daux2 * kyky)
+            self.g01 = dummy
+            self.g22 = 2 * (self.daux3 + dummy)
+            self.g02 = M_SQRT2 * kxky * (self.daux4 - self.daux2 * kxkx)
+            self.g12 = M_SQRT2 * kxky * (self.daux4 - self.daux2 * kyky)
 
     @boundscheck(False)
     cdef inline void _capply(self, double kx, double ky,
                              double[:] tau, double[:] eta):
         self._update(kx, ky)
-        eta[0] = self.m00 * tau[0] + self.m01 * tau[1] + self.m02 * tau[2]
-        eta[1] = self.m01 * tau[0] + self.m11 * tau[1] + self.m12 * tau[2]
-        eta[2] = self.m02 * tau[0] + self.m12 * tau[1] + self.m22 * tau[2]
+        eta[0] = self.g00 * tau[0] + self.g01 * tau[1] + self.g02 * tau[2]
+        eta[1] = self.g01 * tau[0] + self.g11 * tau[1] + self.g12 * tau[2]
+        eta[2] = self.g02 * tau[0] + self.g12 * tau[1] + self.g22 * tau[2]
 
     @boundscheck(False)
     cdef void capply(self, double* k, double[:] tau, double[:] eta):
@@ -162,22 +162,22 @@ cdef class GreenOperator2d(GreenOperator):
         check_shape_1d(k, self.dim)
         out = create_or_check_shape_2d(out, self.sym, self.sym)
         self._update(k[0], k[1])
-        out[0, 0] = self.m00
-        out[0, 1] = self.m01
-        out[0, 2] = self.m02
-        out[1, 0] = self.m01
-        out[1, 1] = self.m11
-        out[1, 2] = self.m12
-        out[2, 0] = self.m02
-        out[2, 1] = self.m12
-        out[2, 2] = self.m22
+        out[0, 0] = self.g00
+        out[0, 1] = self.g01
+        out[0, 2] = self.g02
+        out[1, 0] = self.g01
+        out[1, 1] = self.g11
+        out[1, 2] = self.g12
+        out[2, 0] = self.g02
+        out[2, 1] = self.g12
+        out[2, 2] = self.g22
         return out
 
 cdef class GreenOperator3d(GreenOperator):
 
     cdef:
-        double m00, m01, m02, m03, m04, m05, m11, m12, m13, m14, m15
-        double m22, m23, m24, m25, m33, m34, m35, m44, m45, m55
+        double g00, g01, g02, g03, g04, g05, g11, g12, g13, g14, g15
+        double g22, g23, g24, g25, g33, g34, g35, g44, g45, g55
 
     def __cinit__(self, Material mat):
         if (mat.dim != 3):
@@ -204,27 +204,27 @@ cdef class GreenOperator3d(GreenOperator):
         cdef double kzkz = kz * kz
         cdef double s, kykz, kzkx, kxky
         if kxkx + kyky +kzkz == 0.:
-            self.m00 = 0.
-            self.m01 = 0.
-            self.m02 = 0.
-            self.m03 = 0.
-            self.m04 = 0.
-            self.m05 = 0.
-            self.m11 = 0.
-            self.m12 = 0.
-            self.m13 = 0.
-            self.m14 = 0.
-            self.m15 = 0.
-            self.m22 = 0.
-            self.m23 = 0.
-            self.m24 = 0.
-            self.m25 = 0.
-            self.m33 = 0.
-            self.m34 = 0.
-            self.m35 = 0.
-            self.m44 = 0.
-            self.m45 = 0.
-            self.m55 = 0.
+            self.g00 = 0.
+            self.g01 = 0.
+            self.g02 = 0.
+            self.g03 = 0.
+            self.g04 = 0.
+            self.g05 = 0.
+            self.g11 = 0.
+            self.g12 = 0.
+            self.g13 = 0.
+            self.g14 = 0.
+            self.g15 = 0.
+            self.g22 = 0.
+            self.g23 = 0.
+            self.g24 = 0.
+            self.g25 = 0.
+            self.g33 = 0.
+            self.g34 = 0.
+            self.g35 = 0.
+            self.g44 = 0.
+            self.g45 = 0.
+            self.g55 = 0.
             return
         else:
             s = 1.0 / (kxkx + kyky + kzkz)
@@ -235,47 +235,47 @@ cdef class GreenOperator3d(GreenOperator):
             kzkx = s * kz * kx
             kxky = s * kx * ky
 
-            self.m00 = kxkx * (self.daux1 - self.daux2 * kxkx)
-            self.m11 = kyky * (self.daux1 - self.daux2 * kyky)
-            self.m22 = kzkz * (self.daux1 - self.daux2 * kzkz)
-            self.m33 = 2. * (self.daux3 * (kyky + kzkz)
+            self.g00 = kxkx * (self.daux1 - self.daux2 * kxkx)
+            self.g11 = kyky * (self.daux1 - self.daux2 * kyky)
+            self.g22 = kzkz * (self.daux1 - self.daux2 * kzkz)
+            self.g33 = 2. * (self.daux3 * (kyky + kzkz)
                              - self.daux2 * kyky * kzkz)
-            self.m44 = 2. * (self.daux3 * (kzkz + kxkx)
+            self.g44 = 2. * (self.daux3 * (kzkz + kxkx)
                              - self.daux2 * kzkz * kxkx)
-            self.m55 = 2. * (self.daux3 * (kxkx + kyky)
+            self.g55 = 2. * (self.daux3 * (kxkx + kyky)
                              - self.daux2 * kxkx * kyky)
-            self.m01 = -self.daux2 * kxkx * kyky
-            self.m02 = -self.daux2 * kxkx * kzkz
-            self.m03 = -M_SQRT2 * self.daux2 * kxkx * kykz
-            self.m04 = M_SQRT2 * kzkx * (self.daux4 - self.daux2 * kxkx)
-            self.m05 = M_SQRT2 * kxky * (self.daux4 - self.daux2 * kxkx)
-            self.m12 = -self.daux2 * kyky * kzkz
-            self.m13 = M_SQRT2 * kykz * (self.daux4 - self.daux2 * kyky)
-            self.m14 = -M_SQRT2 * self.daux2 * kyky * kzkx
-            self.m15 = M_SQRT2 * kxky * (self.daux4 - self.daux2 * kyky)
-            self.m23 = M_SQRT2 * kykz * (self.daux4 - self.daux2 * kzkz)
-            self.m24 = M_SQRT2 * kzkx * (self.daux4 - self.daux2 * kzkz)
-            self.m25 = -M_SQRT2 * self.daux2 * kzkz * kxky
-            self.m34 = 2 * kxky * (self.daux3 - self.daux2 * kzkz)
-            self.m35 = 2 * kzkx * (self.daux3 - self.daux2 * kyky)
-            self.m45 = 2 * kykz * (self.daux3 - self.daux2 * kxkx)
+            self.g01 = -self.daux2 * kxkx * kyky
+            self.g02 = -self.daux2 * kxkx * kzkz
+            self.g03 = -M_SQRT2 * self.daux2 * kxkx * kykz
+            self.g04 = M_SQRT2 * kzkx * (self.daux4 - self.daux2 * kxkx)
+            self.g05 = M_SQRT2 * kxky * (self.daux4 - self.daux2 * kxkx)
+            self.g12 = -self.daux2 * kyky * kzkz
+            self.g13 = M_SQRT2 * kykz * (self.daux4 - self.daux2 * kyky)
+            self.g14 = -M_SQRT2 * self.daux2 * kyky * kzkx
+            self.g15 = M_SQRT2 * kxky * (self.daux4 - self.daux2 * kyky)
+            self.g23 = M_SQRT2 * kykz * (self.daux4 - self.daux2 * kzkz)
+            self.g24 = M_SQRT2 * kzkx * (self.daux4 - self.daux2 * kzkz)
+            self.g25 = -M_SQRT2 * self.daux2 * kzkz * kxky
+            self.g34 = 2 * kxky * (self.daux3 - self.daux2 * kzkz)
+            self.g35 = 2 * kzkx * (self.daux3 - self.daux2 * kyky)
+            self.g45 = 2 * kykz * (self.daux3 - self.daux2 * kxkx)
 
     @boundscheck(False)
     cdef inline void _capply(self, double kx, double ky, double kz,
                              double[:] tau, double[:] eta):
         self._update(kx, ky, kz)
-        eta[0] = (self.m00 * tau[0] + self.m01 * tau[1] + self.m02 * tau[2]
-                  + self.m03 * tau[3] + self.m04 * tau[4] + self.m05 * tau[5])
-        eta[1] = (self.m01 * tau[0] + self.m11 * tau[1] + self.m12 * tau[2]
-                  + self.m13 * tau[3] + self.m14 * tau[4] + self.m15 * tau[5])
-        eta[2] = (self.m02 * tau[0] + self.m12 * tau[1] + self.m22 * tau[2]
-                  + self.m23 * tau[3] + self.m24 * tau[4] + self.m25 * tau[5])
-        eta[3] = (self.m03 * tau[0] + self.m13 * tau[1] + self.m23 * tau[2]
-                  + self.m33 * tau[3] + self.m34 * tau[4] + self.m35 * tau[5])
-        eta[4] = (self.m04 * tau[0] + self.m14 * tau[1] + self.m24 * tau[2]
-                  + self.m34 * tau[3] + self.m44 * tau[4] + self.m45 * tau[5])
-        eta[5] = (self.m05 * tau[0] + self.m15 * tau[1] + self.m25 * tau[2]
-                  + self.m35 * tau[3] + self.m45 * tau[4] + self.m55 * tau[5])
+        eta[0] = (self.g00 * tau[0] + self.g01 * tau[1] + self.g02 * tau[2]
+                  + self.g03 * tau[3] + self.g04 * tau[4] + self.g05 * tau[5])
+        eta[1] = (self.g01 * tau[0] + self.g11 * tau[1] + self.g12 * tau[2]
+                  + self.g13 * tau[3] + self.g14 * tau[4] + self.g15 * tau[5])
+        eta[2] = (self.g02 * tau[0] + self.g12 * tau[1] + self.g22 * tau[2]
+                  + self.g23 * tau[3] + self.g24 * tau[4] + self.g25 * tau[5])
+        eta[3] = (self.g03 * tau[0] + self.g13 * tau[1] + self.g23 * tau[2]
+                  + self.g33 * tau[3] + self.g34 * tau[4] + self.g35 * tau[5])
+        eta[4] = (self.g04 * tau[0] + self.g14 * tau[1] + self.g24 * tau[2]
+                  + self.g34 * tau[3] + self.g44 * tau[4] + self.g45 * tau[5])
+        eta[5] = (self.g05 * tau[0] + self.g15 * tau[1] + self.g25 * tau[2]
+                  + self.g35 * tau[3] + self.g45 * tau[4] + self.g55 * tau[5])
 
     @boundscheck(False)
     cdef void capply(self, double *k, double[:] tau, double[:] eta):
@@ -294,40 +294,40 @@ cdef class GreenOperator3d(GreenOperator):
         check_shape_1d(k, self.dim)
         out = create_or_check_shape_2d(out, self.sym, self.sym)
         self._update(k[0], k[1], k[2])
-        out[0, 0] = self.m00
-        out[0, 1] = self.m01
-        out[0, 2] = self.m02
-        out[0, 3] = self.m03
-        out[0, 4] = self.m04
-        out[0, 5] = self.m05
-        out[1, 0] = self.m01
-        out[1, 1] = self.m11
-        out[1, 2] = self.m12
-        out[1, 3] = self.m13
-        out[1, 4] = self.m14
-        out[1, 5] = self.m15
-        out[2, 0] = self.m02
-        out[2, 1] = self.m12
-        out[2, 2] = self.m22
-        out[2, 3] = self.m23
-        out[2, 4] = self.m24
-        out[2, 5] = self.m25
-        out[3, 0] = self.m03
-        out[3, 1] = self.m13
-        out[3, 2] = self.m23
-        out[3, 3] = self.m33
-        out[3, 4] = self.m34
-        out[3, 5] = self.m35
-        out[4, 0] = self.m04
-        out[4, 1] = self.m14
-        out[4, 2] = self.m24
-        out[4, 3] = self.m34
-        out[4, 4] = self.m44
-        out[4, 5] = self.m45
-        out[5, 0] = self.m05
-        out[5, 1] = self.m15
-        out[5, 2] = self.m25
-        out[5, 3] = self.m35
-        out[5, 4] = self.m45
-        out[5, 5] = self.m55
+        out[0, 0] = self.g00
+        out[0, 1] = self.g01
+        out[0, 2] = self.g02
+        out[0, 3] = self.g03
+        out[0, 4] = self.g04
+        out[0, 5] = self.g05
+        out[1, 0] = self.g01
+        out[1, 1] = self.g11
+        out[1, 2] = self.g12
+        out[1, 3] = self.g13
+        out[1, 4] = self.g14
+        out[1, 5] = self.g15
+        out[2, 0] = self.g02
+        out[2, 1] = self.g12
+        out[2, 2] = self.g22
+        out[2, 3] = self.g23
+        out[2, 4] = self.g24
+        out[2, 5] = self.g25
+        out[3, 0] = self.g03
+        out[3, 1] = self.g13
+        out[3, 2] = self.g23
+        out[3, 3] = self.g33
+        out[3, 4] = self.g34
+        out[3, 5] = self.g35
+        out[4, 0] = self.g04
+        out[4, 1] = self.g14
+        out[4, 2] = self.g24
+        out[4, 3] = self.g34
+        out[4, 4] = self.g44
+        out[4, 5] = self.g45
+        out[5, 0] = self.g05
+        out[5, 1] = self.g15
+        out[5, 2] = self.g25
+        out[5, 3] = self.g35
+        out[5, 4] = self.g45
+        out[5, 5] = self.g55
         return out
