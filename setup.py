@@ -34,9 +34,8 @@ ext_modules = [checkarray, matprop, greenop, discretegreenop, fft_serial]
 
 if not(get_platform() in ('win32', 'win-amd64')):
     # TODO improve this uggly hack
-    gcc = 'gcc-4.2'
-    #mpicc = '/usr/bin/mpicc'
-    mpicc = 'mpicc'
+    gcc = 'gcc'
+    mpicc = '/usr/bin/mpicc'
     os.environ['CC'] = get_config_var('CC').replace(gcc, mpicc)
     os.environ['LDSHARED'] = get_config_var('LDSHARED').replace(gcc, mpicc)
 
