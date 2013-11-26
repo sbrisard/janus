@@ -157,8 +157,8 @@ cdef class GreenOperator2D(GreenOperator):
         return eta
 
     @boundscheck(False)
-    cdef inline void _c_as_array(self, double kx, double ky, double[:, :] out):
-        self._update(kx, ky)
+    cdef void c_as_array(self, double *k, double[:, :] out):
+        self._update(k[0], k[1])
         out[0, 0] = self.g00
         out[0, 1] = self.g01
         out[0, 2] = self.g02
@@ -168,9 +168,6 @@ cdef class GreenOperator2D(GreenOperator):
         out[2, 0] = self.g02
         out[2, 1] = self.g12
         out[2, 2] = self.g22
-
-    cdef void c_as_array(self, double *k, double[:, :] out):
-        self._c_as_array(k[0], k[1], out)
 
     @boundscheck(False)
     def as_array(self, double[::1] k, double[:, :] out=None):
@@ -291,9 +288,8 @@ cdef class GreenOperator3D(GreenOperator):
         return eta
 
     @boundscheck(False)
-    cdef inline void _c_as_array(self, double kx, double ky, double kz,
-                                 double[:, :] out):
-        self._update(kx, ky, kz)
+    cdef void c_as_array(self, double *k, double[:, :] out):
+        self._update(k[0], k[1], k[2])
         out[0, 0] = self.g00
         out[0, 1] = self.g01
         out[0, 2] = self.g02
@@ -330,9 +326,6 @@ cdef class GreenOperator3D(GreenOperator):
         out[5, 3] = self.g35
         out[5, 4] = self.g45
         out[5, 5] = self.g55
-
-    cdef void c_as_array(self, double *k, double[:, :] out):
-        self._c_as_array(k[0], k[1], k[2], out)
 
     @boundscheck(False)
     def as_array(self, double[::1] k, double[:, :] out=None):
