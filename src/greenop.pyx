@@ -50,7 +50,7 @@ cdef class GreenOperator:
         """
         pass
 
-    def apply(self, double[::1] k, double[:] tau, double[:] eta=None):
+    def apply(self, double[:] k, double[:] tau, double[:] eta=None):
         """apply(k, tau, eta=None)
 
         Apply the Green operator to the specified prestress.
@@ -71,7 +71,7 @@ cdef class GreenOperator:
         """
         pass
 
-    def asarray(self, double[::1] k, double[:, :] g=None):
+    def asarray(self, double[:] k, double[:, :] g=None):
         """asarray(k, g=None)
 
         Return the array representation of the Green operator for the
@@ -150,7 +150,7 @@ cdef class GreenOperator2D(GreenOperator):
     cdef void capply(self, double* k, double[:] tau, double[:] eta):
         self._capply(k[0], k[1], tau, eta)
 
-    def apply(self, double[::1] k, double[:] tau, double[:] eta=None):
+    def apply(self, double[:] k, double[:] tau, double[:] eta=None):
         check_shape_1d(k, self.dim)
         check_shape_1d(tau, self.sym)
         eta = create_or_check_shape_1d(eta, self.sym)
@@ -158,7 +158,7 @@ cdef class GreenOperator2D(GreenOperator):
         return eta
 
     @boundscheck(False)
-    def asarray(self, double[::1] k, double[:, :] out=None):
+    def asarray(self, double[:] k, double[:, :] out=None):
         check_shape_1d(k, self.dim)
         out = create_or_check_shape_2d(out, self.sym, self.sym)
         self._update(k[0], k[1])
@@ -282,7 +282,7 @@ cdef class GreenOperator3D(GreenOperator):
         self._capply(k[0], k[1], k[2], tau, eta)
 
     @boundscheck(False)
-    def apply(self, double[::1] k, double[:] tau, double[:] eta=None):
+    def apply(self, double[:] k, double[:] tau, double[:] eta=None):
         check_shape_1d(k, self.dim)
         check_shape_1d(tau, self.sym)
         eta = create_or_check_shape_1d(eta, self.sym)
@@ -290,7 +290,7 @@ cdef class GreenOperator3D(GreenOperator):
         return eta
 
     @boundscheck(False)
-    def asarray(self, double[::1] k, double[:, :] out=None):
+    def asarray(self, double[:] k, double[:, :] out=None):
         check_shape_1d(k, self.dim)
         out = create_or_check_shape_2d(out, self.sym, self.sym)
         self._update(k[0], k[1], k[2])
