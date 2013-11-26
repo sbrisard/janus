@@ -71,6 +71,9 @@ cdef class GreenOperator:
         """
         pass
 
+    cdef void c_as_array(self, double *k, double[:, :] out):
+        pass
+    
     def as_array(self, double[:] k, double[:, :] out=None):
         """as_array(k, out=None)
 

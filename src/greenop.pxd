@@ -36,3 +36,4 @@ cdef class GreenOperator:
     cdef double daux1, daux2, daux3, daux4
 
     cdef void capply(self, double *k, double[:] tau, double[:] eta)
+    cdef void c_as_array(self, double *k, double[:, :] out)
