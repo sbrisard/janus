@@ -35,5 +35,6 @@ cdef class GreenOperator:
     # reference material.
     cdef double daux1, daux2, daux3, daux4
 
-    cdef void update(self, double[:] k)
-    cpdef double[:] apply(self, double[:] k, double[:] tau, double[:] eta=*)
+    cdef void update(self, double *k)
+    cdef void capply(self, double *k, double[:] tau, double[:] eta)
+    #    def apply(self, double[:] k, double[:] tau, double[:] eta=None)
