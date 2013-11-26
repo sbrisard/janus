@@ -93,28 +93,28 @@ def test_apply():
                 yield do_test_apply, k, mat, in_place
 
 @nottest
-def do_test_asarray(k, mat, inplace):
+def do_test_as_array(k, mat, inplace):
     sym = (mat.dim * (mat.dim + 1)) // 2
     expected = green_matrix(k,  mat)
     green = greenop.create(mat)
     if inplace:
         base = np.empty((sym, sym), np.float64)
-        actual = green.asarray(k, base)
+        actual = green.as_array(k, base)
         assert actual.base is base
     else:
-        actual = green.asarray(k)
+        actual = green.as_array(k)
     for j in range(sym):
         for i in range(sym):
             msg = 'coefficient [{0}, {1}]'.format(i, j)
             assert_almost_equal(expected[i, j], actual[i, j],
                                 msg=msg, delta=1.E-15)
 
-def test_asarray():
+def test_as_array():
     for dim in DIMS:
         mat = Material(MU, NU, dim)
         for k in wave_vectors(dim):
             for inplace in [True, False]:
-                yield do_test_asarray, k, mat, inplace
+                yield do_test_as_array, k, mat, inplace
 
 @raises(ValueError)
 def test_init_2D_invalid_dimension():
@@ -154,16 +154,16 @@ def test_apply_invalid_params():
     for f, k, tau, eps in zip(all_apply, all_k, all_tau, all_eps):
         yield f, k, tau, eps
 
-def test_asarray_invalid_params():
+def test_as_array_invalid_params():
     g2 = greenop.create(Material(MU, NU, 2))
     @raises(ValueError)
-    def asarray2(k, arr):
-        return g2.asarray(k, arr)
+    def as_array2(k, arr):
+        return g2.as_array(k, arr)
 
     g3 = greenop.create(Material(MU, NU, 3))
     @raises(ValueError)
-    def asarray3(k, arr):
-        return g3.asarray(k, arr)
+    def as_array3(k, arr):
+        return g3.as_array(k, arr)
 
     k2 = np.empty((2,))
     k3 = np.empty((3,))
@@ -171,9 +171,10 @@ def test_asarray_invalid_params():
     arr6x6 = np.empty((6, 6), dtype=np.float64)
     arr3x6 = np.empty((3, 6), dtype=np.float64)
     arr6x3 = np.empty((6, 3), dtype=np.float64)
-    all_asarray = [asarray2, asarray2, asarray2, asarray3, asarray3, asarray3]
+    all_as_array = [as_array2, as_array2, as_array2,
+                    as_array3, as_array3, as_array3]
     all_k = [k3, k2, k2, k2, k3, k3]
     all_arr = [arr3x3, arr6x3, arr3x6, arr6x6, arr6x3, arr3x6]
 
-    for asarray, k, arr in zip(all_asarray, all_k, all_arr):
-        yield asarray, k, arr
+    for as_array, k, arr in zip(all_as_array, all_k, all_arr):
+        yield as_array, k, arr

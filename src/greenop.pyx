@@ -71,8 +71,8 @@ cdef class GreenOperator:
         """
         pass
 
-    def asarray(self, double[:] k, double[:, :] g=None):
-        """asarray(k, g=None)
+    def as_array(self, double[:] k, double[:, :] out=None):
+        """as_array(k, out=None)
 
         Return the array representation of the Green operator for the
         specified wave vector. Uses the Mandel-Voigt convention.
@@ -174,7 +174,7 @@ cdef class GreenOperator2D(GreenOperator):
         self._c_as_array(k[0], k[1], out)
 
     @boundscheck(False)
-    def asarray(self, double[:] k, double[:, :] out=None):
+    def as_array(self, double[:] k, double[:, :] out=None):
         check_shape_1d(k, self.dim)
         out = create_or_check_shape_2d(out, self.sym, self.sym)
         self._c_as_array(k[0], k[1], out)
@@ -341,7 +341,7 @@ cdef class GreenOperator3D(GreenOperator):
         self._c_as_array(k[0], k[1], k[2], out)
 
     @boundscheck(False)
-    def asarray(self, double[:] k, double[:, :] out=None):
+    def as_array(self, double[:] k, double[:, :] out=None):
         check_shape_1d(k, self.dim)
         out = create_or_check_shape_2d(out, self.sym, self.sym)
         self._c_as_array(k[0], k[1], k[2], out)
