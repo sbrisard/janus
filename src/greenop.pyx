@@ -158,20 +158,20 @@ cdef class GreenOperator2d(GreenOperator):
         return eta
 
     @boundscheck(False)
-    def asarray(self, double[::1] k, double[:, :] g=None):
+    def asarray(self, double[::1] k, double[:, :] out=None):
         check_shape_1d(k, self.dim)
-        g = create_or_check_shape_2d(g, self.sym, self.sym)
+        out = create_or_check_shape_2d(out, self.sym, self.sym)
         self._update(k[0], k[1])
-        g[0, 0] = self.m00
-        g[0, 1] = self.m01
-        g[0, 2] = self.m02
-        g[1, 0] = self.m01
-        g[1, 1] = self.m11
-        g[1, 2] = self.m12
-        g[2, 0] = self.m02
-        g[2, 1] = self.m12
-        g[2, 2] = self.m22
-        return g
+        out[0, 0] = self.m00
+        out[0, 1] = self.m01
+        out[0, 2] = self.m02
+        out[1, 0] = self.m01
+        out[1, 1] = self.m11
+        out[1, 2] = self.m12
+        out[2, 0] = self.m02
+        out[2, 1] = self.m12
+        out[2, 2] = self.m22
+        return out
 
 cdef class GreenOperator3d(GreenOperator):
 
