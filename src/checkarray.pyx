@@ -22,3 +22,8 @@ cdef inline double[:, :] create_or_check_shape_2d(double[:, :] a,
         return array((n0, n1), sizeof(double), 'd')
     check_shape_2d(a, n0, n1)
     return a
+
+cdef inline void check_shape_ssize_t_1D(Py_ssize_t[:] a, int n0) except *:
+    if a.shape[0] != n0:
+        raise ValueError('invalid shape: expected ({0},), actual ({1},)'
+                         .format(n0, a.shape[0]))
