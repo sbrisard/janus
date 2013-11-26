@@ -9,6 +9,7 @@ from libc.stdlib cimport malloc
 from libc.stdlib cimport free
 
 from checkarray cimport create_or_check_shape_2d
+from checkarray cimport check_shape_ssize_t_1D
 from greenop cimport GreenOperator
 
 cdef str INVALID_N_MSG = 'length of n must be {0} (was {1})'
@@ -18,6 +19,7 @@ cdef str INVALID_B_MSG = 'shape of b must be ({0},) [was ({1},)]'
 cdef class TruncatedGreenOperator:
     cdef readonly GreenOperator green
     cdef readonly double h
+    cdef int dim
     # Size of the space of symmetric, second-rank tensors
     cdef int sym
     #TODO Make this readable from Python
@@ -36,6 +38,7 @@ cdef class TruncatedGreenOperator:
         self.green = green
         self.h = h
         self.two_pi_over_h = 2. * M_PI / h
+        self.dim = d
         self.sym = (d * (d + 1)) / 2
         self.n = <Py_ssize_t *> malloc(d * sizeof(Py_ssize_t))
         self.k = <double *> malloc(d * sizeof(double))
@@ -93,8 +96,8 @@ cdef class TruncatedGreenOperator:
         self.green.c_as_array(self.k, out)
 
     def as_array(self, Py_ssize_t[::1] b, double[:, :] out=None):
-        # TODO Check b
-        out = create_or_check_shape_2d(out, self.sym, self.sym)        
+        check_shape_ssize_t_1D(b, self.dim)
+        out = create_or_check_shape_2d(out, self.sym, self.sym)
         self.c_as_array(&b[0], out)
         return out
 
