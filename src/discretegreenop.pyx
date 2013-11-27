@@ -11,8 +11,10 @@ from libc.stdlib cimport free
 from checkarray cimport create_or_check_shape_1d
 from checkarray cimport create_or_check_shape_2d
 from checkarray cimport create_or_check_shape_3d
+from checkarray cimport create_or_check_shape_4d
 from checkarray cimport check_shape_1d
 from checkarray cimport check_shape_3d
+from checkarray cimport check_shape_4d
 from greenop cimport GreenOperator
 
 cdef str INVALID_N_MSG = 'length of n must be {0} (was {1})'
@@ -32,7 +34,7 @@ cdef class TruncatedGreenOperator:
 
 
     @cdivision(True)
-    def __cinit__(self, GreenOperator green, tuple n not None, double h):
+    def __cinit__(self, GreenOperator green, n, double h):
         cdef Py_ssize_t d = len(n)
         if d != green.mat.dim:
             raise ValueError(INVALID_N_MSG.format(green.mat.dim, d))
@@ -110,21 +112,10 @@ cdef class TruncatedGreenOperator:
         pass
 
 cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
-    cdef inline void check_grid_shape(self,
-                                      double[:, :, :] a,
-                                      name) except *:
-        if ((a.shape[0] != self.n[1])
-            or (a.shape[1] != self.n[0])
-            or (a.shape[2] != self.ncols)):
-            raise ValueError('shape of {0} must be ({1}, {2}) [was ({3}, {4})]'
-                             .format(name,
-                                     self.n[1], self.n[0],
-                                     a.shape[0], a.shape[1]))
-
     @boundscheck(False)
-    cdef inline double[:, :, :]  c_apply_all_freqs(self,
-                                                   double[:, :, :] tau,
-                                                   double[:, :, :] eta):
+    cdef inline void c_apply_all_freqs(self,
+                                       double[:, :, :] tau,
+                                       double[:, :, :] eta):
         cdef int n0 = self.n[0]
         cdef int n1 = self.n[1]
         cdef Py_ssize_t b0, b1, b[2]
@@ -134,9 +125,36 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
                 b[0] = b0
                 self.update(b)
                 self.green.c_apply(self.k, tau[b1, b0, :], eta[b1, b0, :])
-        return eta
 
     def apply_all_freqs(self, tau, eta=None):
         check_shape_3d(tau, self.n[1], self.n[0], self.ncols)
         eta = create_or_check_shape_3d(eta, self.n[1], self.n[0], self.nrows)
-        return self.c_apply_all_freqs(tau, eta)
+        self.c_apply_all_freqs(tau, eta)
+        return eta
+
+cdef class TruncatedGreenOperator3D(TruncatedGreenOperator):
+    @boundscheck(False)
+    cdef inline void c_apply_all_freqs(self,
+                                       double[:, :, :, :] tau,
+                                       double[:, :, :, :] eta):
+        cdef int n0 = self.n[0]
+        cdef int n1 = self.n[1]
+        cdef int n2 = self.n[2]
+        cdef Py_ssize_t b0, b1, b2, b[3]
+        for b2 in range(n2):
+            b[2] = b2
+            for b1 in range(n1):
+                b[1] = b1
+                for b0 in range(n0):
+                    b[0] = b0
+                    self.update(b)
+                    self.green.c_apply(self.k,
+                                       tau[b2, b1, b0, :],
+                                       eta[b2, b1, b0, :])
+
+    def apply_all_freqs(self, tau, eta=None):
+        check_shape_4d(tau, self.n[2], self.n[1], self.n[0], self.ncols)
+        eta = create_or_check_shape_4d(eta, self.n[2], self.n[1], self.n[0],
+                                       self.nrows)
+        self.c_apply_all_freqs(tau, eta)
+        return eta

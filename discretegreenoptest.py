@@ -1,14 +1,9 @@
-if __name__ == '__main__':
-    import sys
-    sys.path.append('./src/')
-
-# TODO Implement test of apply_single_freq with invalid params.
-
-import discretegreenop
-import greenop
 import itertools
 import numpy as np
 import numpy.random as rnd
+
+import discretegreenop
+import greenop
 
 from numpy.testing import assert_array_max_ulp
 from matprop import IsotropicLinearElasticMaterial as Material
@@ -17,8 +12,8 @@ from nose.tools import raises
 
 # All tests are performed with discrete Green operators based on these
 # grids
-GRID_SIZES = [(8, 8), (8, 16), (16, 8), (8, 8, 8), (8, 16, 32)]
-#GRID_SIZES = [(8, 8), (8, 16)]
+GRID_SIZES = ([(8, 8), (8, 16), (16, 8), (4, 4, 4)]
+              + list(itertools.permutations((4, 8, 16))))
 
 def discrete_green_operator(n, h):
     """Create a discrete Green operator with default material constants
@@ -33,7 +28,7 @@ def discrete_green_operator(n, h):
     if mat.dim == 2:
         return discretegreenop.TruncatedGreenOperator2D(greenc, n, h)
     else:
-        return discretegreenop.TruncatedGreenOperator(greenc, n, h)
+        return discretegreenop.TruncatedGreenOperator3D(greenc, n, h)
 
 def get_base(a):
     # TODO This is a hack to avoid writing uggly things like a.base.base.base.
@@ -42,19 +37,29 @@ def get_base(a):
     else:
         return get_base(a.base)
 
-def invalid_frequency_multi_indices(n):
-    """Return a list of frequency multi-indices which are incompatible with the
-    specified grid-size (too many indices, negative and too large indices).
+def multi_indices(n):
+    """Returns a list of all multi-indices [b[0], ..., b[dim - 1]] such that
+    0 <= b[i] < n[i] for all i.
+
+    """
+    iterables = [range(ni) for ni in n]
+    return [np.asarray(b, dtype=np.intp)
+            for b in itertools.product(*iterables)]
+
+
+def invalid_multi_indices(n):
+    """Return a list of multi-indices which are incompatible with the specified
+    grid-size (too many indices, negative and too large indices).
 
     """
     def f(i, x):
-        a = np.zeros(len(n), dtype=np.intp)
-        a[i] = x
-        return a
+        b = np.zeros(len(n), dtype=np.intp)
+        b[i] = x
+        return b
 
-    ret = [f(i, x) for i in range(len(n)) for x in [n[i], -1]]
-    ret.append(np.zeros((len(n) + 1,), dtype=np.intp))
-    return ret
+    indices = [f(i, x) for i in range(len(n)) for x in [n[i], -1]]
+    indices.append(np.zeros((len(n) + 1,), dtype=np.intp))
+    return indices
 
 def increment_element(a, i):
     """Return a copy of a (as a list), where the i-th element is incremented."""
@@ -80,38 +85,29 @@ def invalid_shapes(shape):
 def do_test_as_array(n, inplace):
     mat = Material(0.75, 0.3, len(n))
 
-    n_arr = np.asarray(n)
-
-    # Continuous Green operator
     greenc = greenop.create(mat)
-
-    # Discrete Green operator
     greend = discretegreenop.TruncatedGreenOperator(greenc, n, 1.0)
-
-    # Wave-vector
     k = np.empty((len(n),), dtype=np.float64)
 
-    iterables = [range(ni) for ni in n]
-    for b in itertools.product(*iterables):
-        b_arr = np.asarray(b)
-        i = 2 * b_arr > n_arr
-        k[i] = 2. * np.pi * (b_arr[i] - n_arr[i]) / n_arr[i]
-        k[~i] = 2. * np.pi * b_arr[~i] / n_arr[~i]
+    for b in multi_indices(n):
+        i = 2 * b > n
+        k[i] = 2. * np.pi * (b[i] - n[i]) / n[i]
+        k[~i] = 2. * np.pi * b[~i] / n[~i]
 
         expected = greenc.as_array(k)
 
         if inplace:
             base = np.empty_like(expected)
-            actual = greend.as_array(b_arr, base)
+            actual = greend.as_array(b, base)
             assert get_base(actual) is base
         else:
-            actual = greend.as_array(b_arr)
+            actual = greend.as_array(b)
         assert_array_max_ulp(expected, actual, 1)
 
 def test_as_array():
     for n in GRID_SIZES:
         for inplace in [True, False]:
-            yield do_test_as_array, n, inplace
+            yield do_test_as_array, np.asarray(n), inplace
 
 #
 # 1.2 Invalid parameters
@@ -125,7 +121,7 @@ def test_as_array_invalid_parameters():
         b0 = np.zeros((green.dim,), dtype=np.intp)
         out1 = np.zeros((green.nrows + 1, green.ncols), dtype=np.float64)
         out2 = np.zeros((green.nrows, green.ncols + 1), dtype=np.float64)
-        params = ([(b, None) for b in invalid_frequency_multi_indices(n)]
+        params = ([(b, None) for b in invalid_multi_indices(n)]
                   + [(b0, out1), (b0, out2)])
 
         @raises(ValueError)
@@ -150,12 +146,9 @@ def do_test_apply_single_freq(n, tau, inplace):
     greenc = greenop.create(mat)
     greend = discretegreenop.TruncatedGreenOperator(greenc, n, 1.0)
 
-    n_arr = np.asarray(n)
     tau_vec = tau.reshape(greend.ncols, 1)
 
-    iterables = [range(ni) for ni in n]
-    for b_tuple in itertools.product(*iterables):
-        b = np.asarray(b_tuple)
+    for b in multi_indices(n):
         g = np.asmatrix(greend.as_array(b))
         # expected is by default a matrix, so that it has two dimensions.
         # First convert to ndarray so as to reshape is to a 1D array.
@@ -196,7 +189,7 @@ def test_apply_single_freq_invalid_params():
         eta_invalid = np.zeros((green.nrows + 1,), dtype=np.float64)
 
         params = ([(b, tau_valid, None)
-                   for b in invalid_frequency_multi_indices(n)]
+                   for b in invalid_multi_indices(n)]
                   + [(b_valid, tau_invalid, None),
                      (b_valid, tau_valid, eta_invalid)])
 
@@ -220,12 +213,9 @@ def do_test_apply_all_freqs(n, inplace):
     green = discrete_green_operator(n, 1.)
     tau = rnd.rand(*(n[::-1] + (green.ncols,)))
     expected = np.empty(n[::-1] + (green.nrows,), dtype=np.float64)
-    b = np.empty((green.dim,), dtype=np.intp)
-    for b[0] in range(n[0]):
-        for b[1] in range(n[1]):
-            green.apply_single_freq(b,
-                                    tau[b[1], b[0], :],
-                                    expected[b[1], b[0], :])
+    for b in multi_indices(n):
+        index = tuple(b[::-1])
+        green.apply_single_freq(b, tau[index], expected[index])
     if inplace:
         base = np.empty_like(expected)
         actual = green.apply_all_freqs(tau, base)
@@ -237,10 +227,8 @@ def do_test_apply_all_freqs(n, inplace):
 
 def test_apply_all_freqs():
     for n in GRID_SIZES:
-        # TODO remove this statement
-        if len(n) == 2:
-            for inplace in [True, False]:
-                yield do_test_apply_all_freqs, n, inplace
+        for inplace in [True, False]:
+            yield do_test_apply_all_freqs, n, inplace
 
 #
 # 3.2 Invalid parameters
@@ -262,9 +250,10 @@ def test_apply_all_freqs_invalid_params():
                    for shape in tau_invalid_shapes]
                    + [(np.zeros(shape, dtype=np.float64), eta)
                       for shape in tau_invalid_shapes]
-                      + [(tau, np.zeros(shape, dtype=np.float64))
-                        for shape in eta_invalid_shapes])
+                   + [(tau, np.zeros(shape, dtype=np.float64))
+                      for shape in eta_invalid_shapes])
 
+        @raises(ValueError)
         def test(tau, eta):
             green.apply_all_freqs(tau, eta)
 
