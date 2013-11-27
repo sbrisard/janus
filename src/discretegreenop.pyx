@@ -81,24 +81,6 @@ cdef class TruncatedGreenOperator:
             else:
                 self.k[i] = s * bi
 
-    cdef void c_apply_single_freq(self, Py_ssize_t *b,
-                                  double[:] tau, double[:] eta):
-        self.update(b)
-        self.green.c_apply(self.k, tau, eta)
-
-    cpdef double[:] apply_single_freq(self,
-                                      Py_ssize_t[::1] b,
-                                      double[:] tau,
-                                      double[:] eta=None):
-        self.check_b(b)
-        check_shape_1d(tau, self.ncols)
-        eta = create_or_check_shape_1d(eta, self.nrows)
-        self.c_apply_single_freq(&b[0], tau, eta)
-        return eta
-
-    def apply_all_freqs(self, tau, eta=None):
-        pass
-
     cdef void c_as_array(self, Py_ssize_t *b, double[:, :] out):
         self.update(b)
         self.green.c_as_array(self.k, out)
@@ -108,6 +90,22 @@ cdef class TruncatedGreenOperator:
         out = create_or_check_shape_2d(out, self.nrows, self.ncols)
         self.c_as_array(&b[0], out)
         return out
+
+    cdef void c_apply_single_freq(self, Py_ssize_t *b,
+                                  double[:] tau, double[:] eta):
+        self.update(b)
+        self.green.c_apply(self.k, tau, eta)
+
+    def apply_single_freq(self, Py_ssize_t[::1] b,
+                          double[:] tau, double[:] eta=None):
+        self.check_b(b)
+        check_shape_1d(tau, self.ncols)
+        eta = create_or_check_shape_1d(eta, self.nrows)
+        self.c_apply_single_freq(&b[0], tau, eta)
+        return eta
+
+    def apply_all_freqs(self, tau, eta=None):
+        pass
 
 cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
     cdef inline void check_grid_shape(self,
