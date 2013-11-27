@@ -19,3 +19,8 @@ cdef void check_shape_3d(double[:, :, :] a,
                          int n0, int n1, int n2) except *
 cdef double[:, :, :] create_or_check_shape_3d(double[:, :, :] a,
                                               int n0, int n1, int n2) except *
+
+cdef void check_shape_4d(double[:, :, :, :] a,
+                         int n0, int n1, int n2, int n3) except *
+cdef double[:, :, :, :] create_or_check_shape_4d(double[:, :, :, :] a,
+                                                 int n0, int n1, int n2, int n3) except *
