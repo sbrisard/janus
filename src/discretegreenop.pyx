@@ -61,7 +61,7 @@ cdef class TruncatedGreenOperator:
         for i in range(self.dim):
             ni = self.n[i]
             bi = b[i]
-            if (bi < 0) or (bi >= self.n[i]):
+            if (bi < 0) or (bi >= ni):
                 raise ValueError('index must be >= 0 and < {0} (was {1})'
                                  .format(ni, bi))
 
