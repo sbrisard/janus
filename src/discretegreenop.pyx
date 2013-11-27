@@ -126,7 +126,6 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
     cdef inline void c_apply_all_freqs(self,
                                        double[:, :, :] tau,
                                        double[:, :, :] eta):
-        cdef double[:] x
         cdef int n0 = self.n[0]
         cdef int n1 = self.n[1]
         cdef Py_ssize_t b0, b1, b[2]
@@ -134,7 +133,6 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
             b[1] = b1
             for b0 in range(n0):
                 b[0] = b0
-                x = tau[b1, b0, :]
                 self.update(b)
                 self.green.c_apply(self.k, tau[b1, b0, :], eta[b1, b0, :])
 
