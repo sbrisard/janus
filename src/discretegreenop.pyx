@@ -20,9 +20,9 @@ cdef str INVALID_B_MSG = 'shape of b must be ({0},) [was ({1},)]'
 cdef class TruncatedGreenOperator:
     cdef readonly GreenOperator green
     cdef readonly double h
-    cdef int dim
-    # Size of the space of symmetric, second-rank tensors
-    cdef int sym
+    cdef readonly int dim
+    cdef readonly int nrows
+    cdef readonly int ncols
     #TODO Make this readable from Python
     cdef Py_ssize_t *n
     cdef double* k
@@ -40,7 +40,8 @@ cdef class TruncatedGreenOperator:
         self.h = h
         self.two_pi_over_h = 2. * M_PI / h
         self.dim = d
-        self.sym = (d * (d + 1)) / 2
+        self.nrows = green.nrows
+        self.ncols = green.ncols
         self.n = <Py_ssize_t *> malloc(d * sizeof(Py_ssize_t))
         self.k = <double *> malloc(d * sizeof(double))
         cdef int i
@@ -90,8 +91,8 @@ cdef class TruncatedGreenOperator:
                                       double[:] tau,
                                       double[:] eta=None):
         self.check_b(b)
-        check_shape_1d(tau, self.sym)
-        eta = create_or_check_shape_1d(eta, self.sym)
+        check_shape_1d(tau, self.ncols)
+        eta = create_or_check_shape_1d(eta, self.nrows)
         self.c_apply_single_freq(&b[0], tau, eta)
         return eta
 
@@ -104,7 +105,7 @@ cdef class TruncatedGreenOperator:
 
     def as_array(self, Py_ssize_t[::1] b, double[:, :] out=None):
         self.check_b(b)
-        out = create_or_check_shape_2d(out, self.sym, self.sym)
+        out = create_or_check_shape_2d(out, self.nrows, self.ncols)
         self.c_as_array(&b[0], out)
         return out
 
@@ -114,7 +115,7 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
                                       name) except *:
         if ((a.shape[0] != self.n[1])
             or (a.shape[1] != self.n[0])
-            or (a.shape[2] != self.sym)):
+            or (a.shape[2] != self.ncols)):
             raise ValueError('shape of {0} must be ({1}, {2}) [was ({3}, {4})]'
                              .format(name,
                                      self.n[1], self.n[0],
@@ -144,7 +145,7 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
         if eta is not None:
             self.check_grid_shape(eta_mv, 'eta')
         else:
-            eta_mv = array(shape=(self.n[1], self.n[0], self.sym),
+            eta_mv = array(shape=(self.n[1], self.n[0], self.nrows),
                            itemsize=sizeof(double),
                            format='d')
         return self.capply_all_freqs(tau_mv, eta_mv)
