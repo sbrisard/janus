@@ -17,7 +17,7 @@ from nose.tools import raises
 
 # All tests are performed with discrete Green operators based on these
 # grids
-GRID_SIZES = [(8, 8), (8, 16), (8, 8, 8), (8, 16, 32)]
+GRID_SIZES = [(8, 8), (8, 16), (16, 8), (8, 8, 8), (8, 16, 32)]
 #GRID_SIZES = [(8, 8), (8, 16)]
 
 def discrete_green_operator(n, h):
@@ -55,6 +55,18 @@ def invalid_frequency_multi_indices(n):
     ret = [f(i, x) for i in range(len(n)) for x in [n[i], -1]]
     ret.append(np.zeros((len(n) + 1,), dtype=np.intp))
     return ret
+
+def increment_element(a, i):
+    """Return a copy of a (as a list), where the i-th element is incremented."""
+    return [(a[j] + (1 if j==i else 0)) for j in range(len(a))]
+
+def invalid_shapes(shape):
+    """Return a list of invalid shapes, based on the specified (valid) shape.
+    Each invalid shape is derived from the valid shape by incrementing one
+    element at a time.
+
+    """
+    return [increment_element(shape, i) for i in range(len(shape))]
 
 #
 # 1 Test of the method as_array
@@ -195,60 +207,66 @@ def test_apply_single_freq_invalid_params():
         for b, tau, eta in params:
             yield test, b, tau, eta
 
-"""
+#
+# 3 Test of the method apply_all_freqs
+#   ==================================
+#
+# 3.1 Valid parameters
+#     ----------------
+#
+
 @nottest
 def do_test_apply_all_freqs(n, inplace):
-    greend = discrete_green_operator(n, 1.)
-    dim = len(n)
-    sym = (dim * (dim + 1)) // 2
-    tau = rnd.rand(n[1], n[0], sym)
-    expected = np.empty_like(tau)
-    b = np.empty((dim,), dtype=np.intp)
+    green = discrete_green_operator(n, 1.)
+    tau = rnd.rand(*(n[::-1] + (green.ncols,)))
+    expected = np.empty(n[::-1] + (green.nrows,), dtype=np.float64)
+    b = np.empty((green.dim,), dtype=np.intp)
     for b[0] in range(n[0]):
         for b[1] in range(n[1]):
-            greend.apply_single_freq(b,
-                                     tau[b[1], b[0], :],
-                                     expected[b[1], b[0], :])
+            green.apply_single_freq(b,
+                                    tau[b[1], b[0], :],
+                                    expected[b[1], b[0], :])
     if inplace:
-        base = np.empty_like(tau)
-        actual = greend.apply_all_freqs(tau, base)
+        base = np.empty_like(expected)
+        actual = green.apply_all_freqs(tau, base)
         assert get_base(actual) is base
     else:
-        actual = greend.apply_all_freqs(tau)
+        actual = green.apply_all_freqs(tau)
 
     assert_array_max_ulp(expected, actual, 0)
 
 def test_apply_all_freqs():
-    shapes = ((8, 8), (8, 16))
     for n in GRID_SIZES:
-        for inplace in [True, False]:
-            yield do_test_apply_all_freqs, n, inplace
+        # TODO remove this statement
+        if len(n) == 2:
+            for inplace in [True, False]:
+                yield do_test_apply_all_freqs, n, inplace
 
-@raises(ValueError)
-def test_apply_all_freqs_tau_wrong_num_dims():
-    green = discrete_green_operator((8, 16), 1.)
-    green.apply_all_freqs(np.empty((8, 8), dtype=np.float64))
+#
+# 3.2 Invalid parameters
+#     ------------------
+#
 
-@nottest
-@raises(ValueError)
-def do_test_apply_all_freqs_tau_invalid_shape(n, shape):
-    green = discrete_green_operator(n, 1.)
-    dim = len(n)
-    sym = (dim * (dim + 1)) // 2
-    tau = np.empty(shape + (sym,), dtype=np.float64)
-    green.apply_all_freqs(tau)
+def test_apply_all_freqs_invalid_params():
+    for dim in [2, 3]:
+        n = tuple(2**(i + 3) for i in range(dim))
+        green = discrete_green_operator(n, 1.)
 
-def incr_elem(n, i):
-    n_list = list(n)
-    n_list[i] += 1
-    return tuple(n_list)
+        tau = np.zeros(n[::-1] + (green.ncols,), dtype=np.float64)
+        eta = np.zeros(n[::-1] + (green.nrows,), dtype=np.float64)
 
-def test_apply_all_freqs_tau_invalid_shape():
-    for n in GRID_SIZES:
-        n_mirror = list(n)[::-1]
-        for shape in [incr_elem(n_mirror, i) for i in range(len(n))]:
-            yield do_test_apply_all_freqs_tau_invalid_shape, n, shape
+        tau_invalid_shapes = invalid_shapes(tau.shape)
+        eta_invalid_shapes = invalid_shapes(eta.shape)
 
-if __name__ == '__main__':
-    do_test_apply_all_freqs_tau_invalid_shape((8, 16), (17, 8))
-"""
+        params = ([(np.zeros(shape, dtype=np.float64), None)
+                   for shape in tau_invalid_shapes]
+                   + [(np.zeros(shape, dtype=np.float64), eta)
+                      for shape in tau_invalid_shapes]
+                      + [(tau, np.zeros(shape, dtype=np.float64))
+                        for shape in eta_invalid_shapes])
+
+        def test(tau, eta):
+            green.apply_all_freqs(tau, eta)
+
+        for tau, eta in params:
+            yield test, tau, eta

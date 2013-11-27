@@ -10,7 +10,9 @@ from libc.stdlib cimport free
 
 from checkarray cimport create_or_check_shape_1d
 from checkarray cimport create_or_check_shape_2d
+from checkarray cimport create_or_check_shape_3d
 from checkarray cimport check_shape_1d
+from checkarray cimport check_shape_3d
 from greenop cimport GreenOperator
 
 cdef str INVALID_N_MSG = 'length of n must be {0} (was {1})'
@@ -120,13 +122,12 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
                                      a.shape[0], a.shape[1]))
 
     @boundscheck(False)
-    cdef inline double[:, :, :]  capply_all_freqs(self,
-                                                  double[:, :, :] tau,
-                                                  double[:, :, :] eta):
+    cdef inline double[:, :, :]  c_apply_all_freqs(self,
+                                                   double[:, :, :] tau,
+                                                   double[:, :, :] eta):
         cdef int n0 = self.n[0]
         cdef int n1 = self.n[1]
-        cdef Py_ssize_t b0, b1
-        cdef Py_ssize_t b[2]
+        cdef Py_ssize_t b0, b1, b[2]
         for b1 in range(n1):
             b[1] = b1
             for b0 in range(n0):
@@ -136,14 +137,6 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
         return eta
 
     def apply_all_freqs(self, tau, eta=None):
-        cdef double[:, :, :] tau_mv = tau
-        self.check_grid_shape(tau_mv, 'tau')
-
-        cdef double[:, :, :] eta_mv = eta
-        if eta is not None:
-            self.check_grid_shape(eta_mv, 'eta')
-        else:
-            eta_mv = array(shape=(self.n[1], self.n[0], self.nrows),
-                           itemsize=sizeof(double),
-                           format='d')
-        return self.capply_all_freqs(tau_mv, eta_mv)
+        check_shape_3d(tau, self.n[1], self.n[0], self.ncols)
+        eta = create_or_check_shape_3d(eta, self.n[1], self.n[0], self.nrows)
+        return self.c_apply_all_freqs(tau, eta)
