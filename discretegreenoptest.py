@@ -81,14 +81,15 @@ def test_as_array():
 
 @nottest
 @raises(ValueError)
-def do_test_as_array_invalid_b_shape(n):
+def do_test_as_array_invalid_b(n):
     b = np.zeros((len(n) + 1,), dtype=np.intp)
     greend = discrete_green_operator(n, 1.)
     greend.as_array(b)
 
-def test_as_array_invalid_b_shape():
-    for n in GRID_SIZES:
-        yield do_test_as_array_invalid_b_shape, n
+def test_as_array_invalid_b():
+    for dim in [2, 3]:
+        n = tuple(itertools.repeat(16, dim))
+        yield do_test_as_array_invalid_b, n
 
 @nottest
 @raises(ValueError)
@@ -105,7 +106,6 @@ def test_as_array_invalid_output():
         for shape in shapes:
             yield do_test_as_array_invalid_output, dim, shape
 
-"""
 @nottest
 def do_test_apply_single_freq(n, tau, inplace):
     dim = len(n)
@@ -147,6 +147,37 @@ def test_apply_single_freq():
         for inplace in [False, True]:
             yield do_test_apply_single_freq, n, tau[len(n) - 2], inplace
 
+@nottest
+@raises(ValueError)
+def do_test_apply_single_freq_invalid_params(n, b, tau, eta):
+    discrete_green_operator(n, 1.).apply_single_freq(b, tau, eta)
+    b = np.zeros((greend.dim + 1,), dtype=np.intp)
+    tau = np.zeros((greend.sym,), dtype=np.float64)
+    greend.apply_single_freq(b, tau)
+
+def test_apply_single_freq_invalid_params():
+    for dim in [2, 3]:
+        sym = (dim * (dim + 1)) // 2
+        n = tuple(itertools.repeat(16, dim))
+        params = [(np.zeros((dim + 1,), dtype=np.intp),
+                   np.zeros((sym, sym), dtype=np.float64),
+                   None),
+                   (np.zeros((dim,), dtype=np.intp),
+                   np.zeros((sym + 1, sym), dtype=np.float64),
+                   None),
+                   (np.zeros((dim,), dtype=np.intp),
+                   np.zeros((sym, sym + 1), dtype=np.float64),
+                   None),
+                   (np.zeros((dim,), dtype=np.intp),
+                   np.zeros((sym, sym), dtype=np.float64),
+                   np.zeros((sym + 1, sym), dtype=np.float64)),
+                   (np.zeros((dim,), dtype=np.intp),
+                    np.zeros((sym, sym), dtype=np.float64),
+                    np.zeros((sym, sym + 1), dtype=np.float64))]
+        for b, tau, eta in params:
+            yield do_test_apply_single_freq_invalid_params, n, b, tau, eta
+
+"""
 @nottest
 def do_test_apply_all_freqs(n, inplace):
     greend = discrete_green_operator(n, 1.)
