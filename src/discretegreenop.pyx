@@ -40,8 +40,6 @@ cdef class TruncatedGreenOperator:
     cdef double* k
     cdef double two_pi_over_h
 
-
-    @cdivision(True)
     def __cinit__(self, GreenOperator green, n, double h):
         cdef Py_ssize_t d = len(n)
         if d != green.mat.dim:
@@ -77,9 +75,7 @@ cdef class TruncatedGreenOperator:
                 raise ValueError('index must be >= 0 and < {0} (was {1})'
                                  .format(ni, bi))
 
-    @boundscheck(False)
     @cdivision(True)
-    @wraparound(False)
     cdef inline void update(self, Py_ssize_t *b):
         cdef:
             Py_ssize_t i, ni, bi
@@ -97,6 +93,8 @@ cdef class TruncatedGreenOperator:
         self.update(b)
         self.green.c_as_array(self.k, out)
 
+    @boundscheck(False)
+    @wraparound(False)
     def as_array(self, Py_ssize_t[::1] b, double[:, :] out=None):
         self.check_b(b)
         out = create_or_check_shape_2d(out, self.nrows, self.ncols)
@@ -108,6 +106,8 @@ cdef class TruncatedGreenOperator:
         self.update(b)
         self.green.c_apply(self.k, tau, eta)
 
+    @boundscheck(False)
+    @wraparound(False)
     def apply_single_freq(self, Py_ssize_t[::1] b,
                           double[:] tau, double[:] eta=None):
         self.check_b(b)
@@ -120,10 +120,13 @@ cdef class TruncatedGreenOperator:
         pass
 
 cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
+
     @boundscheck(False)
+    @wraparound(False)
     cdef inline void c_apply_all_freqs(self,
                                        double[:, :, :] tau,
                                        double[:, :, :] eta):
+        cdef double[:] x
         cdef int n0 = self.n[0]
         cdef int n1 = self.n[1]
         cdef Py_ssize_t b0, b1, b[2]
@@ -131,6 +134,7 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
             b[1] = b1
             for b0 in range(n0):
                 b[0] = b0
+                x = tau[b1, b0, :]
                 self.update(b)
                 self.green.c_apply(self.k, tau[b1, b0, :], eta[b1, b0, :])
 
@@ -141,7 +145,9 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
         return eta
 
 cdef class TruncatedGreenOperator3D(TruncatedGreenOperator):
+
     @boundscheck(False)
+    @wraparound(False)
     cdef inline void c_apply_all_freqs(self,
                                        double[:, :, :, :] tau,
                                        double[:, :, :, :] eta):
