@@ -47,16 +47,12 @@ def invalid_frequency_multi_indices(n):
     specified grid-size (too many indices, negative and too large indices).
 
     """
-    def f1(a, i):
-        a[i] += 1
+    def f(i, x):
+        a = np.zeros(len(n), dtype=np.intp)
+        a[i] = x
         return a
 
-    def f2(a, i):
-        a[i] = -1
-        return a
-
-    ret = [f(np.copy(n).astype(np.intp), i)
-            for i in range(len(n)) for f in [f1, f2]]
+    ret = [f(i, x) for i in range(len(n)) for x in [n[i], -1]]
     ret.append(np.zeros((len(n) + 1,), dtype=np.intp))
     return ret
 
@@ -112,7 +108,7 @@ def test_as_array():
 
 def test_as_array_invalid_parameters():
     for dim in [2, 3]:
-        n = tuple(itertools.repeat(16, dim))
+        n = tuple(2**(i + 3) for i in range(dim))
         green = discrete_green_operator(n, 1.)
         b0 = np.zeros((green.dim,), dtype=np.intp)
         out1 = np.zeros((green.nrows + 1, green.ncols), dtype=np.float64)
@@ -127,83 +123,78 @@ def test_as_array_invalid_parameters():
         for b, out in params:
             yield test, b, out
 
+#
+# 2 Test of the method apply_single_freq
+#   ====================================
+#
+# 2.1 Valid parameters
+#     ----------------
+#
 
-"""
 @nottest
 def do_test_apply_single_freq(n, tau, inplace):
     dim = len(n)
-    sym = (dim * (dim + 1)) // 2
     mat = Material(0.75, 0.3, dim)
-
-    n_arr = np.asarray(n)
-    tau_vec = tau.reshape(sym, 1)
-
     greenc = greenop.create(mat)
     greend = discretegreenop.TruncatedGreenOperator(greenc, n, 1.0)
 
-    iterables = [range(ni) for ni in n]
-    for b in itertools.product(*iterables):
-        b_arr = np.asarray(b)
+    n_arr = np.asarray(n)
+    tau_vec = tau.reshape(greend.ncols, 1)
 
-        g = np.asmatrix(greend.as_array(b_arr))
+    iterables = [range(ni) for ni in n]
+    for b_tuple in itertools.product(*iterables):
+        b = np.asarray(b_tuple)
+        g = np.asmatrix(greend.as_array(b))
         # expected is by default a matrix, so that it has two dimensions.
         # First convert to ndarray so as to reshape is to a 1D array.
-        expected = np.asarray(g * tau_vec).reshape((sym,))
+        expected = np.asarray(g * tau_vec).reshape((greend.nrows,))
 
         if inplace:
             base = np.empty_like(expected)
-            actual = greend.apply_single_freq(b_arr, tau, base)
+            actual = greend.apply_single_freq(b, tau, base)
             assert get_base(actual) is base
         else:
-            actual = greend.apply_single_freq(b_arr, tau)
+            actual = greend.apply_single_freq(b, tau)
 
         actual = np.asarray(actual)
         assert_array_max_ulp(expected, actual, 1)
 
 def test_apply_single_freq():
     shapes = GRID_SIZES
-
     tau = [np.array([0.3, -0.4, 0.5]),
            np.array([0.1, -0.2, 0.3, -0.4, 0.5, -0.6])]
 
-    for n in shapes:
+    for n in GRID_SIZES:
         for inplace in [False, True]:
             yield do_test_apply_single_freq, n, tau[len(n) - 2], inplace
 
-@nottest
-@raises(ValueError)
-def do_test_apply_single_freq_invalid_params(n, b, tau, eta):
-    discrete_green_operator(n, 1.).apply_single_freq(b, tau, eta)
-    b = np.zeros((greend.dim + 1,), dtype=np.intp)
-    tau = np.zeros((greend.sym,), dtype=np.float64)
-    greend.apply_single_freq(b, tau)
+#
+# 2.2 Invalid parameters
+#     ------------------
+#
 
 def test_apply_single_freq_invalid_params():
     for dim in [2, 3]:
-        n = tuple(itertools.repeat(16, dim))
+        n = tuple(2**(i + 3) for i in range(dim))
         green = discrete_green_operator(n, 1.)
-        nrows = green.sym
-        ncols = green.sym
 
-        b0 = np.zeros((dim,), dtype=np.intp)
-        tau0 = np.zeros((nrows, ncols), dtype=np.float64)
-        tau1 = np.zeros((nrows + 1, ncols), dtype=np.float64)
-        tau2 = np.zeros((nrows, ncols + 1), dtype=np.float64)
-        eta0 = np.zeros((nrows, ncols), dtype=np.float64)
-        eta1 = np.zeros((nrows + 1, ncols), dtype=np.float64)
-        eta2 = np.zeros((nrows, ncols + 1), dtype=np.float64)
+        b_valid = np.zeros((dim,), dtype=np.intp)
+        tau_valid = np.zeros((green.ncols,), dtype=np.float64)
+        tau_invalid = np.zeros((green.ncols + 1,), dtype=np.float64)
+        eta_invalid = np.zeros((green.nrows + 1,), dtype=np.float64)
 
-        params = ([(b, tau1, None) for b in invalid_bs(n)]
-                  + [(b0, tau1, None), (b0, tau2, None),
-                     (b0, tau0, eta1), (b0, tau0, eta2)])
+        params = ([(b, tau_valid, None)
+                   for b in invalid_frequency_multi_indices(n)]
+                  + [(b_valid, tau_invalid, None),
+                     (b_valid, tau_valid, eta_invalid)])
 
+        @raises(ValueError)
         def test(b, tau, eta):
-            greend.apply_single_freq(b, tau, eta)
+            green.apply_single_freq(b, tau, eta)
 
         for b, tau, eta in params:
             yield test, b, tau, eta
-"""
-            
+
 """
 @nottest
 def do_test_apply_all_freqs(n, inplace):
