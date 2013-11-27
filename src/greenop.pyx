@@ -146,10 +146,14 @@ cdef class GreenOperator2D(GreenOperator):
     @boundscheck(False)
     @wraparound(False)
     cdef void c_apply(self, double* k, double[:] tau, double[:] eta):
+        cdef double tau0, tau1, tau2, eta0, eta1, eta2
         self._update(k)
-        eta[0] = self.g00 * tau[0] + self.g01 * tau[1] + self.g02 * tau[2]
-        eta[1] = self.g01 * tau[0] + self.g11 * tau[1] + self.g12 * tau[2]
-        eta[2] = self.g02 * tau[0] + self.g12 * tau[1] + self.g22 * tau[2]
+        tau0 = tau[0]
+        tau1 = tau[1]
+        tau2 = tau[2]
+        eta[0] = self.g00 * tau0 + self.g01 * tau1 + self.g02 * tau2
+        eta[1] = self.g01 * tau0 + self.g11 * tau1 + self.g12 * tau2
+        eta[2] = self.g02 * tau0 + self.g12 * tau1 + self.g22 * tau2
 
     @boundscheck(False)
     @wraparound(False)
@@ -271,19 +275,26 @@ cdef class GreenOperator3D(GreenOperator):
     @boundscheck(False)
     @wraparound(False)
     cdef void c_apply(self, double *k, double[:] tau, double[:] eta):
+        cdef double tau0, tau1, tau2, tau3, tau4, tau5
         self._update(k)
-        eta[0] = (self.g00 * tau[0] + self.g01 * tau[1] + self.g02 * tau[2]
-                  + self.g03 * tau[3] + self.g04 * tau[4] + self.g05 * tau[5])
-        eta[1] = (self.g01 * tau[0] + self.g11 * tau[1] + self.g12 * tau[2]
-                  + self.g13 * tau[3] + self.g14 * tau[4] + self.g15 * tau[5])
-        eta[2] = (self.g02 * tau[0] + self.g12 * tau[1] + self.g22 * tau[2]
-                  + self.g23 * tau[3] + self.g24 * tau[4] + self.g25 * tau[5])
-        eta[3] = (self.g03 * tau[0] + self.g13 * tau[1] + self.g23 * tau[2]
-                  + self.g33 * tau[3] + self.g34 * tau[4] + self.g35 * tau[5])
-        eta[4] = (self.g04 * tau[0] + self.g14 * tau[1] + self.g24 * tau[2]
-                  + self.g34 * tau[3] + self.g44 * tau[4] + self.g45 * tau[5])
-        eta[5] = (self.g05 * tau[0] + self.g15 * tau[1] + self.g25 * tau[2]
-                  + self.g35 * tau[3] + self.g45 * tau[4] + self.g55 * tau[5])
+        tau0 = tau[0]
+        tau1 = tau[1]
+        tau2 = tau[2]
+        tau3 = tau[3]
+        tau4 = tau[4]
+        tau5 = tau[5]
+        eta[0] = (self.g00 * tau0 + self.g01 * tau1 + self.g02 * tau2
+                  + self.g03 * tau3 + self.g04 * tau4 + self.g05 * tau5)
+        eta[1] = (self.g01 * tau0 + self.g11 * tau1 + self.g12 * tau2
+                  + self.g13 * tau3 + self.g14 * tau4 + self.g15 * tau5)
+        eta[2] = (self.g02 * tau0 + self.g12 * tau1 + self.g22 * tau2
+                  + self.g23 * tau3 + self.g24 * tau4 + self.g25 * tau5)
+        eta[3] = (self.g03 * tau0 + self.g13 * tau1 + self.g23 * tau2
+                  + self.g33 * tau3 + self.g34 * tau4 + self.g35 * tau5)
+        eta[4] = (self.g04 * tau0 + self.g14 * tau1 + self.g24 * tau2
+                  + self.g34 * tau3 + self.g44 * tau4 + self.g45 * tau5)
+        eta[5] = (self.g05 * tau0 + self.g15 * tau1 + self.g25 * tau2
+                  + self.g35 * tau3 + self.g45 * tau4 + self.g55 * tau5)
 
     @boundscheck(False)
     @wraparound(False)

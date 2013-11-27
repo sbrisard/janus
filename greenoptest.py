@@ -1,14 +1,13 @@
 import numpy as np
-from numpy import cos
-from numpy import sin
-
-from nose.tools import assert_almost_equal
-from nose.tools import assert_equal
-from nose.tools import nottest
-from nose.tools import raises
 
 import greenop
 import mandelvoigt as mv
+
+from nose.tools import nottest
+from nose.tools import raises
+from numpy import cos
+from numpy import sin
+from numpy.testing import assert_array_almost_equal_nulp
 
 from matprop import IsotropicLinearElasticMaterial as Material
 
@@ -26,8 +25,8 @@ def green_coefficient(i, j, k, l, n, mat):
     return ((delta(i, k) * n[j] * n[l]
              + delta(i, l) * n[j] * n[k]
              + delta(j, k) * n[i] * n[l]
-             + delta(j, l) * n[i] * n[k]) / (4. * mat.g)
-            - n[i] * n[j] * n[k] * n[l] / (2. * mat.g * (1. - mat.nu)))
+             + delta(j, l) * n[i] * n[k])
+            - 2 * n[i] * n[j] * n[k] * n[l] / (1. - mat.nu)) / (4 * mat.g)
 
 def green_matrix(k, mat):
     k2 = sum(k**2)
@@ -64,32 +63,33 @@ def wave_vectors(dim):
     return ret
 
 @nottest
-def do_test_apply(k, mat, in_place):
+def do_test_apply(k, mat, flag):
     expected = green_matrix(k,  mat)
     green = greenop.create(mat)
-    if in_place:
-        eps = np.empty((green.nrows,), np.float64)
+    tau = np.zeros((green.ncols,), np.float64)
+    if flag == 0:
+        base = None
+    elif flag == 1:
+        base = tau
+    elif flag == 2:
+        base = np.empty((green.nrows,), np.float64)
     else:
-        eps = None
+        raise ValueError()
 
     for j in range(green.ncols):
-        tau = np.zeros((green.ncols,), np.float64)
+        tau[:] = 0.
         tau[j] = 1.
-        actual = green.apply(k, tau, eps)
-        if in_place:
-            msg = 'actual.base and eps should be the same object'
-            assert actual.base is eps, msg
-        for i in range(green.nrows):
-            msg = 'coefficient [{0}, {1}]'.format(i, j)
-            assert_almost_equal(expected[i, j], actual[i],
-                                msg=msg, delta=1.E-15)
+        actual = green.apply(k, tau, base)
+        if base is not None:
+            assert actual.base is base
+        assert_array_almost_equal_nulp(expected[:, j], actual, 325)
 
 def test_apply():
-    for in_place in [True, False]:
-        for dim in DIMS:
-            mat = Material(MU, NU, dim)
-            for k in wave_vectors(dim):
-                yield do_test_apply, k, mat, in_place
+    for dim in DIMS:
+        mat = Material(MU, NU, dim)
+        for k in wave_vectors(dim):
+            for flag in range(3):
+                yield do_test_apply, k, mat, flag
 
 @nottest
 def do_test_as_array(k, mat, inplace):
@@ -101,11 +101,7 @@ def do_test_as_array(k, mat, inplace):
         assert actual.base is base
     else:
         actual = green.as_array(k)
-    for j in range(green.ncols):
-        for i in range(green.nrows):
-            msg = 'coefficient [{0}, {1}]'.format(i, j)
-            assert_almost_equal(expected[i, j], actual[i, j],
-                                msg=msg, delta=1.E-15)
+    assert_array_almost_equal_nulp(expected, actual, 325)
 
 def test_as_array():
     for dim in DIMS:
