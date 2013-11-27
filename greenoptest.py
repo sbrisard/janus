@@ -66,21 +66,20 @@ def wave_vectors(dim):
 @nottest
 def do_test_apply(k, mat, in_place):
     expected = green_matrix(k,  mat)
-    sym = (mat.dim * (mat.dim + 1)) // 2
     green = greenop.create(mat)
     if in_place:
-        eps = np.empty((sym,), np.float64)
+        eps = np.empty((green.nrows,), np.float64)
     else:
         eps = None
 
-    for j in range(sym):
-        tau = np.zeros((sym,), np.float64)
+    for j in range(green.ncols):
+        tau = np.zeros((green.ncols,), np.float64)
         tau[j] = 1.
         actual = green.apply(k, tau, eps)
         if in_place:
             msg = 'actual.base and eps should be the same object'
             assert actual.base is eps, msg
-        for i in range(sym):
+        for i in range(green.nrows):
             msg = 'coefficient [{0}, {1}]'.format(i, j)
             assert_almost_equal(expected[i, j], actual[i],
                                 msg=msg, delta=1.E-15)
@@ -94,17 +93,16 @@ def test_apply():
 
 @nottest
 def do_test_as_array(k, mat, inplace):
-    sym = (mat.dim * (mat.dim + 1)) // 2
     expected = green_matrix(k,  mat)
     green = greenop.create(mat)
     if inplace:
-        base = np.empty((sym, sym), np.float64)
+        base = np.empty((green.nrows, green.ncols), np.float64)
         actual = green.as_array(k, base)
         assert actual.base is base
     else:
         actual = green.as_array(k)
-    for j in range(sym):
-        for i in range(sym):
+    for j in range(green.ncols):
+        for i in range(green.nrows):
             msg = 'coefficient [{0}, {1}]'.format(i, j)
             assert_almost_equal(expected[i, j], actual[i, j],
                                 msg=msg, delta=1.E-15)

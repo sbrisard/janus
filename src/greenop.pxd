@@ -14,17 +14,17 @@ cdef class GreenOperator:
     ----------
     dim : int
         Dimension of the physical space.
+    nrows : int
+        Number of rows of the matrix representation of the Green operator.
+    ncols : int
+        Number of columns of the matrix representation of the Green operator.
     mat : IsotropicLinearElasticMaterial
         Reference material.
 
     """
 
-    cdef readonly int dim
+    cdef readonly int dim, nrows, ncols
     cdef readonly Material mat
-
-    # Dimension of the space on which this object operates (space of the
-    # second-rank, symmetric tensors).
-    cdef int sym
 
     # The auxiliary variables daux1 to daux4 are defined as follows
     #   daux1 = 1 / g

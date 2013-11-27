@@ -20,7 +20,8 @@ cdef class GreenOperator:
     @cdivision(True)
     def __cinit__(self, Material mat):
         self.dim = mat.dim
-        self.sym = (mat.dim * (mat.dim + 1)) / 2
+        self.nrows = (mat.dim * (mat.dim + 1)) / 2
+        self.ncols = self.nrows
         self.mat = mat
         cdef double g = mat.g
         cdef double nu = mat.nu
@@ -151,8 +152,8 @@ cdef class GreenOperator2D(GreenOperator):
 
     def apply(self, double[::1] k, double[:] tau, double[:] eta=None):
         check_shape_1d(k, self.dim)
-        check_shape_1d(tau, self.sym)
-        eta = create_or_check_shape_1d(eta, self.sym)
+        check_shape_1d(tau, self.ncols)
+        eta = create_or_check_shape_1d(eta, self.nrows)
         self.c_apply(&k[0], tau, eta)
         return eta
 
@@ -172,7 +173,7 @@ cdef class GreenOperator2D(GreenOperator):
     @boundscheck(False)
     def as_array(self, double[::1] k, double[:, :] out=None):
         check_shape_1d(k, self.dim)
-        out = create_or_check_shape_2d(out, self.sym, self.sym)
+        out = create_or_check_shape_2d(out, self.nrows, self.ncols)
         self.c_as_array(&k[0], out)
         return out
 
@@ -281,8 +282,8 @@ cdef class GreenOperator3D(GreenOperator):
     @boundscheck(False)
     def apply(self, double[::1] k, double[:] tau, double[:] eta=None):
         check_shape_1d(k, self.dim)
-        check_shape_1d(tau, self.sym)
-        eta = create_or_check_shape_1d(eta, self.sym)
+        check_shape_1d(tau, self.ncols)
+        eta = create_or_check_shape_1d(eta, self.nrows)
         self.c_apply(&k[0], tau, eta)
         return eta
 
@@ -329,6 +330,6 @@ cdef class GreenOperator3D(GreenOperator):
     @boundscheck(False)
     def as_array(self, double[::1] k, double[:, :] out=None):
         check_shape_1d(k, self.dim)
-        out = create_or_check_shape_2d(out, self.sym, self.sym)
+        out = create_or_check_shape_2d(out, self.nrows, self.ncols)
         self.c_as_array(&k[0], out)
         return out
