@@ -144,12 +144,15 @@ cdef class GreenOperator2D(GreenOperator):
             self.g12 = M_SQRT2 * kxky * (self.daux4 - self.daux2 * kyky)
 
     @boundscheck(False)
+    @wraparound(False)
     cdef void c_apply(self, double* k, double[:] tau, double[:] eta):
         self._update(k)
         eta[0] = self.g00 * tau[0] + self.g01 * tau[1] + self.g02 * tau[2]
         eta[1] = self.g01 * tau[0] + self.g11 * tau[1] + self.g12 * tau[2]
         eta[2] = self.g02 * tau[0] + self.g12 * tau[1] + self.g22 * tau[2]
 
+    @boundscheck(False)
+    @wraparound(False)
     def apply(self, double[::1] k, double[:] tau, double[:] eta=None):
         check_shape_1d(k, self.dim)
         check_shape_1d(tau, self.ncols)
@@ -158,6 +161,7 @@ cdef class GreenOperator2D(GreenOperator):
         return eta
 
     @boundscheck(False)
+    @wraparound(False)
     cdef void c_as_array(self, double *k, double[:, :] out):
         self._update(k)
         out[0, 0] = self.g00
@@ -171,6 +175,7 @@ cdef class GreenOperator2D(GreenOperator):
         out[2, 2] = self.g22
 
     @boundscheck(False)
+    @wraparound(False)
     def as_array(self, double[::1] k, double[:, :] out=None):
         check_shape_1d(k, self.dim)
         out = create_or_check_shape_2d(out, self.nrows, self.ncols)
@@ -264,6 +269,7 @@ cdef class GreenOperator3D(GreenOperator):
             self.g45 = 2 * kykz * (self.daux3 - self.daux2 * kxkx)
 
     @boundscheck(False)
+    @wraparound(False)
     cdef void c_apply(self, double *k, double[:] tau, double[:] eta):
         self._update(k)
         eta[0] = (self.g00 * tau[0] + self.g01 * tau[1] + self.g02 * tau[2]
@@ -280,6 +286,7 @@ cdef class GreenOperator3D(GreenOperator):
                   + self.g35 * tau[3] + self.g45 * tau[4] + self.g55 * tau[5])
 
     @boundscheck(False)
+    @wraparound(False)
     def apply(self, double[::1] k, double[:] tau, double[:] eta=None):
         check_shape_1d(k, self.dim)
         check_shape_1d(tau, self.ncols)
@@ -288,6 +295,7 @@ cdef class GreenOperator3D(GreenOperator):
         return eta
 
     @boundscheck(False)
+    @wraparound(False)
     cdef void c_as_array(self, double *k, double[:, :] out):
         self._update(k)
         out[0, 0] = self.g00
@@ -328,6 +336,7 @@ cdef class GreenOperator3D(GreenOperator):
         out[5, 5] = self.g55
 
     @boundscheck(False)
+    @wraparound(False)
     def as_array(self, double[::1] k, double[:, :] out=None):
         check_shape_1d(k, self.dim)
         out = create_or_check_shape_2d(out, self.nrows, self.ncols)
