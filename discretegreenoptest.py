@@ -24,11 +24,7 @@ def discrete_green_operator(n, h):
     """
 
     mat = Material(0.75, 0.3, len(n))
-    greenc = greenop.create(mat)
-    if mat.dim == 2:
-        return discretegreenop.TruncatedGreenOperator2D(greenc, n, h)
-    else:
-        return discretegreenop.TruncatedGreenOperator3D(greenc, n, h)
+    return discretegreenop.create(greenop.create(mat), n, h)
 
 def get_base(a):
     # TODO This is a hack to avoid writing uggly things like a.base.base.base.

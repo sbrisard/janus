@@ -21,6 +21,14 @@ cdef str INVALID_N_MSG = 'length of n must be {0} (was {1})'
 cdef str INVALID_H_MSG = 'h must be > 0 (was {0})'
 cdef str INVALID_B_MSG = 'shape of b must be ({0},) [was ({1},)]'
 
+def create(green, n, h):
+    if green.dim == 2:
+        return TruncatedGreenOperator2D(green, n, h)
+    elif green.dim == 3:
+        return TruncatedGreenOperator3D(green, n, h)
+    else:
+        raise ValueError('dim must be 2 or 3 (was {0})'.format(green.dim))
+
 cdef class TruncatedGreenOperator:
     cdef readonly GreenOperator green
     cdef readonly double h
