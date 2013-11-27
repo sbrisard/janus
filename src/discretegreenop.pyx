@@ -8,7 +8,9 @@ from libc.math cimport M_PI
 from libc.stdlib cimport malloc
 from libc.stdlib cimport free
 
+from checkarray cimport create_or_check_shape_1d
 from checkarray cimport create_or_check_shape_2d
+from checkarray cimport check_shape_1d
 from greenop cimport GreenOperator
 
 cdef str INVALID_N_MSG = 'length of n must be {0} (was {1})'
@@ -50,7 +52,7 @@ cdef class TruncatedGreenOperator:
         free(self.n)
         free(self.k)
 
-    cdef inline void check_b(self, Py_ssize_t[:] b) except *:
+    cdef inline void check_b(self, Py_ssize_t[::1] b) except *:
         if b.shape[0] != self.dim:
             raise ValueError('invalid shape: expected ({0},), actual ({1},)'
                              .format(self.dim, b.shape[0]))
@@ -65,11 +67,11 @@ cdef class TruncatedGreenOperator:
     @boundscheck(False)
     @cdivision(True)
     @wraparound(False)
-    cdef void update(self, Py_ssize_t *b):
+    cdef inline void update(self, Py_ssize_t *b):
         cdef:
             Py_ssize_t i, ni, bi
             double s
-        for i in range(self.green.mat.dim):
+        for i in range(self.dim):
             ni = self.n[i]
             bi = b[i]
             s = self.two_pi_over_h / <double> ni
@@ -78,13 +80,19 @@ cdef class TruncatedGreenOperator:
             else:
                 self.k[i] = s * bi
 
+    cdef void c_apply_single_freq(self, Py_ssize_t *b,
+                                  double[:] tau, double[:] eta):
+        self.update(b)
+        self.green.c_apply(self.k, tau, eta)
+
     cpdef double[:] apply_single_freq(self,
                                       Py_ssize_t[::1] b,
                                       double[:] tau,
                                       double[:] eta=None):
         self.check_b(b)
-        self.update(&b[0])
-        self.green.c_apply(self.k, tau, eta)
+        check_shape_1d(tau, self.sym)
+        eta = create_or_check_shape_1d(eta, self.sym)
+        self.c_apply_single_freq(&b[0], tau, eta)
         return eta
 
     def apply_all_freqs(self, tau, eta=None):
