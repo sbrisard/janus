@@ -64,6 +64,11 @@ def wave_vectors(dim):
 
 @nottest
 def do_test_apply(k, mat, flag):
+    """flag allows the specification of various calling sequences:
+      - flag = 0: apply_single_freq(b, tau)
+      - flag = 1: apply_single_freq(b, tau, tau)
+      - flag = 2: apply_single_freq(b, tau, eta)
+    """
     expected = green_matrix(k,  mat)
     green = greenop.create(mat)
     tau = np.zeros((green.ncols,), np.float64)
@@ -80,7 +85,7 @@ def do_test_apply(k, mat, flag):
         tau[:] = 0.
         tau[j] = 1.
         actual = green.apply(k, tau, base)
-        if base is not None:
+        if flag != 0:
             assert actual.base is base
         assert_array_almost_equal_nulp(expected[:, j], actual, 325)
 

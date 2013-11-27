@@ -5,13 +5,13 @@ import numpy.random as rnd
 import discretegreenop
 import greenop
 
-from numpy.testing import assert_array_max_ulp
-from matprop import IsotropicLinearElasticMaterial as Material
 from nose.tools import nottest
 from nose.tools import raises
+from numpy.testing import assert_array_almost_equal_nulp
 
-# All tests are performed with discrete Green operators based on these
-# grids
+from matprop import IsotropicLinearElasticMaterial as Material
+
+# All tests are performed with discrete Green operators based on these grids
 GRID_SIZES = ([(8, 8), (8, 16), (16, 8), (4, 4, 4)]
               + list(itertools.permutations((4, 8, 16))))
 
@@ -98,7 +98,8 @@ def do_test_as_array(n, inplace):
             assert get_base(actual) is base
         else:
             actual = greend.as_array(b)
-        assert_array_max_ulp(expected, actual, 1)
+        assert_array_almost_equal_nulp(np.asarray(expected),
+                                       np.asarray(actual), 1)
 
 def test_as_array():
     for n in GRID_SIZES:
@@ -136,7 +137,12 @@ def test_as_array_invalid_parameters():
 #
 
 @nottest
-def do_test_apply_single_freq(n, tau, inplace):
+def do_test_apply_single_freq(n, tau, flag):
+    """flag allows the specification of various calling sequences:
+      - flag = 0: apply_single_freq(b, tau)
+      - flag = 1: apply_single_freq(b, tau, tau)
+      - flag = 2: apply_single_freq(b, tau, eta)
+    """
     dim = len(n)
     mat = Material(0.75, 0.3, dim)
     greenc = greenop.create(mat)
@@ -149,16 +155,18 @@ def do_test_apply_single_freq(n, tau, inplace):
         # expected is by default a matrix, so that it has two dimensions.
         # First convert to ndarray so as to reshape is to a 1D array.
         expected = np.asarray(g * tau_vec).reshape((greend.nrows,))
-
-        if inplace:
+        if flag == 0:
+            base = None
+        elif flag == 1:
+            base = tau
+        elif flag == 2:
             base = np.empty_like(expected)
-            actual = greend.apply_single_freq(b, tau, base)
-            assert get_base(actual) is base
         else:
-            actual = greend.apply_single_freq(b, tau)
-
-        actual = np.asarray(actual)
-        assert_array_max_ulp(expected, actual, 1)
+            raise(ValueError)
+        actual = greend.apply_single_freq(b, tau, base)
+        if flag != 0:
+            assert get_base(actual) is base
+        assert_array_almost_equal_nulp(expected, np.asarray(actual), 1)
 
 def test_apply_single_freq():
     shapes = GRID_SIZES
@@ -166,8 +174,8 @@ def test_apply_single_freq():
            np.array([0.1, -0.2, 0.3, -0.4, 0.5, -0.6])]
 
     for n in GRID_SIZES:
-        for inplace in [False, True]:
-            yield do_test_apply_single_freq, n, tau[len(n) - 2], inplace
+        for flag in range(3):
+            yield do_test_apply_single_freq, n, tau[len(n) - 2], flag
 
 #
 # 2.2 Invalid parameters
@@ -205,26 +213,35 @@ def test_apply_single_freq_invalid_params():
 #
 
 @nottest
-def do_test_apply_all_freqs(n, inplace):
+def do_test_apply_all_freqs(n, flag):
+    """flag allows the specification of various calling sequences:
+      - flag = 0: apply_all_freqs(tau)
+      - flag = 1: apply_all_freqs(tau, tau)
+      - flag = 2: apply_all_freqs(tau, eta)
+    """
     green = discrete_green_operator(n, 1.)
     tau = rnd.rand(*(n[::-1] + (green.ncols,)))
     expected = np.empty(n[::-1] + (green.nrows,), dtype=np.float64)
     for b in multi_indices(n):
         index = tuple(b[::-1])
         green.apply_single_freq(b, tau[index], expected[index])
-    if inplace:
+    if flag == 0:
+        base = None
+    elif flag == 1:
+        base = tau
+    elif flag == 2:
         base = np.empty_like(expected)
-        actual = green.apply_all_freqs(tau, base)
-        assert get_base(actual) is base
     else:
-        actual = green.apply_all_freqs(tau)
-
-    assert_array_max_ulp(expected, actual, 0)
+        raise ValueError()
+    actual = green.apply_all_freqs(tau, base)
+    if flag != 0:
+        assert get_base(actual) is base
+    assert_array_almost_equal_nulp(expected, np.asarray(actual), 0)
 
 def test_apply_all_freqs():
     for n in GRID_SIZES:
-        for inplace in [True, False]:
-            yield do_test_apply_all_freqs, n, inplace
+        for flag in range(3):
+            yield do_test_apply_all_freqs, n, flag
 
 #
 # 3.2 Invalid parameters
