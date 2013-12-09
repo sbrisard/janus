@@ -220,10 +220,10 @@ def do_test_apply_all_freqs(n, flag):
       - flag = 2: apply_all_freqs(tau, eta)
     """
     green = discrete_green_operator(n, 1.)
-    tau = rnd.rand(*(n[::-1] + (green.ncols,)))
-    expected = np.empty(n[::-1] + (green.nrows,), dtype=np.float64)
+    tau = rnd.rand(*(n + (green.ncols,)))
+    expected = np.empty(n + (green.nrows,), dtype=np.float64)
     for b in multi_indices(n):
-        index = tuple(b[::-1])
+        index = tuple(b)
         green.apply_single_freq(b, tau[index], expected[index])
     if flag == 0:
         base = None
@@ -253,8 +253,8 @@ def test_apply_all_freqs_invalid_params():
         n = tuple(2**(i + 3) for i in range(dim))
         green = discrete_green_operator(n, 1.)
 
-        tau = np.zeros(n[::-1] + (green.ncols,), dtype=np.float64)
-        eta = np.zeros(n[::-1] + (green.nrows,), dtype=np.float64)
+        tau = np.zeros(n + (green.ncols,), dtype=np.float64)
+        eta = np.zeros(n + (green.nrows,), dtype=np.float64)
 
         tau_invalid_shapes = invalid_shapes(tau.shape)
         eta_invalid_shapes = invalid_shapes(eta.shape)

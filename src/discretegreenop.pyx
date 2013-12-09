@@ -134,13 +134,22 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
             for b0 in range(n0):
                 b[0] = b0
                 self.update(b)
-                self.green.c_apply(self.k, tau[b1, b0, :], eta[b1, b0, :])
+                self.green.c_apply(self.k, tau[b0, b1, :], eta[b0, b1, :])
 
     def apply_all_freqs(self, tau, eta=None):
-        check_shape_3d(tau, self.n[1], self.n[0], self.ncols)
-        eta = create_or_check_shape_3d(eta, self.n[1], self.n[0], self.nrows)
+        check_shape_3d(tau, self.n[0], self.n[1], self.ncols)
+        eta = create_or_check_shape_3d(eta, self.n[0], self.n[1], self.nrows)
         self.c_apply_all_freqs(tau, eta)
         return eta
+
+    def convolve(self, tau, eta, transform):
+        cdef int n0 = self.n[0]
+        cdef int n1 = self.n[1]
+        cdef Py_ssize_t b0, b1, b[2]
+        """
+        dft_tau = np.empty(transform.cshape + (self.ncols,), dtype=np.float64)
+        dft_tau = transform.r2c(tau)
+        """
 
 cdef class TruncatedGreenOperator3D(TruncatedGreenOperator):
 
@@ -161,12 +170,12 @@ cdef class TruncatedGreenOperator3D(TruncatedGreenOperator):
                     b[0] = b0
                     self.update(b)
                     self.green.c_apply(self.k,
-                                       tau[b2, b1, b0, :],
-                                       eta[b2, b1, b0, :])
+                                       tau[b0, b1, b2, :],
+                                       eta[b0, b1, b2, :])
 
     def apply_all_freqs(self, tau, eta=None):
-        check_shape_4d(tau, self.n[2], self.n[1], self.n[0], self.ncols)
-        eta = create_or_check_shape_4d(eta, self.n[2], self.n[1], self.n[0],
+        check_shape_4d(tau, self.n[0], self.n[1], self.n[2], self.ncols)
+        eta = create_or_check_shape_4d(eta, self.n[0], self.n[1], self.n[2],
                                        self.nrows)
         self.c_apply_all_freqs(tau, eta)
         return eta
