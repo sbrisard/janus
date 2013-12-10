@@ -16,6 +16,7 @@ from checkarray cimport check_shape_1d
 from checkarray cimport check_shape_3d
 from checkarray cimport check_shape_4d
 from greenop cimport GreenOperator
+from fft.serial._serial_fft cimport _RealFFT2D
 
 cdef str INVALID_N_MSG = 'length of n must be {0} (was {1})'
 cdef str INVALID_H_MSG = 'h must be > 0 (was {0})'
@@ -142,15 +143,41 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
         self.c_apply_all_freqs(tau, eta)
         return eta
 
+    @boundscheck(False)
+    @wraparound(False)
+    cdef inline void c_apply_all_freqs_complex(self,
+                                               double[:, :, :] tau,
+                                               double[:, :, :] eta):
+        cdef int n0 = tau.shape[0]
+        cdef int n1 = tau.shape[1] / 2
+        cdef Py_ssize_t b0, b1, b[2]
+        for b1 in range(n1):
+            b[1] = b1
+            for b0 in range(n0):
+                b[0] = b0
+                self.update(b)
+                self.green.c_apply(self.k,
+                                   tau[b0, 2 * b1, :],
+                                   eta[b0, 2 * b1, :])
+                self.green.c_apply(self.k,
+                                   tau[b0, 2 * b1 + 1, :],
+                                   eta[b0, 2 * b1 + 1, :])
+
     def convolve(self, tau, eta, transform):
+        cdef _RealFFT2D transform2D = transform
         cdef int n0 = self.n[0]
         cdef int n1 = self.n[1]
         cdef Py_ssize_t b0, b1, b[2]
-        """
-        dft_tau = np.empty(transform.cshape + (self.ncols,), dtype=np.float64)
-        dft_tau = transform.r2c(tau)
-        """
-
+        dft_tau = array(transform2D.cshape + (self.ncols,),
+                        sizeof(double), 'd')
+        dft_eta = array(transform2D.cshape + (self.nrows,),
+                        sizeof(double), 'd')
+        for i in range(self.ncols):
+            transform.r2c(tau[:, :, i], dft_tau[:, :, i])
+        self.c_apply_all_freqs_complex(dft_tau, dft_eta)
+        for i in range(self.nrows):
+            transform.c2r(dft_eta[:, :, i], eta[:, :, i])
+            
 cdef class TruncatedGreenOperator3D(TruncatedGreenOperator):
 
     @boundscheck(False)

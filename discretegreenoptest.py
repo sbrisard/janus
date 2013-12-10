@@ -3,6 +3,7 @@ import numpy as np
 import numpy.random as rnd
 
 import discretegreenop
+import fft.serial
 import greenop
 
 from nose.tools import nottest
@@ -272,3 +273,45 @@ def test_apply_all_freqs_invalid_params():
 
         for tau, eta in params:
             yield test, tau, eta
+
+#
+# 4 Test of the method convolve
+#   ===========================
+#
+# 4.1 Valid parameters
+#     ----------------
+#
+# These tests are based on convolutions computed with an independent
+# (Java-based) code. References values are stored as an array in a *.npy file.
+# The array ref is organized as follows
+#   - ref[:, :, 0:3] = tau
+#   - ref[:, :, 3:6] = eta = - Gamma * tau
+
+@nottest
+def do_test_convolve_2D(path_to_ref, rel_err):
+    dummy = np.load(path_to_ref)
+    n = dummy.shape[:-1]
+    green = discrete_green_operator(n, 1.)
+    transform = fft.serial.create_real(n)
+
+    tau = dummy[:, :, 0:green.ncols]
+    expected = dummy[:, :, green.ncols:]
+    actual = np.zeros(transform.rshape + (green.nrows,), np.float64)
+    green.convolve(tau, actual, transform)
+
+    error = actual - expected
+    ulp = np.finfo(np.float64).eps
+    nulp = rel_err / ulp
+    assert_array_almost_equal_nulp(expected, np.asarray(actual), nulp)
+
+def test_convolve_2D():
+
+    params = [('truncated_green_operator_200x300_unit_tau_xx_10x10+95+145.npy',
+               1.2E-10),
+              ('truncated_green_operator_200x300_unit_tau_yy_10x10+95+145.npy',
+               6.7E-11),
+              ('truncated_green_operator_200x300_unit_tau_xy_10x10+95+145.npy',
+               7.7E-11),
+               ]
+    for path_to_ref, rel_err in params:
+        yield do_test_convolve_2D, path_to_ref, rel_err
