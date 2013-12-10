@@ -21,7 +21,8 @@ cdef class _RealFFT2D:
     cdef inline copy_to_buffer(self, double[:, :] a,
                                ptrdiff_t n0, ptrdiff_t n1, int padding)
     cdef inline copy_from_buffer(self, double[:, :] a,
-                                 ptrdiff_t n0, ptrdiff_t n1, int padding)
+                                 ptrdiff_t n0, ptrdiff_t n1, int padding,
+                                 double scaling)
     cpdef double[:, :] r2c(self, double[:, :] r, double[:, :] c=*)
     cpdef double[:, :] c2r(self, double[:, :] c, double[:, :] r=*)
 
@@ -41,9 +42,8 @@ cdef class _RealFFT3D:
                                int padding)
     cdef inline copy_from_buffer(self, double[:, :, :] a,
                                  ptrdiff_t n0, ptrdiff_t n1, ptrdiff_t n2,
-                                 int padding)
+                                 int padding, double scaling)
     cpdef double[:, :, :] r2c(self, double[:, :, :] r,
                               double[:, :, :] c=*)
     cpdef double[:, :, :] c2r(self, double[:, :, :] c,
                               double[:, :, :] r=*)
-

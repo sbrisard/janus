@@ -36,7 +36,6 @@ def do_test_c2r(shape, inplace, delta):
     else:
         actual = transform.c2r(a)
     actual = np.asarray(actual)
-    expected *= expected.size
 
     error = (np.sum(np.absolute(actual - expected))
              / np.sum(np.absolute(expected)))

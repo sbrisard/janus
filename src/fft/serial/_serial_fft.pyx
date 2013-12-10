@@ -86,7 +86,7 @@ cdef class _RealFFT2D:
         pbuf = self.buffer
         row = &a[0, 0]
         for i0 in range(n0):
-            cell = row 
+            cell = row
             for i1 in range(n1):
                 pbuf[0] = cell[0]
                 pbuf += 1
@@ -98,7 +98,8 @@ cdef class _RealFFT2D:
     @cython.cdivision(True)
     @cython.wraparound(False)
     cdef inline copy_from_buffer(self, double[:, :] a,
-                                 ptrdiff_t n0, ptrdiff_t n1, int padding):
+                                 ptrdiff_t n0, ptrdiff_t n1, int padding,
+                                 double scaling):
         cdef:
             ptrdiff_t s0, s1, i0, i1
             double *pbuf, *row, *cell
@@ -106,15 +107,25 @@ cdef class _RealFFT2D:
         s1 = a.strides[1] / SIZEOF_DOUBLE
         pbuf = self.buffer
         row = &a[0, 0]
-        for i0 in range(n0):
-            cell = row
-            for i1 in range(n1):
-                cell[0] = pbuf[0]
-                pbuf += 1
-                cell += s1
-            row += s0
-            pbuf += padding
-    
+        if scaling == 1.:
+            for i0 in range(n0):
+                cell = row
+                for i1 in range(n1):
+                    cell[0] = pbuf[0]
+                    pbuf += 1
+                    cell += s1
+                row += s0
+                pbuf += padding
+        else:
+            for i0 in range(n0):
+                cell = row
+                for i1 in range(n1):
+                    cell[0] = scaling * pbuf[0]
+                    pbuf += 1
+                    cell += s1
+                row += s0
+                pbuf += padding
+
     cpdef double[:, :] r2c(self, double[:, :] r, double[:, :] c = None):
         self.check_real_array(r)
         if c is None:
@@ -124,10 +135,10 @@ cdef class _RealFFT2D:
 
         self.copy_to_buffer(r, self.rsize0, self.rsize1, self.padding)
         fftw_execute(self.plan_r2c)
-        self.copy_from_buffer(c, self.csize0, self.csize1, 0)
-        
+        self.copy_from_buffer(c, self.csize0, self.csize1, 0, 1.)
+
         return c
-       
+
     cpdef double[:, :] c2r(self, double[:, :] c, double[:, :] r = None):
         self.check_complex_array(c)
         if r is None:
@@ -137,10 +148,11 @@ cdef class _RealFFT2D:
 
         self.copy_to_buffer(c, self.csize0, self.csize1, 0)
         fftw_execute(self.plan_c2r)
-        self.copy_from_buffer(r, self.rsize0, self.rsize1, self.padding)
-        
+        self.copy_from_buffer(r, self.rsize0, self.rsize1, self.padding,
+                              1. / (self.rsize0 * self.rsize1))
+
         return r
-    
+
 cdef class _RealFFT3D:
 
     @cython.boundscheck(False)
@@ -154,10 +166,10 @@ cdef class _RealFFT3D:
         self.csize2 = 2 * (n2 / 2 + 1)
         self.offset0 = offset0
         self.padding = padding(self.rsize2)
-        self.shape = n0, n1, n2        
+        self.shape = n0, n1, n2
         self.rshape = self.rsize0, self.rsize1, self.rsize2
         self.cshape = self.csize0, self.csize1, self.csize2
-        
+
     def __dealloc__(self):
         fftw_free(self.buffer)
         fftw_destroy_plan(self.plan_r2c)
@@ -196,7 +208,7 @@ cdef class _RealFFT3D:
         pbuf = self.buffer
         pslice = &a[0, 0, 0]
         for i0 in range(n0):
-            prow = pslice 
+            prow = pslice
             for i1 in range(n1):
                 pcell = prow
                 for i2 in range(n2):
@@ -212,7 +224,7 @@ cdef class _RealFFT3D:
     @cython.wraparound(False)
     cdef inline copy_from_buffer(self, double[:, :, :] a,
                                  ptrdiff_t n0, ptrdiff_t n1, ptrdiff_t n2,
-                                 int padding):
+                                 int padding, double scaling):
         cdef:
             int s0, s1, s2, i0, i1, i2
             double *pbuf, *pslice, *prow, *pcell
@@ -221,17 +233,30 @@ cdef class _RealFFT3D:
         s2 = a.strides[2] / SIZEOF_DOUBLE
         pbuf = self.buffer
         pslice = &a[0, 0, 0]
-        for i0 in range(n0):
-            prow = pslice 
-            for i1 in range(n1):
-                pcell = prow
-                for i2 in range(n2):
-                    pcell[0] = pbuf[0]
-                    pbuf += 1
-                    pcell += s2
-                pbuf += padding
-                prow += s1
-            pslice += s0
+        if scaling == 1.:
+            for i0 in range(n0):
+                prow = pslice
+                for i1 in range(n1):
+                    pcell = prow
+                    for i2 in range(n2):
+                        pcell[0] = pbuf[0]
+                        pbuf += 1
+                        pcell += s2
+                    pbuf += padding
+                    prow += s1
+                pslice += s0
+        else:
+            for i0 in range(n0):
+                prow = pslice
+                for i1 in range(n1):
+                    pcell = prow
+                    for i2 in range(n2):
+                        pcell[0] = scaling * pbuf[0]
+                        pbuf += 1
+                        pcell += s2
+                    pbuf += padding
+                    prow += s1
+                pslice += s0
 
     cpdef double[:, :, :] r2c(self, double[:, :, :] r,
                               double[:, :, :] c = None):
@@ -244,10 +269,10 @@ cdef class _RealFFT3D:
         self.copy_to_buffer(r, self.rsize0, self.rsize1, self.rsize2,
                             self.padding)
         fftw_execute(self.plan_r2c)
-        self.copy_from_buffer(c, self.csize0, self.csize1, self.csize2, 0)
-        
+        self.copy_from_buffer(c, self.csize0, self.csize1, self.csize2, 0, 1.)
+
         return c
-       
+
     cpdef double[:, :, :] c2r(self, double[:, :, :] c,
                               double[:, :, :] r = None):
         self.check_complex_array(c)
@@ -259,7 +284,7 @@ cdef class _RealFFT3D:
         self.copy_to_buffer(c, self.csize0, self.csize1, self.csize2, 0)
         fftw_execute(self.plan_c2r)
         self.copy_from_buffer(r, self.rsize0, self.rsize1, self.rsize2,
-                              self.padding)
-        
-        return r
+                              self.padding,
+                              1. / (self.rsize0 * self.rsize1 * self.rsize2))
 
+        return r
