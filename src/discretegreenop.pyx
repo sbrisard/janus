@@ -155,9 +155,6 @@ cdef class TruncatedGreenOperator:
         self.c_apply_single_freq(&b[0], tau, eta)
         return eta
 
-    def apply_all_freqs(self, tau, eta=None):
-        pass
-
 cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
     cdef Py_ssize_t n0, n1
     cdef _RealFFT2D transform
@@ -181,25 +178,6 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
                               self.nrows)
         self.s0 = 2. * M_PI / (self.h * self.n0)
         self.s1 = 2. * M_PI / (self.h * self.n1)
-
-    @boundscheck(False)
-    @wraparound(False)
-    cdef inline void c_apply_all_freqs(self,
-                                       double[:, :, :] tau,
-                                       double[:, :, :] eta):
-        cdef Py_ssize_t b0, b1, b[2]
-        for b1 in range(self.n1):
-            b[1] = b1
-            for b0 in range(self.n0):
-                b[0] = b0
-                self.update(b)
-                self.green.c_apply(self.k, tau[b0, b1, :], eta[b0, b1, :])
-
-    def apply_all_freqs(self, tau, eta=None):
-        check_shape_3d(tau, self.n0, self.n1, self.ncols)
-        eta = create_or_check_shape_3d(eta, self.n0, self.n1, self.nrows)
-        self.c_apply_all_freqs(tau, eta)
-        return eta
 
     @boundscheck(False)
     @cdivision(True)
@@ -261,30 +239,4 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
         return eta
 
 cdef class TruncatedGreenOperator3D(TruncatedGreenOperator):
-
-    @boundscheck(False)
-    @wraparound(False)
-    cdef inline void c_apply_all_freqs(self,
-                                       double[:, :, :, :] tau,
-                                       double[:, :, :, :] eta):
-        cdef int n0 = self.n[0]
-        cdef int n1 = self.n[1]
-        cdef int n2 = self.n[2]
-        cdef Py_ssize_t b0, b1, b2, b[3]
-        for b2 in range(n2):
-            b[2] = b2
-            for b1 in range(n1):
-                b[1] = b1
-                for b0 in range(n0):
-                    b[0] = b0
-                    self.update(b)
-                    self.green.c_apply(self.k,
-                                       tau[b0, b1, b2, :],
-                                       eta[b0, b1, b2, :])
-
-    def apply_all_freqs(self, tau, eta=None):
-        check_shape_4d(tau, self.n[0], self.n[1], self.n[2], self.ncols)
-        eta = create_or_check_shape_4d(eta, self.n[0], self.n[1], self.n[2],
-                                       self.nrows)
-        self.c_apply_all_freqs(tau, eta)
-        return eta
+    pass

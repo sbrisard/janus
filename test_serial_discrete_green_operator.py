@@ -247,64 +247,64 @@ def test_apply_single_freq_invalid_params():
         for b, tau, eta in params:
             yield test, b, tau, eta
 
-#
-# 3 Test of the method apply_all_freqs
-#   ==================================
-#
-# 3.1 Valid parameters
-#     ----------------
-#
+# #
+# # 3 Test of the method apply_all_freqs
+# #   ==================================
+# #
+# # 3.1 Valid parameters
+# #     ----------------
+# #
 
-@nottest
-def do_test_apply_all_freqs(n, flag):
-    """flag allows the specification of various calling sequences:
-      - flag = 0: apply_all_freqs(tau)
-      - flag = 1: apply_all_freqs(tau, tau)
-      - flag = 2: apply_all_freqs(tau, eta)
-    """
-    green = discrete_green_operator(n, 1.)
-    tau = rnd.rand(*(n + (green.ncols,)))
-    expected = np.empty(n + (green.nrows,), dtype=np.float64)
-    for b in multi_indices(n):
-        index = tuple(b)
-        green.apply_single_freq(b, tau[index], expected[index])
-    if flag == 0:
-        base = None
-    elif flag == 1:
-        base = tau
-    elif flag == 2:
-        base = np.empty_like(expected)
-    else:
-        raise ValueError()
-    actual = green.apply_all_freqs(tau, base)
-    if flag != 0:
-        assert get_base(actual) is base
-    assert_array_almost_equal_nulp(expected, np.asarray(actual), 0)
+# @nottest
+# def do_test_apply_all_freqs(n, flag):
+#     """flag allows the specification of various calling sequences:
+#       - flag = 0: apply_all_freqs(tau)
+#       - flag = 1: apply_all_freqs(tau, tau)
+#       - flag = 2: apply_all_freqs(tau, eta)
+#     """
+#     green = discrete_green_operator(n, 1.)
+#     tau = rnd.rand(*(n + (green.ncols,)))
+#     expected = np.empty(n + (green.nrows,), dtype=np.float64)
+#     for b in multi_indices(n):
+#         index = tuple(b)
+#         green.apply_single_freq(b, tau[index], expected[index])
+#     if flag == 0:
+#         base = None
+#     elif flag == 1:
+#         base = tau
+#     elif flag == 2:
+#         base = np.empty_like(expected)
+#     else:
+#         raise ValueError()
+#     actual = green.apply_all_freqs(tau, base)
+#     if flag != 0:
+#         assert get_base(actual) is base
+#     assert_array_almost_equal_nulp(expected, np.asarray(actual), 0)
 
-def test_apply_all_freqs():
-    for n in GRID_SIZES:
-        for flag in range(3):
-            yield do_test_apply_all_freqs, n, flag
+# def test_apply_all_freqs():
+#     for n in GRID_SIZES:
+#         for flag in range(3):
+#             yield do_test_apply_all_freqs, n, flag
 
-#
-# 3.2 Invalid parameters
-#     ------------------
-#
+# #
+# # 3.2 Invalid parameters
+# #     ------------------
+# #
 
-def test_apply_all_freqs_invalid_params():
-    for dim in [2, 3]:
-        n = tuple(2**(i + 3) for i in range(dim))
-        green = discrete_green_operator(n, 1.)
-        params = invalid_tau_eta(n + (green.ncols,),
-                                 n + (green.nrows,))
+# def test_apply_all_freqs_invalid_params():
+#     for dim in [2, 3]:
+#         n = tuple(2**(i + 3) for i in range(dim))
+#         green = discrete_green_operator(n, 1.)
+#         params = invalid_tau_eta(n + (green.ncols,),
+#                                  n + (green.nrows,))
 
-        @raises(ValueError)
-        def test(tau, eta):
-            green.apply_all_freqs(tau, eta)
+#         @raises(ValueError)
+#         def test(tau, eta):
+#             green.apply_all_freqs(tau, eta)
 
-        for tau, eta in params:
-            yield test, tau, eta
-
+#         for tau, eta in params:
+#             yield test, tau, eta
+            
 #
 # 4 Test of the method convolve
 #   ===========================
