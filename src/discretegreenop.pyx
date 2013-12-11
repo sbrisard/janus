@@ -163,21 +163,25 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
                                    tau[b0, 2 * b1 + 1, :],
                                    eta[b0, 2 * b1 + 1, :])
 
-    def convolve(self, tau, eta, transform):
+    def convolve(self, transform, tau, eta=None):
         cdef _RealFFT2D transform2D = transform
         cdef int n0 = self.n[0]
         cdef int n1 = self.n[1]
+        check_shape_3d(tau, self.n[0], self.n[1], self.ncols)
+        eta = create_or_check_shape_3d(eta, self.n[0], self.n[1], self.nrows)
         cdef Py_ssize_t b0, b1, b[2]
-        dft_tau = array(transform2D.cshape + (self.ncols,),
-                        sizeof(double), 'd')
-        dft_eta = array(transform2D.cshape + (self.nrows,),
-                        sizeof(double), 'd')
+        shape = (transform2D.cshape[0], transform2D.cshape[1], self.ncols)
+        cdef double[:, :, :] dft_tau = array(shape, sizeof(double), 'd')
+        shape = (transform2D.cshape[0], transform2D.cshape[1], self.nrows)
+        cdef double[:, :, :] dft_eta = array(shape, sizeof(double), 'd')
+        cdef int i
         for i in range(self.ncols):
-            transform.r2c(tau[:, :, i], dft_tau[:, :, i])
+            transform2D.r2c(tau[:, :, i], dft_tau[:, :, i])
         self.c_apply_all_freqs_complex(dft_tau, dft_eta)
         for i in range(self.nrows):
-            transform.c2r(dft_eta[:, :, i], eta[:, :, i])
-            
+            transform2D.c2r(dft_eta[:, :, i], eta[:, :, i])
+        return eta
+
 cdef class TruncatedGreenOperator3D(TruncatedGreenOperator):
 
     @boundscheck(False)
