@@ -169,9 +169,9 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
                                  .format(self.shape, transform.shape))
         self.n0 = self.n[0]
         self.n1 = self.n[1]
-        self.dft_tau_shape = (self.transform.csize0, self.transform.csize1,
+        self.dft_tau_shape = (self.transform.cshape0, self.transform.cshape1,
                               self.ncols)
-        self.dft_eta_shape = (self.transform.csize0, self.transform.csize1,
+        self.dft_eta_shape = (self.transform.cshape0, self.transform.cshape1,
                               self.nrows)
         self.s0 = 2. * M_PI / (self.h * self.n0)
         self.s1 = 2. * M_PI / (self.h * self.n1)
@@ -181,10 +181,10 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
     @wraparound(False)
     def convolve(self, tau, eta=None):
         cdef double[:, :, :] tau_as_mv = tau
-        check_shape_3d(tau_as_mv, self.transform.rsize0,
-                       self.transform.rsize1, self.ncols)
-        eta = create_or_check_shape_3d(eta, self.transform.rsize0,
-                                       self.transform.rsize1, self.nrows)
+        check_shape_3d(tau_as_mv, self.transform.rshape0,
+                       self.transform.rshape1, self.ncols)
+        eta = create_or_check_shape_3d(eta, self.transform.rshape0,
+                                       self.transform.rshape1, self.nrows)
 
         cdef double[:, :, :] dft_tau = array(self.dft_tau_shape,
                                              sizeof(double), 'd')
@@ -252,10 +252,10 @@ cdef class TruncatedGreenOperator3D(TruncatedGreenOperator):
         self.n0 = self.n[0]
         self.n1 = self.n[1]
         self.n2 = self.n[2]
-        self.dft_tau_shape = (self.transform.csize0, self.transform.csize1,
-                              self.transform.csize2, self.ncols)
-        self.dft_eta_shape = (self.transform.csize0, self.transform.csize1,
-                              self.transform.csize2, self.nrows)
+        self.dft_tau_shape = (self.transform.cshape0, self.transform.cshape1,
+                              self.transform.cshape2, self.ncols)
+        self.dft_eta_shape = (self.transform.cshape0, self.transform.cshape1,
+                              self.transform.cshape2, self.nrows)
         self.s0 = 2. * M_PI / (self.h * self.n0)
         self.s1 = 2. * M_PI / (self.h * self.n1)
         self.s2 = 2. * M_PI / (self.h * self.n2)
@@ -265,11 +265,16 @@ cdef class TruncatedGreenOperator3D(TruncatedGreenOperator):
     @wraparound(False)
     def convolve(self, tau, eta=None):
         cdef double[:, :, :, :] tau_as_mv = tau
-        check_shape_4d(tau_as_mv, self.transform.rsize0, self.transform.rsize1,
-                       self.transform.rsize2, self.ncols)
-        eta = create_or_check_shape_4d(eta, self.transform.rsize0,
-                                       self.transform.rsize1,
-                                       self.transform.rsize2, self.nrows)
+        check_shape_4d(tau_as_mv,
+                       self.transform.rshape0,
+                       self.transform.rshape1,
+                       self.transform.rshape2,
+                       self.ncols)
+        eta = create_or_check_shape_4d(eta,
+                                       self.transform.rshape0,
+                                       self.transform.rshape1,
+                                       self.transform.rshape2,
+                                       self.nrows)
 
         cdef double[:, :, :, :] dft_tau = array(self.dft_tau_shape,
                                                 sizeof(double), 'd')

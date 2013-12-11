@@ -10,7 +10,7 @@ cdef inline int padding(int n):
 cdef class _RealFFT2D:
     cdef:
         int padding
-        ptrdiff_t rsize0, rsize1, csize0, csize1
+        ptrdiff_t rshape0, rshape1, cshape0, cshape1
         double *buffer, scaling
         fftw_plan plan_r2c, plan_c2r
         readonly ptrdiff_t offset0
@@ -29,7 +29,7 @@ cdef class _RealFFT2D:
 cdef class _RealFFT3D:
     cdef:
         int padding
-        ptrdiff_t rsize0, rsize1, rsize2, csize0, csize1, csize2
+        ptrdiff_t rshape0, rshape1, rshape2, cshape0, cshape1, cshape2
         double *buffer, scaling
         fftw_plan plan_r2c, plan_c2r
         readonly ptrdiff_t offset0
