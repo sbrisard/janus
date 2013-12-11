@@ -163,6 +163,9 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
     cdef _RealFFT2D transform
     cdef tuple dft_tau_shape, dft_eta_shape
 
+    # s[i] = 2 * pi / (h * n[i])
+    cdef double s0, s1
+
     def __cinit__(self, GreenOperator green, shape, double h, transform=None):
         self.transform = transform
         if self.transform is not None:
@@ -176,6 +179,8 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
                               self.ncols)
         self.dft_eta_shape = (self.transform.csize0, self.transform.csize1,
                               self.nrows)
+        self.s0 = 2. * M_PI / (self.h * self.n0)
+        self.s1 = 2. * M_PI / (self.h * self.n1)
 
     @boundscheck(False)
     @wraparound(False)
@@ -211,29 +216,43 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
         cdef double[:, :, :] dft_eta = array(self.dft_eta_shape,
                                              sizeof(double), 'd')
 
-        # Compute DFT of tau
         cdef int i
+
+        # Compute DFT of tau
         for i in range(self.ncols):
             self.transform.r2c(tau_as_mv[:, :, i], dft_tau[:, :, i])
 
         # Apply Green operator frequency-wise
         cdef Py_ssize_t n0 = dft_tau.shape[0]
         cdef Py_ssize_t n1 = dft_tau.shape[1] / 2
-        cdef Py_ssize_t b0, b1, b[2]
+        cdef Py_ssize_t i0, i1, b0, b1
+        cdef double k[2]
 
-        for b1 in range(n1):
-            b[1] = b1
-            for b0 in range(n0):
-                b[0] = b0 + self.transform.offset0
-                self.update(b)
+        for i0 in range(n0):
+            b0 = i0 + self.transform.offset0
+            if 2 * b0 > self.n0:
+                k[0] = self.s0 * (b0 - self.n0)
+            else:
+                k[0] = self.s0 * b0
+
+            i1 = 0
+            for b1 in range(n1):
+                # At this point, i1 = 2 * b1
+                if i1 > self.n1:
+                    k[1] = self.s1 * (b1 - self.n1)
+                else:
+                    k[1] = self.s1 * b1
+
                 # Apply Green operator to real part
-                self.green.c_apply(self.k,
-                                   dft_tau[b0, 2 * b1, :],
-                                   dft_eta[b0, 2 * b1, :])
+                self.green.c_apply(k,
+                                   dft_tau[i0, i1, :],
+                                   dft_eta[i0, i1, :])
+                i1 += 1
                 # Apply Green operator to imaginary part
-                self.green.c_apply(self.k,
-                                   dft_tau[b0, 2 * b1 + 1, :],
-                                   dft_eta[b0, 2 * b1 + 1, :])
+                self.green.c_apply(k,
+                                   dft_tau[i0, i1, :],
+                                   dft_eta[i0, i1, :])
+                i1 += 1
 
         # Compute inverse DFT of eta
         for i in range(self.nrows):
