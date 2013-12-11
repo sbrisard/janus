@@ -1,5 +1,6 @@
 from cython cimport boundscheck
 from cython cimport cdivision
+from cython cimport embedsignature
 from cython cimport Py_ssize_t
 from cython cimport sizeof
 from cython cimport wraparound
@@ -28,7 +29,39 @@ def create(green, n, h, transform=None):
     else:
         raise ValueError('dim must be 2 or 3 (was {0})'.format(green.dim))
 
+@embedsignature(True)
 cdef class TruncatedGreenOperator:
+
+    """
+
+    Parameters
+    ----------
+    green:
+        The underlying continuous green operator.
+    shape:
+        The shape of the spatial grid used to discretize the Green operator.
+    h: float
+        The size of each cell of the grid.
+    transform:
+        The FFT object to be used to carry out discrete Fourier transforms.
+
+    Attributes
+    ----------
+    green:
+        The underlying continuous green operator.
+    shape:
+        The shape of the spatial grid used to discretize the Green operator.
+    h: float
+        The size of each cell of the grid.
+    dim: int
+        The dimension of the physical space.
+    nrows: int
+        The number of rows of the Green tensor, for each frequency (dimension
+        of the space of polarizations).
+    ncols: int
+        The number of columns of the Green tensor, for each frequency (dimension
+        of the space of strains).
+    """
     cdef readonly GreenOperator green
     cdef readonly tuple shape
     cdef readonly double h
@@ -164,40 +197,46 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
         return eta
 
     @boundscheck(False)
+    @cdivision(True)
     @wraparound(False)
-    cdef inline void c_apply_all_freqs_complex(self,
-                                               double[:, :, :] tau,
-                                               double[:, :, :] eta):
-        cdef int n0 = tau.shape[0]
-        cdef int n1 = tau.shape[1] / 2
-        cdef Py_ssize_t b0, b1, b[2]
-        for b1 in range(n1):
-            b[1] = b1
-            for b0 in range(n0):
-                b[0] = b0
-                self.update(b)
-                self.green.c_apply(self.k,
-                                   tau[b0, 2 * b1, :],
-                                   eta[b0, 2 * b1, :])
-                self.green.c_apply(self.k,
-                                   tau[b0, 2 * b1 + 1, :],
-                                   eta[b0, 2 * b1 + 1, :])
-
     def convolve(self, tau, eta=None):
-        check_shape_3d(tau, self.n0, self.n1, self.ncols)
+        cdef double[:, :, :] tau_as_mv = tau
+        check_shape_3d(tau_as_mv, self.n0, self.n1, self.ncols)
         eta = create_or_check_shape_3d(eta, self.n0, self.n1, self.nrows)
-        cdef Py_ssize_t b0, b1, b[2]
 
         cdef double[:, :, :] dft_tau = array(self.dft_tau_shape,
                                              sizeof(double), 'd')
         cdef double[:, :, :] dft_eta = array(self.dft_eta_shape,
                                              sizeof(double), 'd')
+
+        # Compute DFT of tau
         cdef int i
         for i in range(self.ncols):
-            self.transform.r2c(tau[:, :, i], dft_tau[:, :, i])
-        self.c_apply_all_freqs_complex(dft_tau, dft_eta)
+            self.transform.r2c(tau_as_mv[:, :, i], dft_tau[:, :, i])
+
+        # Apply Green operator frequency-wise
+        cdef Py_ssize_t n0 = dft_tau.shape[0]
+        cdef Py_ssize_t n1 = dft_tau.shape[1] / 2
+        cdef Py_ssize_t b0, b1, b[2]
+
+        for b1 in range(n1):
+            b[1] = b1
+            for b0 in range(n0):
+                b[0] = b0 + self.transform.offset0
+                self.update(b)
+                # Apply Green operator to real part
+                self.green.c_apply(self.k,
+                                   dft_tau[b0, 2 * b1, :],
+                                   dft_eta[b0, 2 * b1, :])
+                # Apply Green operator to imaginary part
+                self.green.c_apply(self.k,
+                                   dft_tau[b0, 2 * b1 + 1, :],
+                                   dft_eta[b0, 2 * b1 + 1, :])
+
+        # Compute inverse DFT of eta
         for i in range(self.nrows):
             self.transform.c2r(dft_eta[:, :, i], eta[:, :, i])
+
         return eta
 
 cdef class TruncatedGreenOperator3D(TruncatedGreenOperator):
