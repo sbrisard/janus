@@ -85,6 +85,34 @@ def invalid_tau_eta(valid_tau_shape, valid_eta_shape):
     return params1 + params2 + params3
 
 #
+# 0 Test of the constructor with invalid parameters
+#   ===============================================
+#
+
+def test_cinit_invalid_params():
+    #@raises(ValueError)
+    def test(green, n, h, transform=None):
+        discretegreenop.create(green, n, h, transform)
+
+    green_2D = greenop.create(Material(0.75, 0.3, 2))
+    green_3D = greenop.create(Material(0.75, 0.3, 3))
+
+    params = [(green_3D, (9, 9), 1., None),
+              (green_2D, (-1, 9), 1., None),
+              (green_2D, (9, -1), 1., None),
+              (green_2D, (9, 9), -1., None),
+              (green_2D, (9, 9), 1., fft.serial.create_real((8, 9))),
+              (green_2D, (9, 9), 1., fft.serial.create_real((9, 8))),
+              (green_2D, (9, 9, 9), 1., None),
+              (green_3D, (-1, 9, 9), 1., None),
+              (green_3D, (9, -1, 9), 1., None),
+              (green_3D, (9, 9, -1), 1., None),
+              (green_3D, (9, 9, 9), -1., None)]
+
+    for green, n, h, transform in params:
+        yield test, green, n, h, transform
+
+#
 # 1 Test of the method as_array
 #   ===========================
 #

@@ -30,17 +30,18 @@ def create(green, n, h, transform=None):
 
 cdef class TruncatedGreenOperator:
     cdef readonly GreenOperator green
+    cdef readonly tuple shape
     cdef readonly double h
     cdef readonly int dim
     cdef readonly int nrows
     cdef readonly int ncols
-    #TODO Make this readable from Python
+
     cdef Py_ssize_t *n
     cdef double* k
     cdef double two_pi_over_h
 
-    def __cinit__(self, GreenOperator green, n, double h, transform=None):
-        self.dim = len(n)
+    def __cinit__(self, GreenOperator green, shape, double h, transform=None):
+        self.dim = len(shape)
         if self.dim != green.mat.dim:
             raise ValueError('length of shape must be {0} (was {1})'
                              .format(green.mat.dim, self.dim))
@@ -51,12 +52,18 @@ cdef class TruncatedGreenOperator:
         self.two_pi_over_h = 2. * M_PI / h
         self.nrows = green.nrows
         self.ncols = green.ncols
-        self.n = <Py_ssize_t *> malloc(self.dim * sizeof(Py_ssize_t))
         self.k = <double *> malloc(self.dim * sizeof(double))
+
+        self.n = <Py_ssize_t *> malloc(self.dim * sizeof(Py_ssize_t))
         cdef int i
+        cdef Py_ssize_t ni
         for i in range(self.dim):
-            #TODO Check for sign of shape[i]
-            self.n[i] = n[i]
+            ni = shape[i]
+            if ni < 0:
+                raise ValueError('shape[{0}] must be > 0 (was {1})'
+                                 .format(i, ni))
+            self.n[i] = shape[i]
+        self.shape = tuple(shape)
 
     def __dealloc__(self):
         free(self.n)
@@ -121,8 +128,13 @@ cdef class TruncatedGreenOperator:
 cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
     cdef _RealFFT2D transform
 
-    def __cinit__(self, GreenOperator green, n, double h, transform=None):
+    def __cinit__(self, GreenOperator green, shape, double h, transform=None):
         self.transform = transform
+        if self.transform is not None:
+            if ((self.transform.shape[0] != shape[0]) or
+                (self.transform.shape[1] != shape[1])):
+                raise ValueError('shape of transform must be {0} [was {1}]'
+                                 .format(self.shape, transform.shape))
 
     @boundscheck(False)
     @wraparound(False)
