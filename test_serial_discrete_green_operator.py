@@ -172,15 +172,15 @@ def test_as_array_invalid_parameters():
             yield test, b, out
 
 #
-# 2 Test of the method apply_single_freq
-#   ====================================
+# 2 Test of the method apply
+#   ========================
 #
 # 2.1 Valid parameters
 #     ----------------
 #
 
 @nottest
-def do_test_apply_single_freq(n, tau, flag):
+def do_test_apply(n, tau, flag):
     """flag allows the specification of various calling sequences:
       - flag = 0: apply_single_freq(b, tau)
       - flag = 1: apply_single_freq(b, tau, tau)
@@ -206,26 +206,26 @@ def do_test_apply_single_freq(n, tau, flag):
             base = np.empty_like(expected)
         else:
             raise(ValueError)
-        actual = greend.apply_single_freq(b, tau, base)
+        actual = greend.apply(b, tau, base)
         if flag != 0:
             assert get_base(actual) is base
         assert_array_almost_equal_nulp(expected, np.asarray(actual), 1)
 
-def test_apply_single_freq():
+def test_apply():
     shapes = GRID_SIZES
     tau = [np.array([0.3, -0.4, 0.5]),
            np.array([0.1, -0.2, 0.3, -0.4, 0.5, -0.6])]
 
     for n in GRID_SIZES:
         for flag in range(3):
-            yield do_test_apply_single_freq, n, tau[len(n) - 2], flag
+            yield do_test_apply, n, tau[len(n) - 2], flag
 
 #
 # 2.2 Invalid parameters
 #     ------------------
 #
 
-def test_apply_single_freq_invalid_params():
+def test_apply_invalid_params():
     for dim in [2, 3]:
         n = tuple(2**(i + 3) for i in range(dim))
         green = discrete_green_operator(n, 1.)
@@ -242,7 +242,7 @@ def test_apply_single_freq_invalid_params():
 
         @raises(ValueError)
         def test(b, tau, eta):
-            green.apply_single_freq(b, tau, eta)
+            green.apply(b, tau, eta)
 
         for b, tau, eta in params:
             yield test, b, tau, eta

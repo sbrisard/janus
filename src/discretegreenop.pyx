@@ -140,19 +140,17 @@ cdef class TruncatedGreenOperator:
         self.c_as_array(&b[0], out)
         return out
 
-    cdef void c_apply_single_freq(self, Py_ssize_t *b,
-                                  double[:] tau, double[:] eta):
+    cdef void c_apply(self, Py_ssize_t *b, double[:] tau, double[:] eta):
         self.update(b)
         self.green.c_apply(self.k, tau, eta)
 
     @boundscheck(False)
     @wraparound(False)
-    def apply_single_freq(self, Py_ssize_t[::1] b,
-                          double[:] tau, double[:] eta=None):
+    def apply(self, Py_ssize_t[::1] b, double[:] tau, double[:] eta=None):
         self.check_b(b)
         check_shape_1d(tau, self.ncols)
         eta = create_or_check_shape_1d(eta, self.nrows)
-        self.c_apply_single_freq(&b[0], tau, eta)
+        self.c_apply(&b[0], tau, eta)
         return eta
 
 cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
