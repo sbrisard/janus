@@ -128,6 +128,7 @@ cdef class TruncatedGreenOperator:
 cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
     cdef Py_ssize_t n0, n1
     cdef _RealFFT2D transform
+    cdef tuple dft_tau_shape, dft_eta_shape
 
     def __cinit__(self, GreenOperator green, shape, double h, transform=None):
         self.transform = transform
@@ -138,6 +139,10 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
                                  .format(self.shape, transform.shape))
         self.n0 = self.n[0]
         self.n1 = self.n[1]
+        self.dft_tau_shape = (self.transform.csize0, self.transform.csize1,
+                              self.ncols)
+        self.dft_eta_shape = (self.transform.csize0, self.transform.csize1,
+                              self.nrows)
 
     @boundscheck(False)
     @wraparound(False)
@@ -182,10 +187,11 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
         check_shape_3d(tau, self.n0, self.n1, self.ncols)
         eta = create_or_check_shape_3d(eta, self.n0, self.n1, self.nrows)
         cdef Py_ssize_t b0, b1, b[2]
-        shape = (self.transform.csize0, self.transform.csize1, self.ncols)
-        cdef double[:, :, :] dft_tau = array(shape, sizeof(double), 'd')
-        shape = (self.transform.csize0, self.transform.csize1, self.nrows)
-        cdef double[:, :, :] dft_eta = array(shape, sizeof(double), 'd')
+
+        cdef double[:, :, :] dft_tau = array(self.dft_tau_shape,
+                                             sizeof(double), 'd')
+        cdef double[:, :, :] dft_eta = array(self.dft_eta_shape,
+                                             sizeof(double), 'd')
         cdef int i
         for i in range(self.ncols):
             self.transform.r2c(tau[:, :, i], dft_tau[:, :, i])
