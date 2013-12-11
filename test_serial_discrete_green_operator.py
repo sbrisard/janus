@@ -122,10 +122,9 @@ def test_cinit_invalid_params():
 
 @nottest
 def do_test_as_array(n, inplace):
-    mat = Material(0.75, 0.3, len(n))
 
-    greenc = greenop.create(mat)
-    greend = discretegreenop.TruncatedGreenOperator(greenc, n, 1.0)
+    greend = discrete_green_operator(n, 1.0)
+    greenc = greend.green
     k = np.empty((len(n),), dtype=np.float64)
 
     for b in multi_indices(n):
@@ -141,6 +140,7 @@ def do_test_as_array(n, inplace):
             assert get_base(actual) is base
         else:
             actual = greend.as_array(b)
+        print(np.asarray(expected), np.asarray(actual))
         assert_array_almost_equal_nulp(np.asarray(expected),
                                        np.asarray(actual), 1)
 
@@ -187,9 +187,8 @@ def do_test_apply(n, tau, flag):
       - flag = 2: apply_single_freq(b, tau, eta)
     """
     dim = len(n)
-    mat = Material(0.75, 0.3, dim)
-    greenc = greenop.create(mat)
-    greend = discretegreenop.TruncatedGreenOperator(greenc, n, 1.0)
+    greend = discrete_green_operator(n, 1.)
+    greenc = greend.green
 
     tau_vec = tau.reshape(greend.ncols, 1)
 
@@ -304,7 +303,7 @@ def test_apply_invalid_params():
 
 #         for tau, eta in params:
 #             yield test, tau, eta
-            
+
 #
 # 4 Test of the method convolve
 #   ===========================
@@ -319,14 +318,20 @@ def test_apply_invalid_params():
 #   - ref[:, :, 3:6] = eta = - Gamma * tau
 
 @nottest
-def do_test_convolve_2D(path_to_ref, rel_err):
+def do_test_convolve(path_to_ref, rel_err):
     dummy = np.load(path_to_ref)
     n = dummy.shape[:-1]
     transform = fft.serial.create_real(n)
     green = discrete_green_operator(n, 1., transform)
 
-    tau = dummy[:, :, 0:green.ncols]
-    expected = dummy[:, :, green.ncols:]
+    # TODO This is uggly
+    if green.dim == 2:
+        tau = dummy[:, :, 0:green.ncols]
+        expected = dummy[:, :, green.ncols:]
+    else:
+        tau = dummy[:, :, :, 0:green.ncols]
+        expected = dummy[:, :, :, green.ncols:]
+        
     actual = np.zeros(transform.rshape + (green.nrows,), np.float64)
     green.convolve(tau, actual)
 
@@ -335,7 +340,7 @@ def do_test_convolve_2D(path_to_ref, rel_err):
     nulp = rel_err / ulp
     assert_array_almost_equal_nulp(expected, np.asarray(actual), nulp)
 
-def test_convolve_2D():
+def test_convolve():
 
     params = [('truncated_green_operator_200x300_unit_tau_xx_10x10+95+145.npy',
                1.2E-10),
@@ -343,17 +348,29 @@ def test_convolve_2D():
                6.7E-11),
               ('truncated_green_operator_200x300_unit_tau_xy_10x10+95+145.npy',
                7.7E-11),
+              ('truncated_green_operator_40x50x60_unit_tau_xx_10x10x10+15+20+25.npy',
+               1.7E-10),
+              ('truncated_green_operator_40x50x60_unit_tau_yy_10x10x10+15+20+25.npy',
+               7.6E-10),
+              ('truncated_green_operator_40x50x60_unit_tau_zz_10x10x10+15+20+25.npy',
+               1.6E-9),
+              ('truncated_green_operator_40x50x60_unit_tau_yz_10x10x10+15+20+25.npy',
+               1.6E-10),
+              ('truncated_green_operator_40x50x60_unit_tau_zx_10x10x10+15+20+25.npy',
+               6.4E-10),
+              ('truncated_green_operator_40x50x60_unit_tau_xy_10x10x10+15+20+25.npy',
+               1.6E-9),
                ]
     for path_to_ref, rel_err in params:
-        yield do_test_convolve_2D, path_to_ref, rel_err
+        yield do_test_convolve, path_to_ref, rel_err
 
 #
 # 4.2 Invalid parameters
 #     ------------------
 #
 
-def test_convolve_2D_invalid_params():
-    for dim in [2]:
+def test_convolve_invalid_params():
+    for dim in [2, 3]:
         n = tuple(2**(i + 3) for i in range(dim))
         transform = fft.serial.create_real(n)
         green = discrete_green_operator(n, 1., transform)

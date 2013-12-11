@@ -18,6 +18,7 @@ from checkarray cimport check_shape_3d
 from checkarray cimport check_shape_4d
 from greenop cimport GreenOperator
 from fft.serial._serial_fft cimport _RealFFT2D
+from fft.serial._serial_fft cimport _RealFFT3D
 
 cdef str INVALID_B_MSG = 'shape of b must be ({0},) [was ({1},)]'
 
@@ -155,11 +156,9 @@ cdef class TruncatedGreenOperator:
 
 cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
     cdef Py_ssize_t n0, n1
+    cdef double s0, s1
     cdef _RealFFT2D transform
     cdef tuple dft_tau_shape, dft_eta_shape
-
-    # s[i] = 2 * pi / (h * n[i])
-    cdef double s0, s1
 
     def __cinit__(self, GreenOperator green, shape, double h, transform=None):
         self.transform = transform
@@ -237,4 +236,93 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
         return eta
 
 cdef class TruncatedGreenOperator3D(TruncatedGreenOperator):
-    pass
+    cdef Py_ssize_t n0, n1, n2
+    cdef double s0, s1, s2
+    cdef _RealFFT3D transform
+    cdef tuple dft_tau_shape, dft_eta_shape
+
+    def __cinit__(self, GreenOperator green, shape, double h, transform=None):
+        self.transform = transform
+        if self.transform is not None:
+            if ((self.transform.shape[0] != shape[0]) or
+                (self.transform.shape[1] != shape[1]) or
+                (self.transform.shape[2] != shape[2])):
+                raise ValueError('shape of transform must be {0} [was {1}]'
+                                 .format(self.shape, transform.shape))
+        self.n0 = self.n[0]
+        self.n1 = self.n[1]
+        self.n2 = self.n[2]
+        self.dft_tau_shape = (self.transform.csize0, self.transform.csize1,
+                              self.transform.csize2, self.ncols)
+        self.dft_eta_shape = (self.transform.csize0, self.transform.csize1,
+                              self.transform.csize2, self.nrows)
+        self.s0 = 2. * M_PI / (self.h * self.n0)
+        self.s1 = 2. * M_PI / (self.h * self.n1)
+        self.s2 = 2. * M_PI / (self.h * self.n2)
+
+    @boundscheck(False)
+    @cdivision(True)
+    @wraparound(False)
+    def convolve(self, tau, eta=None):
+        cdef double[:, :, :, :] tau_as_mv = tau
+        check_shape_4d(tau_as_mv, self.transform.rsize0, self.transform.rsize1,
+                       self.transform.rsize2, self.ncols)
+        eta = create_or_check_shape_4d(eta, self.transform.rsize0,
+                                       self.transform.rsize1,
+                                       self.transform.rsize2, self.nrows)
+
+        cdef double[:, :, :, :] dft_tau = array(self.dft_tau_shape,
+                                                sizeof(double), 'd')
+        cdef double[:, :, :, :] dft_eta = array(self.dft_eta_shape,
+                                                sizeof(double), 'd')
+
+        cdef int i
+
+        # Compute DFT of tau
+        for i in range(self.ncols):
+            self.transform.r2c(tau_as_mv[:, :, :, i], dft_tau[:, :, :, i])
+
+        # Apply Green operator frequency-wise
+        cdef Py_ssize_t n0 = dft_tau.shape[0]
+        cdef Py_ssize_t n1 = dft_tau.shape[1]
+        cdef Py_ssize_t n2 = dft_tau.shape[2] / 2
+        cdef Py_ssize_t i0, i2, b0, b1, b2
+        cdef double k[3]
+
+        for i0 in range(n0):
+            b0 = i0 + self.transform.offset0
+            if 2 * b0 > self.n0:
+                k[0] = self.s0 * (b0 - self.n0)
+            else:
+                k[0] = self.s0 * b0
+
+            for b1 in range(n1):
+                if 2 * b1 > self.n1:
+                    k[1] = self.s1 * (b1 - self.n1)
+                else:
+                    k[1] = self.s1 * b1
+
+                i2 = 0
+                for b2 in range(n2):
+                    # At this point, i2 = 2 * b2
+                    if i2 > self.n2:
+                        k[2] = self.s2 * (b2 - self.n2)
+                    else:
+                        k[2] = self.s2 * b2
+
+                    # Apply Green operator to real part
+                    self.green.c_apply(k,
+                                       dft_tau[i0, b1, i2, :],
+                                       dft_eta[i0, b1, i2, :])
+                    i2 += 1
+                    # Apply Green operator to imaginary part
+                    self.green.c_apply(k,
+                                       dft_tau[i0, b1, i2, :],
+                                       dft_eta[i0, b1, i2, :])
+                    i2 += 1
+
+        # Compute inverse DFT of eta
+        for i in range(self.nrows):
+            self.transform.c2r(dft_eta[:, :, :, i], eta[:, :, :, i])
+
+        return eta
