@@ -70,6 +70,20 @@ def invalid_shapes(shape):
     """
     return [increment_element(shape, i) for i in range(len(shape))]
 
+def invalid_tau_eta(valid_tau_shape, valid_eta_shape):
+    """Returns a list of invalid (tau, eta) parameters."""
+    valid_tau = np.zeros(valid_tau_shape)
+    valid_eta = np.zeros(valid_eta_shape)
+
+    invalid_tau_shapes = invalid_shapes(valid_tau_shape)
+    invalid_eta_shapes = invalid_shapes(valid_eta_shape)
+
+    params1 = [(np.zeros(shape), None) for shape in invalid_tau_shapes]
+    params2 = [(np.zeros(shape), valid_eta) for shape in invalid_tau_shapes]
+    params3 = [(valid_tau, np.zeros(shape)) for shape in invalid_eta_shapes]
+
+    return params1 + params2 + params3
+
 #
 # 1 Test of the method as_array
 #   ===========================
@@ -253,19 +267,8 @@ def test_apply_all_freqs_invalid_params():
     for dim in [2, 3]:
         n = tuple(2**(i + 3) for i in range(dim))
         green = discrete_green_operator(n, 1.)
-
-        tau = np.zeros(n + (green.ncols,), dtype=np.float64)
-        eta = np.zeros(n + (green.nrows,), dtype=np.float64)
-
-        tau_invalid_shapes = invalid_shapes(tau.shape)
-        eta_invalid_shapes = invalid_shapes(eta.shape)
-
-        params = ([(np.zeros(shape, dtype=np.float64), None)
-                   for shape in tau_invalid_shapes]
-                   + [(np.zeros(shape, dtype=np.float64), eta)
-                      for shape in tau_invalid_shapes]
-                   + [(tau, np.zeros(shape, dtype=np.float64))
-                      for shape in eta_invalid_shapes])
+        params = invalid_tau_eta(n + (green.ncols,),
+                                 n + (green.nrows,))
 
         @raises(ValueError)
         def test(tau, eta):
@@ -297,7 +300,7 @@ def do_test_convolve_2D(path_to_ref, rel_err):
     tau = dummy[:, :, 0:green.ncols]
     expected = dummy[:, :, green.ncols:]
     actual = np.zeros(transform.rshape + (green.nrows,), np.float64)
-    green.convolve(tau, actual, transform)
+    green.convolve(transform, tau, actual)
 
     error = actual - expected
     ulp = np.finfo(np.float64).eps
@@ -315,3 +318,24 @@ def test_convolve_2D():
                ]
     for path_to_ref, rel_err in params:
         yield do_test_convolve_2D, path_to_ref, rel_err
+
+#
+# 4.2 Invalid parameters
+#     ------------------
+#
+
+def test_convolve_2D_invalid_params():
+    for dim in [2]:
+        n = tuple(2**(i + 3) for i in range(dim))
+        green = discrete_green_operator(n, 1.)
+        transform = fft.serial.create_real(n)
+        params = invalid_tau_eta(n + (green.ncols,),
+                                 n + (green.nrows,))
+
+        @raises(ValueError)
+        def test(tau, eta):
+            green.convolve(transform, tau, eta)
+
+        for tau, eta in params:
+            yield test, tau, eta
+
