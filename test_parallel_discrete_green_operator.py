@@ -12,7 +12,7 @@ from numpy.testing import assert_array_almost_equal_nulp
 from matprop import IsotropicLinearElasticMaterial as Material
 
 @nottest
-def do_test_convolve_2D(path_to_ref, rel_err):
+def do_test_convolve(path_to_ref, rel_err):
     comm = MPI.COMM_WORLD
     root = 0
     rank = comm.rank
@@ -24,8 +24,12 @@ def do_test_convolve_2D(path_to_ref, rel_err):
         dummy = np.load(path_to_ref)
         n = dummy.shape[:-1]
 
-        tau = dummy[:, :, 0:3]
-        expected = dummy[:, :, 3:]
+        if len(n) == 2:
+            tau = dummy[:, :, 0:3]
+            expected = dummy[:, :, 3:]
+        else:
+            tau = dummy[:, :, :, 0:6]
+            expected = dummy[:, :, :, 6:]
 
     # Broadcast global size of grid
     n = comm.bcast(n, root)
@@ -34,7 +38,7 @@ def do_test_convolve_2D(path_to_ref, rel_err):
     transform = fft.parallel.create_real(n, comm)
     n_locs = comm.gather((transform.rshape[0], transform.offset0), root)
 
-    mat = Material(0.75, 0.3, 2)
+    mat = Material(0.75, 0.3, len(n))
     green = discretegreenop.create(greenop.create(mat), n, 1., transform)
 
     # Scatter tau
@@ -58,7 +62,7 @@ def do_test_convolve_2D(path_to_ref, rel_err):
         nulp = rel_err / ulp
         assert_array_almost_equal_nulp(expected, np.asarray(actual), nulp)
 
-def test_convolve_2D():
+def test_convolve():
 
     params = [('truncated_green_operator_200x300_unit_tau_xx_10x10+95+145.npy',
                1.2E-10),
@@ -66,6 +70,18 @@ def test_convolve_2D():
                6.7E-11),
               ('truncated_green_operator_200x300_unit_tau_xy_10x10+95+145.npy',
                7.7E-11),
+              ('truncated_green_operator_40x50x60_unit_tau_xx_10x10x10+15+20+25.npy',
+               1.7E-10),
+              ('truncated_green_operator_40x50x60_unit_tau_yy_10x10x10+15+20+25.npy',
+               7.6E-10),
+              ('truncated_green_operator_40x50x60_unit_tau_zz_10x10x10+15+20+25.npy',
+               1.6E-9),
+              ('truncated_green_operator_40x50x60_unit_tau_yz_10x10x10+15+20+25.npy',
+               1.6E-10),
+              ('truncated_green_operator_40x50x60_unit_tau_zx_10x10x10+15+20+25.npy',
+               6.4E-10),
+              ('truncated_green_operator_40x50x60_unit_tau_xy_10x10x10+15+20+25.npy',
+               1.6E-9),
                ]
     for path_to_ref, rel_err in params:
-        yield do_test_convolve_2D, path_to_ref, rel_err
+        yield do_test_convolve, path_to_ref, rel_err
