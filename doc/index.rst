@@ -17,6 +17,7 @@ Contents:
    matprop-api
    fft-api
    greenop-api
+   discretegreenop-api
 
 Indices and tables
 ==================
