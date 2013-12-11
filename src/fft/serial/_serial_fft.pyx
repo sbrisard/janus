@@ -41,6 +41,7 @@ cdef create_real_3D(ptrdiff_t n0, ptrdiff_t n1, ptrdiff_t n2):
     return fft
 
 cdef class _RealFFT2D:
+
     @cython.boundscheck(False)
     def __cinit__(self, ptrdiff_t n0, ptrdiff_t n1,
                   ptrdiff_t n0_loc, ptrdiff_t offset0):
@@ -53,6 +54,7 @@ cdef class _RealFFT2D:
         self.shape = n0, n1
         self.rshape = self.rsize0, self.rsize1
         self.cshape = self.csize0, self.csize1
+        self.scaling = 1. / <double> (n0 * n1)
 
     def __dealloc__(self):
         fftw_free(self.buffer)
@@ -149,7 +151,7 @@ cdef class _RealFFT2D:
         self.copy_to_buffer(c, self.csize0, self.csize1, 0)
         fftw_execute(self.plan_c2r)
         self.copy_from_buffer(r, self.rsize0, self.rsize1, self.padding,
-                              1. / (self.rsize0 * self.rsize1))
+                              self.scaling)
 
         return r
 
@@ -169,6 +171,7 @@ cdef class _RealFFT3D:
         self.shape = n0, n1, n2
         self.rshape = self.rsize0, self.rsize1, self.rsize2
         self.cshape = self.csize0, self.csize1, self.csize2
+        self.scaling = 1. / <double> (n0 * n1 * n2)
 
     def __dealloc__(self):
         fftw_free(self.buffer)
@@ -284,7 +287,7 @@ cdef class _RealFFT3D:
         self.copy_to_buffer(c, self.csize0, self.csize1, self.csize2, 0)
         fftw_execute(self.plan_c2r)
         self.copy_from_buffer(r, self.rsize0, self.rsize1, self.rsize2,
-                              self.padding,
-                              1. / (self.rsize0 * self.rsize1 * self.rsize2))
+                              self.padding, self.scaling)
+
 
         return r

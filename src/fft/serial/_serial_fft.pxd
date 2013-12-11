@@ -11,7 +11,7 @@ cdef class _RealFFT2D:
     cdef:
         int padding
         ptrdiff_t rsize0, rsize1, csize0, csize1
-        double *buffer
+        double *buffer, scaling
         fftw_plan plan_r2c, plan_c2r
         readonly ptrdiff_t offset0
         readonly tuple shape, rshape, cshape
@@ -30,7 +30,7 @@ cdef class _RealFFT3D:
     cdef:
         int padding
         ptrdiff_t rsize0, rsize1, rsize2, csize0, csize1, csize2
-        double *buffer
+        double *buffer, scaling
         fftw_plan plan_r2c, plan_c2r
         readonly ptrdiff_t offset0
         readonly tuple shape, rshape, cshape
