@@ -22,11 +22,11 @@ cdef str INVALID_N_MSG = 'length of n must be {0} (was {1})'
 cdef str INVALID_H_MSG = 'h must be > 0 (was {0})'
 cdef str INVALID_B_MSG = 'shape of b must be ({0},) [was ({1},)]'
 
-def create(green, n, h):
+def create(green, n, h, transform=None):
     if green.dim == 2:
-        return TruncatedGreenOperator2D(green, n, h)
+        return TruncatedGreenOperator2D(green, n, h, transform)
     elif green.dim == 3:
-        return TruncatedGreenOperator3D(green, n, h)
+        return TruncatedGreenOperator3D(green, n, h, transform)
     else:
         raise ValueError('dim must be 2 or 3 (was {0})'.format(green.dim))
 
@@ -41,7 +41,7 @@ cdef class TruncatedGreenOperator:
     cdef double* k
     cdef double two_pi_over_h
 
-    def __cinit__(self, GreenOperator green, n, double h):
+    def __cinit__(self, GreenOperator green, n, double h, transform=None):
         cdef Py_ssize_t d = len(n)
         if d != green.mat.dim:
             raise ValueError(INVALID_N_MSG.format(green.mat.dim, d))
@@ -121,6 +121,10 @@ cdef class TruncatedGreenOperator:
         pass
 
 cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
+    cdef _RealFFT2D transform
+
+    def __cinit__(self, GreenOperator green, n, double h, transform=None):
+        self.transform = transform
 
     @boundscheck(False)
     @wraparound(False)
@@ -163,23 +167,22 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
                                    tau[b0, 2 * b1 + 1, :],
                                    eta[b0, 2 * b1 + 1, :])
 
-    def convolve(self, transform, tau, eta=None):
-        cdef _RealFFT2D transform2D = transform
+    def convolve(self, tau, eta=None):
         cdef int n0 = self.n[0]
         cdef int n1 = self.n[1]
         check_shape_3d(tau, self.n[0], self.n[1], self.ncols)
         eta = create_or_check_shape_3d(eta, self.n[0], self.n[1], self.nrows)
         cdef Py_ssize_t b0, b1, b[2]
-        shape = (transform2D.cshape[0], transform2D.cshape[1], self.ncols)
+        shape = (self.transform.csize0, self.transform.csize1, self.ncols)
         cdef double[:, :, :] dft_tau = array(shape, sizeof(double), 'd')
-        shape = (transform2D.cshape[0], transform2D.cshape[1], self.nrows)
+        shape = (self.transform.csize0, self.transform.csize1, self.nrows)
         cdef double[:, :, :] dft_eta = array(shape, sizeof(double), 'd')
         cdef int i
         for i in range(self.ncols):
-            transform2D.r2c(tau[:, :, i], dft_tau[:, :, i])
+            self.transform.r2c(tau[:, :, i], dft_tau[:, :, i])
         self.c_apply_all_freqs_complex(dft_tau, dft_eta)
         for i in range(self.nrows):
-            transform2D.c2r(dft_eta[:, :, i], eta[:, :, i])
+            self.transform.c2r(dft_eta[:, :, i], eta[:, :, i])
         return eta
 
 cdef class TruncatedGreenOperator3D(TruncatedGreenOperator):

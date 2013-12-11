@@ -16,7 +16,7 @@ from matprop import IsotropicLinearElasticMaterial as Material
 GRID_SIZES = ([(8, 8), (8, 16), (16, 8), (4, 4, 4)]
               + list(itertools.permutations((4, 8, 16))))
 
-def discrete_green_operator(n, h):
+def discrete_green_operator(n, h, transform=None):
     """Create a discrete Green operator with default material constants
     g = 0.75 and nu = 0.3. The gridsize is specified by the tuple n, the
     length of which gives the dimension of the physical space (2 or 3). h is
@@ -25,7 +25,7 @@ def discrete_green_operator(n, h):
     """
 
     mat = Material(0.75, 0.3, len(n))
-    return discretegreenop.create(greenop.create(mat), n, h)
+    return discretegreenop.create(greenop.create(mat), n, h, transform)
 
 def get_base(a):
     # TODO This is a hack to avoid writing uggly things like a.base.base.base.
@@ -294,13 +294,13 @@ def test_apply_all_freqs_invalid_params():
 def do_test_convolve_2D(path_to_ref, rel_err):
     dummy = np.load(path_to_ref)
     n = dummy.shape[:-1]
-    green = discrete_green_operator(n, 1.)
     transform = fft.serial.create_real(n)
+    green = discrete_green_operator(n, 1., transform)
 
     tau = dummy[:, :, 0:green.ncols]
     expected = dummy[:, :, green.ncols:]
     actual = np.zeros(transform.rshape + (green.nrows,), np.float64)
-    green.convolve(transform, tau, actual)
+    green.convolve(tau, actual)
 
     error = actual - expected
     ulp = np.finfo(np.float64).eps
@@ -327,15 +327,14 @@ def test_convolve_2D():
 def test_convolve_2D_invalid_params():
     for dim in [2]:
         n = tuple(2**(i + 3) for i in range(dim))
-        green = discrete_green_operator(n, 1.)
         transform = fft.serial.create_real(n)
+        green = discrete_green_operator(n, 1., transform)
         params = invalid_tau_eta(n + (green.ncols,),
                                  n + (green.nrows,))
 
         @raises(ValueError)
         def test(tau, eta):
-            green.convolve(transform, tau, eta)
+            green.convolve(tau, eta)
 
         for tau, eta in params:
             yield test, tau, eta
-
