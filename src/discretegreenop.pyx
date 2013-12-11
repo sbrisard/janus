@@ -126,6 +126,7 @@ cdef class TruncatedGreenOperator:
         pass
 
 cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
+    cdef Py_ssize_t n0, n1
     cdef _RealFFT2D transform
 
     def __cinit__(self, GreenOperator green, shape, double h, transform=None):
@@ -135,25 +136,25 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
                 (self.transform.shape[1] != shape[1])):
                 raise ValueError('shape of transform must be {0} [was {1}]'
                                  .format(self.shape, transform.shape))
+        self.n0 = self.n[0]
+        self.n1 = self.n[1]
 
     @boundscheck(False)
     @wraparound(False)
     cdef inline void c_apply_all_freqs(self,
                                        double[:, :, :] tau,
                                        double[:, :, :] eta):
-        cdef int n0 = self.n[0]
-        cdef int n1 = self.n[1]
         cdef Py_ssize_t b0, b1, b[2]
-        for b1 in range(n1):
+        for b1 in range(self.n1):
             b[1] = b1
-            for b0 in range(n0):
+            for b0 in range(self.n0):
                 b[0] = b0
                 self.update(b)
                 self.green.c_apply(self.k, tau[b0, b1, :], eta[b0, b1, :])
 
     def apply_all_freqs(self, tau, eta=None):
-        check_shape_3d(tau, self.n[0], self.n[1], self.ncols)
-        eta = create_or_check_shape_3d(eta, self.n[0], self.n[1], self.nrows)
+        check_shape_3d(tau, self.n0, self.n1, self.ncols)
+        eta = create_or_check_shape_3d(eta, self.n0, self.n1, self.nrows)
         self.c_apply_all_freqs(tau, eta)
         return eta
 
@@ -178,10 +179,8 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
                                    eta[b0, 2 * b1 + 1, :])
 
     def convolve(self, tau, eta=None):
-        cdef int n0 = self.n[0]
-        cdef int n1 = self.n[1]
-        check_shape_3d(tau, self.n[0], self.n[1], self.ncols)
-        eta = create_or_check_shape_3d(eta, self.n[0], self.n[1], self.nrows)
+        check_shape_3d(tau, self.n0, self.n1, self.ncols)
+        eta = create_or_check_shape_3d(eta, self.n0, self.n1, self.nrows)
         cdef Py_ssize_t b0, b1, b[2]
         shape = (self.transform.csize0, self.transform.csize1, self.ncols)
         cdef double[:, :, :] dft_tau = array(shape, sizeof(double), 'd')

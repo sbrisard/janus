@@ -90,7 +90,7 @@ def invalid_tau_eta(valid_tau_shape, valid_eta_shape):
 #
 
 def test_cinit_invalid_params():
-    #@raises(ValueError)
+    @raises(ValueError)
     def test(green, n, h, transform=None):
         discretegreenop.create(green, n, h, transform)
 
