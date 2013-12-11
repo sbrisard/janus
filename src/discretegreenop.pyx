@@ -18,8 +18,6 @@ from checkarray cimport check_shape_4d
 from greenop cimport GreenOperator
 from fft.serial._serial_fft cimport _RealFFT2D
 
-cdef str INVALID_N_MSG = 'length of n must be {0} (was {1})'
-cdef str INVALID_H_MSG = 'h must be > 0 (was {0})'
 cdef str INVALID_B_MSG = 'shape of b must be ({0},) [was ({1},)]'
 
 def create(green, n, h, transform=None):
@@ -42,21 +40,21 @@ cdef class TruncatedGreenOperator:
     cdef double two_pi_over_h
 
     def __cinit__(self, GreenOperator green, n, double h, transform=None):
-        cdef Py_ssize_t d = len(n)
-        if d != green.mat.dim:
-            raise ValueError(INVALID_N_MSG.format(green.mat.dim, d))
+        self.dim = len(n)
+        if self.dim != green.mat.dim:
+            raise ValueError('length of shape must be {0} (was {1})'
+                             .format(green.mat.dim, self.dim))
         if h <= 0.:
-            raise ValueError(INVALID_H_MSG.format(h))
+            raise ValueError('h must be > 0 (was {0})'.format(h))
         self.green = green
         self.h = h
         self.two_pi_over_h = 2. * M_PI / h
-        self.dim = d
         self.nrows = green.nrows
         self.ncols = green.ncols
-        self.n = <Py_ssize_t *> malloc(d * sizeof(Py_ssize_t))
-        self.k = <double *> malloc(d * sizeof(double))
+        self.n = <Py_ssize_t *> malloc(self.dim * sizeof(Py_ssize_t))
+        self.k = <double *> malloc(self.dim * sizeof(double))
         cdef int i
-        for i in range(d):
+        for i in range(self.dim):
             #TODO Check for sign of shape[i]
             self.n[i] = n[i]
 
