@@ -20,8 +20,6 @@ from greenop cimport GreenOperator
 from fft.serial._serial_fft cimport _RealFFT2D
 from fft.serial._serial_fft cimport _RealFFT3D
 
-cdef str INVALID_B_MSG = 'shape of b must be ({0},) [was ({1},)]'
-
 def create(green, n, h, transform=None):
     if green.dim == 2:
         return TruncatedGreenOperator2D(green, n, h, transform)
