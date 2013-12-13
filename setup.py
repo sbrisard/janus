@@ -28,9 +28,12 @@ discretegreenop = Extension('discretegreenop',
 fft_serial = Extension('fft.serial._serial_fft',
                        sources=['src/fft/serial/_serial_fft.c'],
                        libraries=['fftw3'],
-                       include_dirs=['/opt/local/include'])
+                       include_dirs=['/opt/local/include', '/mingw/include'])
 
-ext_modules = [checkarray, matprop, greenop, discretegreenop, fft_serial]
+isotropic_fourth_rank_tensor = Extension('isotropic_fourth_rank_tensor',
+                                         sources=['src/isotropic_fourth_rank_tensor.c'])
+
+ext_modules = [checkarray, matprop, greenop, discretegreenop, fft_serial, isotropic_fourth_rank_tensor]
 
 if not(get_platform() in ('win32', 'win-amd64')):
     # TODO improve this uggly hack
