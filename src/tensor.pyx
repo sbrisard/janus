@@ -25,7 +25,7 @@ def isotropic4(sph, dev, dim):
         The dimension of the physical space on which the returned tensor
         operates.
     """
-    return IsotropicFourthRankTensor(sph, dev, dim)
+    return FourthRankIsotropicTensor(sph, dev, dim)
 
 @boundscheck(False)
 @wraparound(False)
@@ -48,7 +48,7 @@ cdef inline void c_apply_3D(double tr_coeff, double dev,
     y[4] = dev * x[4]
     y[5] = dev * x[5]
 
-cdef class IsotropicFourthRankTensor:
+cdef class FourthRankIsotropicTensor:
     @cdivision(True)
     def __cinit__(self, double sph, double dev, int dim):
         self.dim = dim
@@ -64,7 +64,7 @@ cdef class IsotropicFourthRankTensor:
             raise ValueError('dim must be 2 or 3 (was {0})'.format(dim))
 
     def __repr__(self):
-        return ('IsotropicFourthRankTensor(sph={0}, dev={1}, dim={2})'
+        return ('FourthRankIsotropicTensor(sph={0}, dev={1}, dim={2})'
                 .format(self.sph, self.dev, self.dim))
 
     cdef inline void c_apply(self, double[:] x, double[:] y):

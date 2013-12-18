@@ -2,7 +2,7 @@
 # isotropic tensor to a second rank, symmetric tensor.
 ctypedef void (*isotropic4_apply_t)(double, double, double[:], double[:])
 
-cdef class IsotropicFourthRankTensor:
+cdef class FourthRankIsotropicTensor:
     cdef int dim, sym
     cdef readonly double sph, dev
     cdef double s
