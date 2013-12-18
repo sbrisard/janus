@@ -4,7 +4,7 @@ from nose.tools import nottest
 from nose.tools import raises
 from numpy.testing import assert_array_almost_equal_nulp
 
-from tensors import create_fourth_rank_isotropic as tensor
+from tensor import create_fourth_rank_isotropic as tensor
 
 #
 # Test of the apply() method
