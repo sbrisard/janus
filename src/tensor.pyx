@@ -55,7 +55,7 @@ cdef class FourthRankIsotropicTensor:
         self.sym = (self.dim * (self.dim + 1)) / 2
         self.sph = sph
         self.dev = dev
-        self.s = (sph - dev) / <double> self.dim
+        self.tr = (sph - dev) / <double> self.dim
         if dim == 2:
             self.static_c_apply = c_apply_2D
         elif dim == 3:
@@ -68,7 +68,7 @@ cdef class FourthRankIsotropicTensor:
                 .format(self.sph, self.dev, self.dim))
 
     cdef inline void c_apply(self, double[:] x, double[:] y):
-        self.static_c_apply(self.s, self.dev, x, y)
+        self.static_c_apply(self.tr, self.dev, x, y)
 
     def apply(self, double[:] x, double[:] y=None):
         check_shape_1d(x, self.sym)
