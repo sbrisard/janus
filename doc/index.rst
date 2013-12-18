@@ -18,6 +18,7 @@ Contents:
    fft-api
    greenop-api
    discretegreenop-api
+   isotropic_fourth_rank_tensor-api
 
 Indices and tables
 ==================

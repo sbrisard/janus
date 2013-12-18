@@ -5,7 +5,23 @@ from cython cimport wraparound
 from checkarray cimport check_shape_1d
 from checkarray cimport create_or_check_shape_1d
 
+"""This module defines fourth rank, isotropic tensor, which are
+classically decomposed as the sum of a spherical and a deviatoric part
+
+where 
+
+"""
+
 def create(sph, dev, dim):
+    """Create a new instance of ``IsotropicFourthRankTensor``.
+
+    Parameters
+    ----------
+    sph: float
+        The spherical projection of the tensor to be returned.
+    dev: float
+        The deviatoric projection of the tensor to be returned.
+    """
     if dim == 2:
         return IsotropicFourthRankTensor2D(sph, dev)
     elif dim == 3:
