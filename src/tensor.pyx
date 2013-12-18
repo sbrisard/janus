@@ -12,7 +12,7 @@ where
 
 """
 
-def isotropic4(sph, dev, dim):
+def isotropic_4(sph, dev, dim):
     """Create a fourth rank, isotropic tensor.
 
     Parameters
