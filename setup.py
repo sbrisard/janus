@@ -33,7 +33,16 @@ fft_serial = Extension('fft.serial._serial_fft',
 isotropic_fourth_rank_tensor = Extension('isotropic_fourth_rank_tensor',
                                          sources=['src/isotropic_fourth_rank_tensor.c'])
 
-ext_modules = [checkarray, matprop, greenop, discretegreenop, fft_serial, isotropic_fourth_rank_tensor]
+local_operator = Extension('local_operator',
+                           sources=['src/local_operator.c'])
+
+ext_modules = [checkarray,
+               matprop,
+               greenop,
+               discretegreenop,
+               fft_serial,
+               isotropic_fourth_rank_tensor,
+               local_operator]
 
 if not(get_platform() in ('win32', 'win-amd64')):
     # TODO improve this uggly hack
