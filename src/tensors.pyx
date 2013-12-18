@@ -12,7 +12,7 @@ where
 
 """
 
-def create(sph, dev, dim):
+def create_fourth_rank_isotropic(sph, dev, dim):
     """Create a new instance of ``IsotropicFourthRankTensor``.
 
     Parameters

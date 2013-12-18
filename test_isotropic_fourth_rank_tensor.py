@@ -1,10 +1,10 @@
 import numpy as np
 
-import tensors
-
 from nose.tools import nottest
 from nose.tools import raises
 from numpy.testing import assert_array_almost_equal_nulp
+
+from tensors import create_fourth_rank_isotropic as tensor
 
 #
 # Test of the apply() method
@@ -22,7 +22,7 @@ def do_test_apply(sph, dev, dim, flag):
       - flag = 2: apply(x, y)
     """
     sym = (dim * (dim + 1)) // 2
-    t = tensors.create(sph, dev, dim)
+    t = tensor(sph, dev, dim)
 
     x = np.empty((sym,), dtype=np.float64)
     expected = np.empty_like(x)
@@ -65,7 +65,7 @@ def test_apply():
 def test_apply_invalid_params():
     for dim in [2, 3]:
         sym = (dim * (dim + 1)) // 2
-        t = tensors.create(2.5, -3.5, dim)
+        t = tensor(2.5, -3.5, dim)
         valid = np.zeros((sym,), dtype=np.float64)
         invalid = np.zeros((sym + 1), dtype=np.float64)
 
