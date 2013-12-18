@@ -1,5 +1,6 @@
-import isotropic_fourth_rank_tensor as tensor
 import numpy as np
+
+import tensors
 
 from nose.tools import nottest
 from nose.tools import raises
@@ -21,7 +22,7 @@ def do_test_apply(sph, dev, dim, flag):
       - flag = 2: apply(x, y)
     """
     sym = (dim * (dim + 1)) // 2
-    t = tensor.create(sph, dev, dim)
+    t = tensors.create(sph, dev, dim)
 
     x = np.empty((sym,), dtype=np.float64)
     expected = np.empty_like(x)
@@ -64,7 +65,7 @@ def test_apply():
 def test_apply_invalid_params():
     for dim in [2, 3]:
         sym = (dim * (dim + 1)) // 2
-        t = tensor.create(2.5, -3.5, dim)
+        t = tensors.create(2.5, -3.5, dim)
         valid = np.zeros((sym,), dtype=np.float64)
         invalid = np.zeros((sym + 1), dtype=np.float64)
 

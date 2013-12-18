@@ -30,8 +30,8 @@ fft_serial = Extension('fft.serial._serial_fft',
                        libraries=['fftw3'],
                        include_dirs=['/opt/local/include', '/mingw/include'])
 
-isotropic_fourth_rank_tensor = Extension('isotropic_fourth_rank_tensor',
-                                         sources=['src/isotropic_fourth_rank_tensor.c'])
+tensors = Extension('tensors',
+                    sources=['src/tensors.c'])
 
 local_operator = Extension('local_operator',
                            sources=['src/local_operator.c'])
@@ -41,7 +41,7 @@ ext_modules = [checkarray,
                greenop,
                discretegreenop,
                fft_serial,
-               isotropic_fourth_rank_tensor,
+               tensors,
                local_operator]
 
 if not(get_platform() in ('win32', 'win-amd64')):
