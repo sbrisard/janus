@@ -31,7 +31,7 @@ def isotropic_4(sph, dev, dim):
         return _FourthRankIsotropicTensor3D(sph, dev, dim)
     else:
         raise ValueError('dim must be 2 or 3 (was {0})'.format(dim))
-    
+
 cdef class FourthRankIsotropicTensor:
     @cdivision(True)
     def __cinit__(self, double sph, double dev, int dim):
@@ -49,7 +49,7 @@ cdef class FourthRankIsotropicTensor:
         return ('FourthRankIsotropicTensor(sph={0}, dev={1}, dim={2})'
                 .format(self.sph, self.dev, self.dim))
 
-    cdef void c_apply(self, double *x, int sx0, double *y, int sy0):
+    cdef void c_apply(self, char *x, int sx0, char *y, int sy0):
         pass
 
     @boundscheck(False)
@@ -57,18 +57,20 @@ cdef class FourthRankIsotropicTensor:
     def apply(self, double[:] x, double[:] y=None):
         check_shape_1d(x, self.sym)
         y = create_or_check_shape_1d(y, self.sym)
-        self.c_apply(&x[0], x.strides[0], &y[0], y.strides[0])
+        # TODO there must be a better way to get a pointer to the data
+        self.c_apply(<char *>&x[0], x.strides[0],
+                     <char *>&y[0], y.strides[0])
         return y
 
 cdef class _FourthRankIsotropicTensor2D(FourthRankIsotropicTensor):
-    cdef inline void c_apply(self, double *x, int sx0, double *y, int sy0):
+    cdef inline void c_apply(self, char *x, int sx0, char *y, int sy0):
         cdef double self_dev = self.dev
-        cdef char *xx = <char *> x
+        cdef char *xx = x
         cdef double x0 = (<double *> xx)[0]
         xx += sx0
         cdef double x1 = (<double *> xx)[0]
         cdef double aux = self.tr * (x0 + x1)
-        cdef char *yy = <char *> y
+        cdef char *yy = y
         (<double *> yy)[0] = aux + self_dev * x0
         yy += sy0
         (<double *> yy)[0] = aux + self_dev * x1
@@ -77,16 +79,16 @@ cdef class _FourthRankIsotropicTensor2D(FourthRankIsotropicTensor):
         (<double *> yy)[0] = self_dev * (<double *> xx)[0]
 
 cdef class _FourthRankIsotropicTensor3D(FourthRankIsotropicTensor):
-    cdef inline void c_apply(self, double *x, int sx0, double *y, int sy0):
+    cdef inline void c_apply(self, char *x, int sx0, char *y, int sy0):
         cdef double self_dev = self.dev
-        cdef char *xx = <char *> x
+        cdef char *xx = x
         cdef double x0 = (<double *> xx)[0]
         xx += sx0
         cdef double x1 = (<double *> xx)[0]
         xx += sx0
         cdef double x2 = (<double *> xx)[0]
         cdef double aux = self.tr * (x0 + x1 + x2)
-        cdef char *yy = <char *>y
+        cdef char *yy = y
         (<double *> yy)[0] = aux + self_dev * x0
         yy += sy0
         (<double *> yy)[0] = aux + self_dev * x1
