@@ -12,15 +12,18 @@ where
 
 """
 
-def create_fourth_rank_isotropic(sph, dev, dim):
-    """Create a new instance of ``IsotropicFourthRankTensor``.
+def isotropic4(sph, dev, dim):
+    """Create a fourth rank, isotropic tensor.
 
     Parameters
     ----------
     sph: float
-        The spherical projection of the tensor to be returned.
+        The spherical projection of the returned tensor.
     dev: float
-        The deviatoric projection of the tensor to be returned.
+        The deviatoric projection of the returned tensor.
+    dim: int
+        The dimension of the physical space on which the returned tensor
+        operates.
     """
     if dim == 2:
         return IsotropicFourthRankTensor2D(sph, dev)
