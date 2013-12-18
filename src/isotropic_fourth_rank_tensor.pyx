@@ -8,7 +8,7 @@ from checkarray cimport create_or_check_shape_1d
 """This module defines fourth rank, isotropic tensor, which are
 classically decomposed as the sum of a spherical and a deviatoric part
 
-where 
+where
 
 """
 
@@ -53,6 +53,9 @@ cdef class IsotropicFourthRankTensor2D:
         self.c_apply(x, y)
         return y
 
+    def __repr__(self):
+        return ('IsotropicFourthRankTensor(sph={0}, dev={1}, dim={2})'.format(self.sph, self.dev, self.dim))
+
 cdef class IsotropicFourthRankTensor3D:
 
     @cdivision(True)
@@ -79,3 +82,6 @@ cdef class IsotropicFourthRankTensor3D:
         y = create_or_check_shape_1d(y, 6)
         self.c_apply(x, y)
         return y
+
+    def __repr__(self):
+        return ('IsotropicFourthRankTensor(sph={0}, dev={1}, dim={2})'.format(self.sph, self.dev, self.dim))
