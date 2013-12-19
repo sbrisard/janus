@@ -40,7 +40,8 @@ cdef class FourthRankIsotropicTensor:
 
         """
         self.dim = dim
-        self.sym = (self.dim * (self.dim + 1)) / 2
+        self.nrows = (self.dim * (self.dim + 1)) / 2
+        self.ncols = self.nrows
         self.sph = sph
         self.dev = dev
         self.tr = (sph - dev) / <double> self.dim
@@ -55,8 +56,8 @@ cdef class FourthRankIsotropicTensor:
     @boundscheck(False)
     @wraparound(False)
     def apply(self, double[:] x, double[:] y=None):
-        check_shape_1d(x, self.sym)
-        y = create_or_check_shape_1d(y, self.sym)
+        check_shape_1d(x, self.ncols)
+        y = create_or_check_shape_1d(y, self.nrows)
         # TODO there must be a better way to get a pointer to the data
         self.c_apply(<char *>&x[0], x.strides[0],
                      <char *>&y[0], y.strides[0])
