@@ -16,6 +16,8 @@ library_dirs = ['C:\\opt\\Microsoft_HPC_Pack_2012\\Lib\\i386']
 checkarray = Extension('checkarray',
                        sources=['src/checkarray.c'])
 
+interfaces = Extension('interfaces', sources=['src/interfaces.c'])
+
 matprop = Extension('matprop',
                     sources=['src/matprop.c'])
 
@@ -37,6 +39,7 @@ local_operator = Extension('local_operator',
                            sources=['src/local_operator.c'])
 
 ext_modules = [checkarray,
+               interfaces,
                matprop,
                greenop,
                discretegreenop,

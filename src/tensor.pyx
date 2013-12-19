@@ -32,7 +32,7 @@ def isotropic_4(sph, dev, dim):
     else:
         raise ValueError('dim must be 2 or 3 (was {0})'.format(dim))
 
-cdef class FourthRankIsotropicTensor:
+cdef class FourthRankIsotropicTensor(Operator):
     @cdivision(True)
     def __cinit__(self, double sph, double dev, int dim):
         """Should not be called directly, as the returned object would not

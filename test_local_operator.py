@@ -8,11 +8,10 @@ import numpy as np
 import numpy.random as rnd
 
 import local_operator
+import tensor
 
 from nose.tools import nottest
 from numpy.testing import assert_array_almost_equal_nulp
-
-from isotropic_fourth_rank_tensor import create
 
 def indices(shape):
     return itertools.product(*map(range, shape))
@@ -21,7 +20,8 @@ def create_local_operators(shape):
     dim = len(shape)
     ops = np.empty(shape, dtype=object)
     for index in indices(shape):
-        ops[index] = create(2. * rnd.rand() - 1, 2. * rnd.rand() - 1, dim)
+        ops[index] = tensor.isotropic_4(2. * rnd.rand() - 1,
+                                        2. * rnd.rand() - 1, dim)
     return ops
 
 @nottest
