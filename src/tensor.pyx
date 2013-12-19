@@ -50,7 +50,7 @@ cdef class FourthRankIsotropicTensor:
         return ('FourthRankIsotropicTensor(sph={0}, dev={1}, dim={2})'
                 .format(self.sph, self.dev, self.dim))
 
-    cdef void c_apply(self, char *x, int sx0, char *y, int sy0):
+    cdef void c_apply(self, double[:] x, double[:] y):
         pass
 
     @boundscheck(False)
@@ -58,49 +58,29 @@ cdef class FourthRankIsotropicTensor:
     def apply(self, double[:] x, double[:] y=None):
         check_shape_1d(x, self.ncols)
         y = create_or_check_shape_1d(y, self.nrows)
-        # TODO there must be a better way to get a pointer to the data
-        self.c_apply(<char *>&x[0], x.strides[0],
-                     <char *>&y[0], y.strides[0])
+        self.c_apply(x, y)
         return y
 
 cdef class _FourthRankIsotropicTensor2D(FourthRankIsotropicTensor):
-    cdef inline void c_apply(self, char *x, int sx0, char *y, int sy0):
+    cdef inline void c_apply(self, double[:] x, double[:] y):
         cdef double self_dev = self.dev
-        cdef char *xx = x
-        cdef double x0 = (<double *> xx)[0]
-        xx += sx0
-        cdef double x1 = (<double *> xx)[0]
+        cdef double x0 = x[0]
+        cdef double x1 = x[1]
         cdef double aux = self.tr * (x0 + x1)
-        cdef char *yy = y
-        (<double *> yy)[0] = aux + self_dev * x0
-        yy += sy0
-        (<double *> yy)[0] = aux + self_dev * x1
-        xx += sx0
-        yy += sy0
-        (<double *> yy)[0] = self_dev * (<double *> xx)[0]
+        y[0] = aux + self_dev * x0
+        y[1] = aux + self_dev * x1
+        y[2] = self_dev * x[2]
 
 cdef class _FourthRankIsotropicTensor3D(FourthRankIsotropicTensor):
-    cdef inline void c_apply(self, char *x, int sx0, char *y, int sy0):
+    cdef inline void c_apply(self, double[:] x, double[:] y):
         cdef double self_dev = self.dev
-        cdef char *xx = x
-        cdef double x0 = (<double *> xx)[0]
-        xx += sx0
-        cdef double x1 = (<double *> xx)[0]
-        xx += sx0
-        cdef double x2 = (<double *> xx)[0]
+        cdef double x0 = x[0]
+        cdef double x1 = x[1]
+        cdef double x2 = x[2]
         cdef double aux = self.tr * (x0 + x1 + x2)
-        cdef char *yy = y
-        (<double *> yy)[0] = aux + self_dev * x0
-        yy += sy0
-        (<double *> yy)[0] = aux + self_dev * x1
-        yy += sy0
-        (<double *> yy)[0] = aux + self_dev * x2
-        xx += sx0
-        yy += sy0
-        (<double *> yy)[0] = self_dev * (<double *> xx)[0]
-        xx += sx0
-        yy += sy0
-        (<double *> yy)[0] = self_dev * (<double *> xx)[0]
-        xx += sx0
-        yy += sy0
-        (<double *> yy)[0] = self_dev * (<double *> xx)[0]
+        y[0] = aux + self_dev * x0
+        y[1] = aux + self_dev * x1
+        y[2] = aux + self_dev * x2
+        y[3] = self_dev * x[3]
+        y[4] = self_dev * x[4]
+        y[5] = self_dev * x[5]

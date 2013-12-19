@@ -9,4 +9,5 @@ cdef class FourthRankIsotropicTensor:
     cdef readonly int dim, nrows, ncols
     cdef readonly double sph, dev
     cdef double tr
-    cdef void c_apply(self, char *x, int sx0, char *y, int sy0)
+    cdef void c_apply(self, double[:] x, double[:] y)
+
