@@ -12,6 +12,7 @@ cdef class LocalOperator2D:
     cdef readonly int dim
     cdef object[:, :] op
     cdef Py_ssize_t n0, n1
+    cdef int nrows, ncols
 
     def __cinit__(self, object[:, :] op):
         # TODO correct this line
@@ -21,6 +22,15 @@ cdef class LocalOperator2D:
         self.n1 = op.shape[1]
         # TODO this is potentially dangerous. Take a deep copy instead
         self.op = op
+        cdef int i0, i1, nrows, ncols
+        for i0 in range(self.n0):
+            for i1 in range(self.n1):
+                nrows = op[i0, i1].nrows
+                ncols = op[i0, i1].ncols
+                if nrows > self.nrows:
+                    self.nrows = nrows
+                if ncols > self.ncols:
+                    self.ncols = ncols
 
     @boundscheck(False)
     @wraparound(False)
@@ -33,12 +43,12 @@ cdef class LocalOperator2D:
                 # TODO This should be optimized
                 op = self.op[i0, i1]
                 op.c_apply(x[i0, i1, :], y[i0, i1, :])
-                #self.op[i0, i1].apply(x[i0, i1, :], y[i0, i1, :])
 
     @boundscheck(False)
     @wraparound(False)
     def apply(self, double[:, :, :] x, double[:, :, :] y=None):
         # TODO How to specify shape of input and output?
-        #check_shape_3d(x, n0, n1,
+        check_shape_3d(x, self.n0, self.n1, self.ncols)
+        y = create_or_check_shape_3d(y, self.n0, self.n1, self.nrows)
         self.c_apply(x, y)
         return y
