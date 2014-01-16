@@ -1,5 +1,4 @@
 import numpy
-import mpi4py
 import os
 
 from distutils.core import setup
@@ -8,10 +7,17 @@ from distutils.sysconfig import get_config_var
 from distutils.util import get_platform
 
 include_dirs = [numpy.get_include(),
-                mpi4py.get_include(),
-                'C:\\opt\\Microsoft_HPC_Pack_2012\\Inc',]
+                'C:\\opt\\Microsoft_HPC_Pack_2012\\Inc',
+                'C:\\opt\\fftw-3.3.3-dll64']
 
-library_dirs = ['C:\\opt\\Microsoft_HPC_Pack_2012\\Lib\\i386']
+library_dirs = ['C:\\opt\\Microsoft_HPC_Pack_2012\\Lib\\i386',
+                'C:\\opt\\fftw-3.3.3-dll64']
+
+try:
+    import mpi4py
+    include_dirs.append(mpi4py.get_include())
+except ImportError:
+    pass
 
 checkarray = Extension('checkarray',
                        sources=['src/checkarray.c'])
@@ -46,6 +52,7 @@ ext_modules = [checkarray,
                fft_serial,
                tensor,
                local_operator]
+
 
 if not(get_platform() in ('win32', 'win-amd64')):
     # TODO improve this uggly hack
