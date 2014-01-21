@@ -1,11 +1,12 @@
 import numpy as np
 import numpy.random as nprnd
 
+import fft.serial
+import fft.parallel
+
 from mpi4py import MPI
 from nose.tools import assert_equal
 from nose.tools import nottest
-import fft.serial
-import fft.parallel
 
 @nottest
 def do_test_r2c(shape):
