@@ -1,4 +1,6 @@
 import itertools
+import os.path
+
 import numpy as np
 import numpy.random as rnd
 
@@ -331,7 +333,7 @@ def do_test_convolve(path_to_ref, rel_err):
     else:
         tau = dummy[:, :, :, 0:green.ncols]
         expected = dummy[:, :, :, green.ncols:]
-        
+
     actual = np.zeros(transform.rshape + (green.nrows,), np.float64)
     green.convolve(tau, actual)
 
@@ -341,6 +343,8 @@ def do_test_convolve(path_to_ref, rel_err):
     assert_array_almost_equal_nulp(expected, np.asarray(actual), nulp)
 
 def test_convolve():
+
+    directory = os.path.dirname(os.path.realpath(__file__))
 
     params = [('truncated_green_operator_200x300_unit_tau_xx_10x10+95+145.npy',
                1.2E-10),
@@ -361,8 +365,9 @@ def test_convolve():
               ('truncated_green_operator_40x50x60_unit_tau_xy_10x10x10+15+20+25.npy',
                1.6E-9),
                ]
-    for path_to_ref, rel_err in params:
-        yield do_test_convolve, path_to_ref, rel_err
+    for filename, rel_err in params:
+        path = os.path.join(directory, 'data', filename)
+        yield do_test_convolve, path, rel_err
 
 #
 # 4.2 Invalid parameters
