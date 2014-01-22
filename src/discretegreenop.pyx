@@ -9,13 +9,13 @@ from libc.math cimport M_PI
 from libc.stdlib cimport malloc
 from libc.stdlib cimport free
 
-from checkarray cimport create_or_check_shape_1d
-from checkarray cimport create_or_check_shape_2d
-from checkarray cimport create_or_check_shape_3d
-from checkarray cimport create_or_check_shape_4d
-from checkarray cimport check_shape_1d
-from checkarray cimport check_shape_3d
-from checkarray cimport check_shape_4d
+from utils.checkarray cimport create_or_check_shape_1d
+from utils.checkarray cimport create_or_check_shape_2d
+from utils.checkarray cimport create_or_check_shape_3d
+from utils.checkarray cimport create_or_check_shape_4d
+from utils.checkarray cimport check_shape_1d
+from utils.checkarray cimport check_shape_3d
+from utils.checkarray cimport check_shape_4d
 from greenop cimport GreenOperator
 from fft.serial._serial_fft cimport _RealFFT2D
 from fft.serial._serial_fft cimport _RealFFT3D

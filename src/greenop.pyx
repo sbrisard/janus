@@ -4,9 +4,9 @@ from cython cimport wraparound
 from cython.view cimport array
 from libc.math cimport M_SQRT2
 
-from checkarray cimport check_shape_1d
-from checkarray cimport create_or_check_shape_1d
-from checkarray cimport create_or_check_shape_2d
+from utils.checkarray cimport check_shape_1d
+from utils.checkarray cimport create_or_check_shape_1d
+from utils.checkarray cimport create_or_check_shape_2d
 from matprop cimport IsotropicLinearElasticMaterial as Material
 
 def create(mat):

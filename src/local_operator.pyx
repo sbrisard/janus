@@ -2,10 +2,9 @@ from cpython cimport PyObject
 from cython cimport boundscheck
 from cython cimport wraparound
 
-from checkarray cimport check_shape_3d
-from checkarray cimport create_or_check_shape_3d
-
 from interfaces cimport Operator
+from utils.checkarray cimport check_shape_3d
+from utils.checkarray cimport create_or_check_shape_3d
 
 cdef class LocalOperator2D:
     cdef readonly tuple shape
