@@ -8,10 +8,9 @@ from distutils.util import get_platform
 
 include_dirs = [numpy.get_include(),
                 'C:\\opt\\Microsoft_HPC_Pack_2012\\Inc',
-                'C:\\opt\\fftw-3.3.3-dll64']
+                '/opt/local/include']
 
-library_dirs = ['C:\\opt\\Microsoft_HPC_Pack_2012\\Lib\\i386',
-                'C:\\opt\\fftw-3.3.3-dll64']
+library_dirs = ['C:\\opt\\Microsoft_HPC_Pack_2012\\Lib\\i386']
 
 try:
     import mpi4py
@@ -36,7 +35,8 @@ discretegreenop = Extension('discretegreenop',
 fft_serial = Extension('fft.serial._serial_fft',
                        sources=['src/fft/serial/_serial_fft.c'],
                        libraries=['fftw3'],
-                       include_dirs=['/opt/local/include', '/mingw/include'])
+                       library_dirs=library_dirs,
+                       include_dirs=include_dirs)
 
 tensor = Extension('tensor',
                    sources=['src/tensor.c'])
