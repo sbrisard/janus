@@ -1,15 +1,15 @@
 import numpy as np
 
-import discretegreenop
-import fft.parallel
-import greenop
+import janus.discretegreenop
+import janus.fft.parallel
+import janus.greenop as greenop
 
 from mpi4py import MPI
 from nose.tools import nottest
 from nose.tools import raises
 from numpy.testing import assert_array_almost_equal_nulp
 
-from matprop import IsotropicLinearElasticMaterial as Material
+from janus.matprop import IsotropicLinearElasticMaterial as Material
 
 @nottest
 def do_test_convolve(path_to_ref, rel_err):
@@ -35,11 +35,11 @@ def do_test_convolve(path_to_ref, rel_err):
     n = comm.bcast(n, root)
 
     # Create local FFT object, and send local grid-size to root process
-    transform = fft.parallel.create_real(n, comm)
+    transform = janus.fft.parallel.create_real(n, comm)
     n_locs = comm.gather((transform.rshape[0], transform.offset0), root)
 
     mat = Material(0.75, 0.3, len(n))
-    green = discretegreenop.create(greenop.create(mat), n, 1., transform)
+    green = janus.discretegreenop.create(greenop.create(mat), n, 1., transform)
 
     # Scatter tau
     tau_locs = None

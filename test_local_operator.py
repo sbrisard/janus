@@ -1,14 +1,10 @@
-if __name__ == '__main__':
-    import sys
-    sys.path.append('./src')
-
 import itertools
 
 import numpy as np
 import numpy.random as rnd
 
-import local_operator
-import tensor
+import janus.local_operator as local_operator
+import janus.tensor as tensor
 
 from nose.tools import nottest
 from numpy.testing import assert_array_almost_equal_nulp
@@ -45,5 +41,3 @@ def do_test_apply(shape, nulp):
 def test_apply():
     do_test_apply((32, 64), 1)
 
-if __name__ == '__main__':
-    do_test_apply((2, 3), 1)

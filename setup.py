@@ -21,39 +21,39 @@ except ImportError:
     pass
 
 extensions = []
-extensions.append(Extension('utils.checkarray',
-                            sources=['src/utils/checkarray.pyx',
-                                     'src/utils/checkarray.pxd']))
+extensions.append(Extension('janus.utils.checkarray',
+                            sources=['janus/utils/checkarray.pyx',
+                                     'janus/utils/checkarray.pxd']))
 
-extensions.append(Extension('interfaces',
-                            sources=['src/interfaces.pyx',
-                                     'src/interfaces.pxd']))
+extensions.append(Extension('janus.interfaces',
+                            sources=['janus/interfaces.pyx',
+                                     'janus/interfaces.pxd']))
 
-extensions.append(Extension('matprop',
-                            sources=['src/matprop.pyx',
-                                     'src/matprop.pxd']))
+extensions.append(Extension('janus.matprop',
+                            sources=['janus/matprop.pyx',
+                                     'janus/matprop.pxd']))
 
-extensions.append(Extension('greenop',
-                            sources=['src/greenop.pyx',
-                                     'src/greenop.pxd']))
+extensions.append(Extension('janus.greenop',
+                            sources=['janus/greenop.pyx',
+                                     'janus/greenop.pxd']))
 
-extensions.append(Extension('discretegreenop',
-                            sources=['src/discretegreenop.pyx']))
+extensions.append(Extension('janus.discretegreenop',
+                            sources=['janus/discretegreenop.pyx']))
 
-extensions.append(Extension('fft.serial._serial_fft',
-                            sources=['src/fft/serial/_serial_fft.pyx',
-                                     'src/fft/serial/_serial_fft.pxd',
-                                     'src/fft/serial/fftw.pxd'],
+extensions.append(Extension('janus.fft.serial._serial_fft',
+                            sources=['janus/fft/serial/_serial_fft.pyx',
+                                     'janus/fft/serial/_serial_fft.pxd',
+                                     'janus/fft/serial/fftw.pxd'],
                             libraries=['fftw3'],
                             library_dirs=library_dirs,
                             include_dirs=include_dirs))
 
-extensions.append(Extension('tensor',
-                            sources=['src/tensor.pyx',
-                                     'src/tensor.pxd']))
+extensions.append(Extension('janus.tensor',
+                            sources=['janus/tensor.pyx',
+                                     'janus/tensor.pxd']))
 
-extensions.append(Extension('local_operator',
-                            sources=['src/local_operator.pyx']))
+extensions.append(Extension('janus.local_operator',
+                            sources=['janus/local_operator.pyx']))
 
 if not(get_platform() in ('win32', 'win-amd64')):
     # TODO improve this uggly hack
@@ -63,10 +63,10 @@ if not(get_platform() in ('win32', 'win-amd64')):
     os.environ['LDSHARED'] = get_config_var('LDSHARED').replace(gcc, mpicc)
 
     extensions.append(
-               Extension('fft.parallel._parallel_fft',
-                         sources=['src/fft/parallel/_parallel_fft.pyx',
-                                  'src/fft/parallel/_parallel_fft.pxd',
-                                  'src/fft/parallel/fftw_mpi.pxd'],
+               Extension('janus.fft.parallel._parallel_fft',
+                         sources=['janus/fft/parallel/_parallel_fft.pyx',
+                                  'janus/fft/parallel/_parallel_fft.pxd',
+                                  'janus/fft/parallel/fftw_mpi.pxd'],
                          libraries=['fftw3', 'fftw3_mpi'],
                          include_dirs = [mpi4py.get_include(),
                                          '/opt/local/include'],
@@ -74,6 +74,6 @@ if not(get_platform() in ('win32', 'win-amd64')):
 
 setup(name = 'Homogenization through FFT',
       packages=[''],
-      package_dir = {'': 'src'},
+      package_dir = {'': ''},
       cmdclass = {'build_ext': build_ext},
       ext_modules = extensions)

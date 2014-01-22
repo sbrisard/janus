@@ -2,15 +2,15 @@ import itertools
 import numpy as np
 import numpy.random as rnd
 
-import discretegreenop
-import fft.serial
-import greenop
+import janus.discretegreenop
+import janus.fft.serial
+import janus.greenop
 
 from nose.tools import nottest
 from nose.tools import raises
 from numpy.testing import assert_array_almost_equal_nulp
 
-from matprop import IsotropicLinearElasticMaterial as Material
+from janus.matprop import IsotropicLinearElasticMaterial as Material
 
 # All tests are performed with discrete Green operators based on these grids
 GRID_SIZES = ([(8, 8), (8, 16), (16, 8), (4, 4, 4)]
@@ -25,7 +25,7 @@ def discrete_green_operator(n, h, transform=None):
     """
 
     mat = Material(0.75, 0.3, len(n))
-    return discretegreenop.create(greenop.create(mat), n, h, transform)
+    return janus.discretegreenop.create(janus.greenop.create(mat), n, h, transform)
 
 def get_base(a):
     # TODO This is a hack to avoid writing uggly things like a.base.base.base.
@@ -92,17 +92,17 @@ def invalid_tau_eta(valid_tau_shape, valid_eta_shape):
 def test_cinit_invalid_params():
     @raises(ValueError)
     def test(green, n, h, transform=None):
-        discretegreenop.create(green, n, h, transform)
+        janus.discretegreenop.create(green, n, h, transform)
 
-    green_2D = greenop.create(Material(0.75, 0.3, 2))
-    green_3D = greenop.create(Material(0.75, 0.3, 3))
+    green_2D = janus.greenop.create(Material(0.75, 0.3, 2))
+    green_3D = janus.greenop.create(Material(0.75, 0.3, 3))
 
     params = [(green_3D, (9, 9), 1., None),
               (green_2D, (-1, 9), 1., None),
               (green_2D, (9, -1), 1., None),
               (green_2D, (9, 9), -1., None),
-              (green_2D, (9, 9), 1., fft.serial.create_real((8, 9))),
-              (green_2D, (9, 9), 1., fft.serial.create_real((9, 8))),
+              (green_2D, (9, 9), 1., janus.fft.serial.create_real((8, 9))),
+              (green_2D, (9, 9), 1., janus.fft.serial.create_real((9, 8))),
               (green_2D, (9, 9, 9), 1., None),
               (green_3D, (-1, 9, 9), 1., None),
               (green_3D, (9, -1, 9), 1., None),
@@ -321,7 +321,7 @@ def test_apply_invalid_params():
 def do_test_convolve(path_to_ref, rel_err):
     dummy = np.load(path_to_ref)
     n = dummy.shape[:-1]
-    transform = fft.serial.create_real(n)
+    transform = janus.fft.serial.create_real(n)
     green = discrete_green_operator(n, 1., transform)
 
     # TODO This is uggly
@@ -372,7 +372,7 @@ def test_convolve():
 def test_convolve_invalid_params():
     for dim in [2, 3]:
         n = tuple(2**(i + 3) for i in range(dim))
-        transform = fft.serial.create_real(n)
+        transform = janus.fft.serial.create_real(n)
         green = discrete_green_operator(n, 1., transform)
         params = invalid_tau_eta(n + (green.ncols,),
                                  n + (green.nrows,))

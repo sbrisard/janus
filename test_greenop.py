@@ -1,7 +1,7 @@
 import numpy as np
 
-import greenop
-import mandelvoigt as mv
+import janus.greenop as greenop
+import janus.mandelvoigt as mv
 
 from nose.tools import nottest
 from nose.tools import raises
@@ -9,7 +9,7 @@ from numpy import cos
 from numpy import sin
 from numpy.testing import assert_array_almost_equal_nulp
 
-from matprop import IsotropicLinearElasticMaterial as Material
+from janus.matprop import IsotropicLinearElasticMaterial as Material
 
 DIMS = [2, 3]
 MU = 0.7

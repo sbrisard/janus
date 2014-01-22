@@ -1,14 +1,16 @@
-from nose.tools import assert_less
-from nose.tools import nottest
-from nose.tools import raises
 import numpy as np
 import numpy.random as nprnd
 import numpy.fft as npfft
-import fft.serial
+
+import janus.fft.serial
+
+from nose.tools import assert_less
+from nose.tools import nottest
+from nose.tools import raises
 
 @nottest
 def do_test_r2c(shape, inplace, delta):
-    transform = fft.serial.create_real(shape)
+    transform = janus.fft.serial.create_real(shape)
     a = 2. * nprnd.rand(*transform.rshape) - 1.
     if inplace:
         output = transform.r2c(a, np.empty(transform.cshape, dtype=np.float64))
@@ -28,7 +30,7 @@ def do_test_r2c(shape, inplace, delta):
 
 @nottest
 def do_test_c2r(shape, inplace, delta):
-    transform = fft.serial.create_real(shape)
+    transform = janus.fft.serial.create_real(shape)
     expected = 2. * nprnd.rand(*transform.rshape) - 1.
     a = np.asarray(transform.r2c(expected))
     if inplace:
@@ -61,14 +63,14 @@ def test_transform():
 def do_test_r2c_invalid_params(shape, rshape, cshape):
     r = np.empty(rshape, dtype = np.float64)
     c = np.empty(cshape, dtype = np.float64)
-    fft.serial.create_real(shape).r2c(r, c)
+    janus.fft.serial.create_real(shape).r2c(r, c)
 
 @nottest
 @raises(ValueError)
 def do_test_c2r_invalid_params(shape, rshape, cshape):
     c = np.empty(cshape, dtype = np.float64)
     r = np.empty(rshape, dtype = np.float64)
-    fft.serial.create_real(shape).c2r(c, r)
+    janus.fft.serial.create_real(shape).c2r(c, r)
 
 def test_transform_invalid_params():
     params = [((128, 256), (127, 256), (128, 258)),

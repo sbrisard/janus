@@ -4,10 +4,10 @@ from cython cimport wraparound
 from cython.view cimport array
 from libc.math cimport M_SQRT2
 
-from utils.checkarray cimport check_shape_1d
-from utils.checkarray cimport create_or_check_shape_1d
-from utils.checkarray cimport create_or_check_shape_2d
-from matprop cimport IsotropicLinearElasticMaterial as Material
+from janus.matprop cimport IsotropicLinearElasticMaterial as Material
+from janus.utils.checkarray cimport check_shape_1d
+from janus.utils.checkarray cimport create_or_check_shape_1d
+from janus.utils.checkarray cimport create_or_check_shape_2d
 
 def create(mat):
     if mat.dim == 2:

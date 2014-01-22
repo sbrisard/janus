@@ -1,8 +1,8 @@
 import numpy as np
 import numpy.random as nprnd
 
-import fft.serial
-import fft.parallel
+import janus.fft.serial
+import janus.fft.parallel
 
 from mpi4py import MPI
 from nose.tools import assert_equal
@@ -14,8 +14,8 @@ def do_test_r2c(shape):
     root = 0
     rank = comm.rank
 
-    fft.parallel.init()
-    pfft = fft.parallel.create_real(shape, comm)
+    janus.fft.parallel.init()
+    pfft = janus.fft.parallel.create_real(shape, comm)
 
     # Root process gathers local n0 and offset
     local_sizes = comm.gather(sendobj=(pfft.rshape[0], pfft.offset0), root=root)
@@ -35,7 +35,7 @@ def do_test_r2c(shape):
 
     # Root process computes serial FFT
     if rank == root:
-        sfft = fft.serial.create_real(shape)
+        sfft = janus.fft.serial.create_real(shape)
         actual = np.empty(sfft.cshape, dtype=np.float64)
         for cloc, (n0, offset0) in zip(clocs, local_sizes):
             actual[offset0:offset0 + n0] = cloc

@@ -4,7 +4,7 @@ from nose.tools import nottest
 from nose.tools import raises
 from numpy.testing import assert_array_almost_equal_nulp
 
-from tensor import isotropic_4
+from janus.tensor import isotropic_4
 
 #
 # Test of the apply() method

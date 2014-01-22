@@ -1,8 +1,7 @@
+import janus.mandelvoigt as mandelvoigt
+
 from nose.tools import nottest
 from nose.tools import raises
-
-import mandelvoigt
-
 
 @nottest
 @raises(ValueError)

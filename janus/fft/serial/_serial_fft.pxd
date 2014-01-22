@@ -1,4 +1,4 @@
-from fftw cimport *
+from janus.fft.serial.fftw cimport *
 from libc.stddef cimport ptrdiff_t
 
 cdef inline int padding(int n):

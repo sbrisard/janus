@@ -1,8 +1,8 @@
-from matprop import IsotropicLinearElasticMaterial as Material
-
 from nose.tools import assert_almost_equals
 from nose.tools import assert_equals
 from nose.tools import raises
+
+from janus.matprop import IsotropicLinearElasticMaterial as Material
 
 def dotest_cinit(g, k, nu, dim):
     mat = Material(g, nu, dim)

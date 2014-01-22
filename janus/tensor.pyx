@@ -2,8 +2,8 @@ from cython cimport boundscheck
 from cython cimport cdivision
 from cython cimport wraparound
 
-from utils.checkarray cimport check_shape_1d
-from utils.checkarray cimport create_or_check_shape_1d
+from janus.utils.checkarray cimport check_shape_1d
+from janus.utils.checkarray cimport create_or_check_shape_1d
 
 """This module defines fourth rank, isotropic tensor, which are
 classically decomposed as the sum of a spherical and a deviatoric part

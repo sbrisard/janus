@@ -9,16 +9,16 @@ from libc.math cimport M_PI
 from libc.stdlib cimport malloc
 from libc.stdlib cimport free
 
-from utils.checkarray cimport create_or_check_shape_1d
-from utils.checkarray cimport create_or_check_shape_2d
-from utils.checkarray cimport create_or_check_shape_3d
-from utils.checkarray cimport create_or_check_shape_4d
-from utils.checkarray cimport check_shape_1d
-from utils.checkarray cimport check_shape_3d
-from utils.checkarray cimport check_shape_4d
-from greenop cimport GreenOperator
-from fft.serial._serial_fft cimport _RealFFT2D
-from fft.serial._serial_fft cimport _RealFFT3D
+from janus.fft.serial._serial_fft cimport _RealFFT2D
+from janus.fft.serial._serial_fft cimport _RealFFT3D
+from janus.greenop cimport GreenOperator
+from janus.utils.checkarray cimport create_or_check_shape_1d
+from janus.utils.checkarray cimport create_or_check_shape_2d
+from janus.utils.checkarray cimport create_or_check_shape_3d
+from janus.utils.checkarray cimport create_or_check_shape_4d
+from janus.utils.checkarray cimport check_shape_1d
+from janus.utils.checkarray cimport check_shape_3d
+from janus.utils.checkarray cimport check_shape_4d
 
 def create(green, n, h, transform=None):
     if green.dim == 2:
