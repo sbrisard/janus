@@ -21,9 +21,9 @@ except ImportError:
     pass
 
 extensions = []
-extensions.append(Extension('checkarray',
-                            sources=['src/checkarray.pyx',
-                                     'src/checkarray.pxd']))
+extensions.append(Extension('utils.checkarray',
+                            sources=['src/utils/checkarray.pyx',
+                                     'src/utils/checkarray.pxd']))
 
 extensions.append(Extension('interfaces',
                             sources=['src/interfaces.pyx',
