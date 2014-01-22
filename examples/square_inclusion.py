@@ -8,7 +8,7 @@ import skimage.io
 petsc4py.init(sys.argv)
 skimage.io.use_plugin('freeimage', 'imread')
 skimage.io.use_plugin('freeimage', 'imsave')
-sys.path.append('./src')
+sys.path.append('../src')
 
 import discretegreenop
 import fft.parallel

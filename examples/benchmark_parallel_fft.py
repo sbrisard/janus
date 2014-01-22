@@ -4,7 +4,7 @@ import time
 import numpy as np
 import numpy.random as nprnd
 
-sys.path.append('./src')
+sys.path.append('../src')
 import fft.parallel
 
 from mpi4py import MPI
