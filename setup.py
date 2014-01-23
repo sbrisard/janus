@@ -48,9 +48,9 @@ extensions.append(Extension('janus.fft.serial._serial_fft',
                             library_dirs=library_dirs,
                             include_dirs=include_dirs))
 
-extensions.append(Extension('janus.tensor',
-                            sources=['janus/tensor.pyx',
-                                     'janus/tensor.pxd']))
+extensions.append(Extension('janus.utils.tensors',
+                            sources=['janus/utils/tensors.pyx',
+                                     'janus/utils/tensors.pxd']))
 
 extensions.append(Extension('janus.local_operator',
                             sources=['janus/local_operator.pyx']))
