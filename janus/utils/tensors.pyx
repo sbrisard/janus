@@ -1,4 +1,7 @@
-"""Functions and classes for the creation and manipulation of tensors.
+"""Creation and manipulation of tensors (:mod:`janus.utils.tensors`)
+=================================================================
+
+Functions and classes for the creation and manipulation of tensors.
 
 Functions:
 
@@ -7,6 +10,8 @@ Functions:
 Classes:
 
 - FourthRankIsotropicTensor -- Fourth-rank, isotropic tensor.
+- FourthRankIsotropicTensor2D
+- FourthRankIsotropicTensor3D
 
 """
 from cython cimport boundscheck
@@ -17,7 +22,7 @@ from cython cimport wraparound
 def isotropic_4(sph, dev, dim):
     """isotropic_4(sph, dev, dim)
 
-    Create a fourth rank, isotropic tensor.
+    Create a fourth rank, isotrpic tensor.
 
     Parameters
     ----------
@@ -31,9 +36,9 @@ def isotropic_4(sph, dev, dim):
 
     """
     if dim == 2:
-        return _FourthRankIsotropicTensor2D(sph, dev, dim)
+        return FourthRankIsotropicTensor2D(sph, dev, dim)
     elif dim == 3:
-        return _FourthRankIsotropicTensor3D(sph, dev, dim)
+        return FourthRankIsotropicTensor3D(sph, dev, dim)
     else:
         raise ValueError('dim must be 2 or 3 (was {0})'.format(dim))
 
@@ -96,7 +101,15 @@ cdef class FourthRankIsotropicTensor(Operator):
         return ('FourthRankIsotropicTensor(sph={0}, dev={1}, dim={2})'
                 .format(self.sph, self.dev, self.dim))
 
-cdef class _FourthRankIsotropicTensor2D(FourthRankIsotropicTensor):
+
+cdef class FourthRankIsotropicTensor2D(FourthRankIsotropicTensor):
+
+    """Specialization of :class:`FourthRankIsotropicTensor` to 2D.
+
+    """
+
+    @boundscheck(False)
+    @wraparound(False)
     cdef inline void c_apply(self, double[:] x, double[:] y):
         cdef double self_dev = self.dev
         cdef double x0 = x[0]
@@ -106,7 +119,11 @@ cdef class _FourthRankIsotropicTensor2D(FourthRankIsotropicTensor):
         y[1] = aux + self_dev * x1
         y[2] = self_dev * x[2]
 
-cdef class _FourthRankIsotropicTensor3D(FourthRankIsotropicTensor):
+
+cdef class FourthRankIsotropicTensor3D(FourthRankIsotropicTensor):
+
+    @boundscheck(False)
+    @wraparound(False)
     cdef inline void c_apply(self, double[:] x, double[:] y):
         cdef double self_dev = self.dev
         cdef double x0 = x[0]
