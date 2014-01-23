@@ -13,9 +13,6 @@ from cython cimport boundscheck
 from cython cimport cdivision
 from cython cimport wraparound
 
-from janus.utils.checkarray cimport check_shape_1d
-from janus.utils.checkarray cimport create_or_check_shape_1d
-
 
 def isotropic_4(sph, dev, dim):
     """isotropic_4(sph, dev, dim)
@@ -98,14 +95,6 @@ cdef class FourthRankIsotropicTensor(Operator):
     def __repr__(self):
         return ('FourthRankIsotropicTensor(sph={0}, dev={1}, dim={2})'
                 .format(self.sph, self.dev, self.dim))
-
-    @boundscheck(False)
-    @wraparound(False)
-    def apply(self, double[:] x, double[:] y=None):
-        check_shape_1d(x, self.ncols)
-        y = create_or_check_shape_1d(y, self.nrows)
-        self.c_apply(x, y)
-        return y
 
 cdef class _FourthRankIsotropicTensor2D(FourthRankIsotropicTensor):
     cdef inline void c_apply(self, double[:] x, double[:] y):
