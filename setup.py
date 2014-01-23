@@ -25,9 +25,13 @@ extensions.append(Extension('janus.utils.checkarray',
                             sources=['janus/utils/checkarray.pyx',
                                      'janus/utils/checkarray.pxd']))
 
-extensions.append(Extension('janus.interfaces',
-                            sources=['janus/interfaces.pyx',
-                                     'janus/interfaces.pxd']))
+extensions.append(Extension('janus.utils.interfaces',
+                            sources=['janus/utils/interfaces.pyx',
+                                     'janus/utils/interfaces.pxd']))
+
+extensions.append(Extension('janus.utils.tensors',
+                            sources=['janus/utils/tensors.pyx',
+                                     'janus/utils/tensors.pxd']))
 
 extensions.append(Extension('janus.matprop',
                             sources=['janus/matprop.pyx',
@@ -47,10 +51,6 @@ extensions.append(Extension('janus.fft.serial._serial_fft',
                             libraries=['fftw3'],
                             library_dirs=library_dirs,
                             include_dirs=include_dirs))
-
-extensions.append(Extension('janus.utils.tensors',
-                            sources=['janus/utils/tensors.pyx',
-                                     'janus/utils/tensors.pxd']))
 
 extensions.append(Extension('janus.local_operator',
                             sources=['janus/local_operator.pyx']))

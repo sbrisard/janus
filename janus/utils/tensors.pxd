@@ -1,4 +1,4 @@
-from janus.interfaces cimport Operator
+from janus.utils.interfaces cimport Operator
 
 cdef class FourthRankIsotropicTensor(Operator):
     cdef readonly int dim

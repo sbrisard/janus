@@ -2,9 +2,9 @@ from cpython cimport PyObject
 from cython cimport boundscheck
 from cython cimport wraparound
 
-from janus.interfaces cimport Operator
 from janus.utils.checkarray cimport check_shape_3d
 from janus.utils.checkarray cimport create_or_check_shape_3d
+from janus.utils.interfaces cimport Operator
 
 cdef class LocalOperator2D:
     cdef readonly tuple shape
