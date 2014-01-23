@@ -1,5 +1,5 @@
 API of module ``matprop``
 ===========================
 
-.. automodule:: matprop
+.. automodule:: janus.matprop
    :members:

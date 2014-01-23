@@ -1,13 +1,6 @@
 from janus.interfaces cimport Operator
 
 cdef class FourthRankIsotropicTensor(Operator):
-    """
-    nrows: int
-        The number of rows of the underlying matrix.
-    ncols: int
-        The number of columns of the underlying matrix.
-
-    """
     cdef readonly int dim
     cdef readonly double sph, dev
     cdef double tr

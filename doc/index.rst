@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Janus's documentation!
-=================================
+Documentation of the Janus library
+==================================
 
 A library for the homogenization of periodic microstructures using the FFT method of Moulinec and Suquet (1994, 1998).
 
@@ -18,6 +18,7 @@ Contents:
    fft-api
    greenop-api
    discretegreenop-api
+   tensors-api
    isotropic_fourth_rank_tensor-api
 
 Indices and tables

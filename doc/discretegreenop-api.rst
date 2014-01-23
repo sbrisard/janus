@@ -1,5 +1,5 @@
 API of module ``discretegreenop``
 =================================
 
-.. automodule:: discretegreenop
+.. automodule:: janus.discretegreenop
    :members:

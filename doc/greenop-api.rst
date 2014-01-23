@@ -1,5 +1,5 @@
 API of module ``greenop``
 ===========================
 
-.. automodule:: greenop
+.. automodule:: janus.greenop
    :members:
