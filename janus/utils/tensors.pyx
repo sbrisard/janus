@@ -18,7 +18,9 @@ from janus.utils.checkarray cimport create_or_check_shape_1d
 
 
 def isotropic_4(sph, dev, dim):
-    """Create a fourth rank, isotropic tensor.
+    """isotropic_4(sph, dev, dim)
+
+    Create a fourth rank, isotropic tensor.
 
     Parameters
     ----------
@@ -47,7 +49,7 @@ cdef class FourthRankIsotropicTensor(Operator):
     Such a tensor is defined by its spherical and deviatoric
     projections. **Warning:** this class should *not* be instantiated
     directly, as the object returned by ``__cinit__`` would not be in a
-    legal state. Use ``isotropic_4`` instead.
+    legal state. Use :func:`isotropic_4` instead.
 
     Parameters
     ----------
