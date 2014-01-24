@@ -10,9 +10,11 @@ from Cython.Distutils import build_ext
 
 include_dirs = [numpy.get_include(),
                 'C:\\opt\\Microsoft_HPC_Pack_2012\\Inc',
+                'C:\\opt\\fftw-3.3.3-dll32',
                 '/opt/local/include']
 
-library_dirs = ['C:\\opt\\Microsoft_HPC_Pack_2012\\Lib\\i386']
+library_dirs = ['C:\\opt\\Microsoft_HPC_Pack_2012\\Lib\\i386',
+                'C:\\opt\\fftw-3.3.3-dll32']
 
 try:
     import mpi4py
@@ -48,7 +50,7 @@ extensions.append(Extension('janus.fft.serial._serial_fft',
                             sources=['janus/fft/serial/_serial_fft.pyx',
                                      'janus/fft/serial/_serial_fft.pxd',
                                      'janus/fft/serial/fftw.pxd'],
-                            libraries=['fftw3'],
+                            libraries=['fftw3-3'],
                             library_dirs=library_dirs,
                             include_dirs=include_dirs))
 
