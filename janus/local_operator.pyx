@@ -19,8 +19,7 @@ cdef class LocalOperator2D:
         self.dim = 2
         self.n0 = op.shape[0]
         self.n1 = op.shape[1]
-        # TODO this is potentially dangerous. Take a deep copy instead
-        self.op = op
+        self.op = op.copy()
         cdef int i0, i1, nrows, ncols
         for i0 in range(self.n0):
             for i1 in range(self.n1):
