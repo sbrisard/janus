@@ -21,13 +21,13 @@ include_dirs = [numpy.get_include()]
 library_dirs = []
 
 parser = ArgumentParser(add_help=False)
-parser.add_argument('--config', help='', required=False)
+parser.add_argument('--config')
 args, unknown = parser.parse_known_args()
 sys.argv = [sys.argv[0]] + unknown
 config = args.config
 
 parser = ConfigParser()
-
+parser.read('janus.cfg')
 if (config is not None) and (config in parser):
     fftw3 = parser.get(config, 'fftw3',
                        fallback=FFTW3_DEFAULT)
