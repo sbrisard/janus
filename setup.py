@@ -1,5 +1,11 @@
-import numpy
 import os
+import sys
+
+import numpy
+
+from argparse import ArgumentParser
+from configparser import ConfigParser
+from configparser import NoOptionError
 
 from distutils.core import setup
 from distutils.extension import Extension
@@ -8,15 +14,38 @@ from distutils.util import get_platform
 
 from Cython.Distutils import build_ext
 
+FFTW3_DEFAULT = 'fftw3'
+FFTW3_MPI_DEFAULT = 'fftw3-mpi'
+
 include_dirs = [numpy.get_include()]
 library_dirs = []
 
-fftw3 = 'fftw3'
+parser = ArgumentParser(add_help=False)
+parser.add_argument('--config', help='', required=False)
+args, unknown = parser.parse_known_args()
+sys.argv = [sys.argv[0]] + unknown
+config = args.config
 
-if get_platform() in ('win32', 'win-amd64'):
-    include_dirs.append('C:\\opt\\fftw-3.3.3-dll32\\')
-    library_dirs.append('C:\\opt\\fftw-3.3.3-dll32\\')
-    fftw3 = 'fftw3-3'
+parser = ConfigParser()
+
+if (config is not None) and (config in parser):
+    fftw3 = parser.get(config, 'fftw3',
+                       fallback=FFTW3_DEFAULT)
+    fftw3_mpi = parser.get(config, 'fftw3-mpi',
+                           fallback=FFTW3_MPI_DEFAULT)
+
+    try:
+        include_dirs.append(parser.get(config, 'fftw3_include'))
+    except NoOptionError:
+        pass
+
+    try:
+        library_dirs.append(parser.get(config, 'fftw3_library'))
+    except NoOptionError:
+        pass
+else:
+    fftw3 = FFTW3_DEFAULT
+    fftw3_mpi = FFTW3_MPI_DEFAULT
 
 # TODO Test for Mac platform and add this path '/opt/local/include'
 
