@@ -7,10 +7,10 @@ space to another.
 
 Classes:
 
-- :class:`Operator` -- general operator
-- :class:`AbstractStructuredOperator2D` -- operator with 2D layout of
-  the (tensorial) data
-- :class:`BlockDiagonalOperator2D` -- block-diagonal, structured operator
+:class:`Operator` -- general operator
+:class:`AbstractStructuredOperator2D` -- operator with 2D layout of
+       the (vectorial) data
+:class:`BlockDiagonalOperator2D` -- block-diagonal, structured operator
 
 """
 from cython cimport boundscheck
@@ -46,22 +46,24 @@ cdef class Operator:
         raise NotImplementedError
 
     def apply(self, double[:] x, double[:] y=None):
-        """Return the result of applying this operator to `x`.
+        """apply(x, y=None)
+
+        Return the result of applying this operator to `x`.
 
         Parameters
         ----------
-        x : memoryview to float64
+        x : 1D memoryview of float64
             The input vector.
-        y : memoryview to float64, optional
-            The vector in which the output is to be stored. If ``None``,
-            a new array is created.
+        y : 1D memoryview of float64, optional
+            The output vector. Its content is altered by this method. If
+            ``None``, a new array is created and returned; otherwise,
+            this method returns a view of this object.
 
         Returns
         -------
-        y : memoryview to float64
-            The value of ``A(x)``, if `A` is the operator. This is a
-            view of the input parameter with the same name (if not
-            ``None``).
+        y : 1D memoryview of float64
+            The result of applying this operator to `x`. This is a
+            view of the parameter `y` (if not ``None``).
 
         """
         check_shape_1d(x, self.ncols)
@@ -72,13 +74,13 @@ cdef class Operator:
 
 cdef class AbstractStructuredOperator2D:
 
-    """Operator applied to data structured in a 2D grid.
+    """Operator applied to vectorial data structured in a 2D grid.
 
-    Objects represented by this class map ``isize``-dimensional real data
-    to ``osize``-dimensional real data. Input and output datas are
-    structured in 2D grids, each grid-cell being a vector itself.
-    Therefore, the input (resp. output) is a (``float64``) memoryview of
-    shape ``(ishape0, ishape1, ishape2)`` [resp.
+    Objects represented by this class map real vectors of dimension
+    ``isize`` to real vectors of dimension ``osize``. Input and output
+    vectors are structured in 2D grids, each grid-cell being a vector
+    itself. Therefore, the input (resp. output) is a (``float64``)
+    memoryview of shape ``(ishape0, ishape1, ishape2)`` [resp.
     ``(oshape0, oshape1, oshape2)``], with::
 
         isize = ishape0 * ishape1 * ishape2
@@ -111,7 +113,7 @@ cdef class AbstractStructuredOperator2D:
     cdef void c_apply(self, double[:, :, :] x, double[:, :, :] y):
         raise NotImplementedError
 
-    def apply(self, x, y=None):
+    def apply(self, double[:, :, :] x, double[:, :, :] y=None):
         """apply(x, y=None)
 
         Return the result of applying this operator to `x`.
@@ -121,18 +123,18 @@ cdef class AbstractStructuredOperator2D:
 
         Parameters
         ----------
-        x : memoryview to float64
+        x : 3D memoryview of float64
             The input vector.
-        y : memoryview to float64, optional
-            The vector in which the output is to be stored. If ``None``,
-            a new array is created.
+        y : 3D memoryview of float64, optional
+            The output vector. Its content is altered by this method. If
+            ``None``, a new array is created and returned; otherwise,
+            this method returns a view of this object.
 
         Returns
         -------
-        y : memoryview to float64
-            The value of ``A(x)``, if `A` is the operator. This is a
-            view of the input parameter with the same name (if not
-            ``None``).
+        y : 3D memoryview of float64
+            The result of applying this operator to `x`. This is a
+            view of the parameter `y` (if not ``None``).
 
         """
         check_shape_3d(x, self.ishape0, self.ishape1, self.ishape2)
@@ -144,12 +146,12 @@ cdef class AbstractStructuredOperator2D:
 
 cdef class BlockDiagonalOperator2D(AbstractStructuredOperator2D):
 
-    """Block-diagonal operator with 2D layout of the (tensorial) data.
+    """Block-diagonal operator with 2D layout of the (vectorial) data.
 
     This class defines concrete implementations of
     :class:`AbstractStructuredOperator2D`. Such operators are defined by
-    a 2D array ``a_loc[:, :]`` of local :class:`Operator`s. Then, for
-    any input data ``x[:, :, :]``, the corresponding output is
+    a 2D array ``a_loc[:, :]`` of local operators (:class:`Operator`).
+    Then, the input ``x[:, :, :]`` is mapped to the output
     ``y[:, :, :]``, such that::
 
         y[i0, i1, :] = a_loc[i0, i1].apply(x)
@@ -159,9 +161,9 @@ cdef class BlockDiagonalOperator2D(AbstractStructuredOperator2D):
 
     Parameters
     ----------
-    a_loc : 2D memoryview of :class:`Operator`s
+    a_loc : 2D memoryview of :class:`Operator`
         The array of local operators.
-        
+
     """
 
     def __cinit__(self, Operator[:, :] a_loc):
