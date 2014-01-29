@@ -1,14 +1,16 @@
-"""Abstract base classes defining operators (:mod:`janus.utils.operators`)
-=======================================================================
+"""Classes defining operators (:mod:`janus.utils.operators`)
+=========================================================
 
-The abstract classes defined in this module define operators in the most
-general sense, that is a mapping from a (real) vector space to another.
+The (concrete and abstract) classes defined in this module define
+operators in the most general sense, as a mapping from a (real) vector
+space to another.
 
 Classes:
 
 - :class:`Operator` -- general operator
 - :class:`AbstractStructuredOperator2D` -- operator with 2D layout of
   the (tensorial) data
+- :class:`BlockDiagonalOperator2D` -- block-diagonal, structured operator
 
 """
 from cython cimport boundscheck
@@ -67,6 +69,7 @@ cdef class Operator:
         self.c_apply(x, y)
         return y
 
+
 cdef class AbstractStructuredOperator2D:
 
     """Operator applied to data structured in a 2D grid.
@@ -110,7 +113,7 @@ cdef class AbstractStructuredOperator2D:
 
     def apply(self, x, y=None):
         """apply(x, y=None)
-        
+
         Return the result of applying this operator to `x`.
 
         The default implementation calls the (Cython) method
@@ -138,24 +141,45 @@ cdef class AbstractStructuredOperator2D:
         self.c_apply(x, y)
         return y
 
+
 cdef class BlockDiagonalOperator2D(AbstractStructuredOperator2D):
 
-    def __cinit__(self, Operator[:, :] op):
-        self.ishape0 = op.shape[0]
-        self.ishape1 = op.shape[1]
-        self.ishape2 = op[0, 0].ncols
-        self.oshape0 = op.shape[0]
-        self.oshape1 = op.shape[1]
-        self.oshape2 = op[0, 0].nrows
+    """Block-diagonal operator with 2D layout of the (tensorial) data.
+
+    This class defines concrete implementations of
+    :class:`AbstractStructuredOperator2D`. Such operators are defined by
+    a 2D array ``a_loc[:, :]`` of local :class:`Operator`s. Then, for
+    any input data ``x[:, :, :]``, the corresponding output is
+    ``y[:, :, :]``, such that::
+
+        y[i0, i1, :] = a_loc[i0, i1].apply(x)
+
+    TODO : all local operators must have same input and output dimensions
+    TODO : what is the ishape and oshape of such an operator?
+
+    Parameters
+    ----------
+    a_loc : 2D memoryview of :class:`Operator`s
+        The array of local operators.
+        
+    """
+
+    def __cinit__(self, Operator[:, :] a_loc):
+        self.ishape0 = a_loc.shape[0]
+        self.ishape1 = a_loc.shape[1]
+        self.ishape2 = a_loc[0, 0].ncols
+        self.oshape0 = a_loc.shape[0]
+        self.oshape1 = a_loc.shape[1]
+        self.oshape2 = a_loc[0, 0].nrows
         self.ishape = (self.ishape0, self.ishape1, self.ishape2)
         self.oshape = (self.oshape0, self.oshape1, self.oshape2)
-        self.op = op.copy()
+        self.a_loc = a_loc.copy()
 
         cdef int i0, i1, ishape2, oshape2
         for i0 in range(self.ishape0):
             for i1 in range(self.ishape1):
-                ishape2 = op[i0, i1].ncols
-                oshape2 = op[i0, i1].nrows
+                ishape2 = a_loc[i0, i1].ncols
+                oshape2 = a_loc[i0, i1].nrows
                 if ishape2 != self.ishape2:
                     raise ValueError('invalid dimension block operator input: '
                                      'expected {0}, '
@@ -175,5 +199,5 @@ cdef class BlockDiagonalOperator2D(AbstractStructuredOperator2D):
 
         for i0 in range(self.ishape0):
             for i1 in range(self.ishape1):
-                op = self.op[i0, i1]
+                op = self.a_loc[i0, i1]
                 op.c_apply(x[i0, i1, :], y[i0, i1, :])

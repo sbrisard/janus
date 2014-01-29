@@ -11,4 +11,4 @@ cdef class AbstractStructuredOperator2D:
     cdef void c_apply(self, double[:, :, :] x, double[:, :, :] y)
 
 cdef class BlockDiagonalOperator2D(AbstractStructuredOperator2D):
-    cdef Operator[:, :] op
+    cdef Operator[:, :] a_loc
