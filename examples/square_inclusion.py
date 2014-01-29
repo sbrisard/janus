@@ -13,8 +13,7 @@ sys.path.append('..')
 import janus.discretegreenop as discretegreenop
 import janus.fft.parallel as fft
 import janus.greenop as greenop
-import janus.local_operator as local_operator
-import janus.utils.tensors as tensors
+import janus.operators as operators
 
 from mpi4py import MPI
 from petsc4py import PETSc
@@ -29,12 +28,12 @@ class SquareInclusion:
         self.offset0 = transform.offset0
         self.green = discretegreenop.create(greenop.create(mat_0), (n, n),
                                             1., transform)
-        aux_i = tensors.isotropic_4(1. / (2. * (mat_i.k - mat_0.k)),
-                                    1. / (2. * (mat_i.g - mat_0.g)),
-                                    dim=2)
-        aux_m = tensors.isotropic_4(1. / (2. * (mat_m.k - mat_0.k)),
-                                    1. / (2. * (mat_m.g - mat_0.g)),
-                                    dim=2)
+        aux_i = operators.isotropic_4(1. / (2. * (mat_i.k - mat_0.k)),
+                                      1. / (2. * (mat_i.g - mat_0.g)),
+                                      dim=2)
+        aux_m = operators.isotropic_4(1. / (2. * (mat_m.k - mat_0.k)),
+                                      1. / (2. * (mat_m.g - mat_0.g)),
+                                      dim=2)
 
         ops = np.empty(transform.rshape, dtype=object)
 
@@ -47,7 +46,7 @@ class SquareInclusion:
                 else:
                     ops[i0, i1] = aux_m
 
-        self.tau2eps = local_operator.BlockDiagonalOperator2D(ops)
+        self.tau2eps = operators.BlockDiagonalOperator2D(ops)
 
     def create_vector(self):
         return PETSc.Vec().createMPI(size=(self.n1 * self.n1 * 3),
