@@ -4,7 +4,6 @@ import numpy as np
 import numpy.random as rnd
 
 import janus.utils.operators as operators
-import janus.utils.tensors as tensors
 
 from nose.tools import nottest
 from numpy.testing import assert_array_almost_equal_nulp
@@ -16,8 +15,8 @@ def create_local_operators(shape):
     dim = len(shape)
     ops = np.empty(shape, dtype=object)
     for index in indices(shape):
-        ops[index] = tensors.isotropic_4(2. * rnd.rand() - 1,
-                                         2. * rnd.rand() - 1, dim)
+        ops[index] = operators.isotropic_4(2. * rnd.rand() - 1,
+                                           2. * rnd.rand() - 1, dim)
     return ops
 
 @nottest

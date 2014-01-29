@@ -32,10 +32,6 @@ extensions.append(Extension('janus.utils.operators',
                             sources=['janus/utils/operators.pyx',
                                      'janus/utils/operators.pxd']))
 
-extensions.append(Extension('janus.utils.tensors',
-                            sources=['janus/utils/tensors.pyx',
-                                     'janus/utils/tensors.pxd']))
-
 extensions.append(Extension('janus.matprop',
                             sources=['janus/matprop.pyx',
                                      'janus/matprop.pxd']))
