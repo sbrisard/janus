@@ -8,33 +8,33 @@ import skimage.io
 petsc4py.init(sys.argv)
 skimage.io.use_plugin('freeimage', 'imread')
 skimage.io.use_plugin('freeimage', 'imsave')
-sys.path.append('../src')
+sys.path.append('..')
 
-import discretegreenop
-import fft.parallel
-import greenop
-import local_operator
-import tensor
+import janus.discretegreenop as discretegreenop
+import janus.fft.parallel as fft
+import janus.greenop as greenop
+import janus.local_operator as local_operator
+import janus.utils.tensors as tensors
 
 from mpi4py import MPI
 from petsc4py import PETSc
 
-from matprop import IsotropicLinearElasticMaterial as Material
+from janus.matprop import IsotropicLinearElasticMaterial as Material
 
 class SquareInclusion:
     def __init__(self, a, mat_i, mat_m, mat_0, n, comm=MPI.COMM_WORLD):
-        transform = fft.parallel.create_real((n, n), comm)
+        transform = fft.create_real((n, n), comm)
         self.n0 = transform.rshape[0]
         self.n1 = transform.rshape[1]
         self.offset0 = transform.offset0
         self.green = discretegreenop.create(greenop.create(mat_0), (n, n),
                                             1., transform)
-        aux_i = tensor.isotropic_4(1. / (2. * (mat_i.k - mat_0.k)),
-                                   1. / (2. * (mat_i.g - mat_0.g)),
-                                   dim=2)
-        aux_m = tensor.isotropic_4(1. / (2. * (mat_m.k - mat_0.k)),
-                                   1. / (2. * (mat_m.g - mat_0.g)),
-                                   dim=2)
+        aux_i = tensors.isotropic_4(1. / (2. * (mat_i.k - mat_0.k)),
+                                    1. / (2. * (mat_i.g - mat_0.g)),
+                                    dim=2)
+        aux_m = tensors.isotropic_4(1. / (2. * (mat_m.k - mat_0.k)),
+                                    1. / (2. * (mat_m.g - mat_0.g)),
+                                    dim=2)
 
         ops = np.empty(transform.rshape, dtype=object)
 
