@@ -1,3 +1,3 @@
-.. automodule:: janus.utils.operators
+.. automodule:: janus.operators
     :members:
     :inherited-members:

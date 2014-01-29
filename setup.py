@@ -28,9 +28,9 @@ extensions.append(Extension('janus.utils.checkarray',
                             sources=['janus/utils/checkarray.pyx',
                                      'janus/utils/checkarray.pxd']))
 
-extensions.append(Extension('janus.utils.operators',
-                            sources=['janus/utils/operators.pyx',
-                                     'janus/utils/operators.pxd']))
+extensions.append(Extension('janus.operators',
+                            sources=['janus/operators.pyx',
+                                     'janus/operators.pxd']))
 
 extensions.append(Extension('janus.matprop',
                             sources=['janus/matprop.pyx',

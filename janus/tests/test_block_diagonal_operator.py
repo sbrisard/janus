@@ -3,7 +3,7 @@ import itertools
 import numpy as np
 import numpy.random as rnd
 
-import janus.utils.operators as operators
+import janus.operators as operators
 
 from nose.tools import nottest
 from numpy.testing import assert_array_almost_equal_nulp

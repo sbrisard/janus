@@ -1,5 +1,5 @@
-"""Classes defining operators (:mod:`janus.utils.operators`)
-=========================================================
+"""Classes defining operators (:mod:`janus.operators`)
+===================================================
 
 The (concrete and abstract) classes defined in this module define
 operators in the most general sense, as a mapping from a (real) vector
