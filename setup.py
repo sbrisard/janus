@@ -8,13 +8,14 @@ from distutils.util import get_platform
 
 from Cython.Distutils import build_ext
 
-include_dirs = [numpy.get_include(),
-                'C:\\opt\\Microsoft_HPC_Pack_2012\\Inc',
-                'C:\\opt\\fftw-3.3.3-dll32',
-                '/opt/local/include']
+include_dirs = [numpy.get_include()]
+library_dirs = []
 
-library_dirs = ['C:\\opt\\Microsoft_HPC_Pack_2012\\Lib\\i386',
-                'C:\\opt\\fftw-3.3.3-dll32']
+if get_platform() in ('win32', 'win-amd64'):
+    include_dirs.append('C:\\opt\\fftw-3.3.3-dll32\\')
+    library_dirs.append('C:\\opt\\fftw-3.3.3-dll32\\')
+
+# TODO Test for Mac platform and add this path '/opt/local/include'
 
 try:
     import mpi4py
@@ -44,7 +45,9 @@ extensions.append(Extension('janus.greenop',
                                      'janus/greenop.pxd']))
 
 extensions.append(Extension('janus.discretegreenop',
-                            sources=['janus/discretegreenop.pyx']))
+                            sources=['janus/discretegreenop.pyx'],
+                            include_dirs=include_dirs,
+                            library_dirs=library_dirs))
 
 extensions.append(Extension('janus.fft.serial._serial_fft',
                             sources=['janus/fft/serial/_serial_fft.pyx',
