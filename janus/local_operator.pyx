@@ -34,10 +34,12 @@ cdef class LocalOperator2D:
     @wraparound(False)
     cdef c_apply(self, double[:, :, :] x, double[:, :, :] y):
         cdef int i0, i1
-        
+        cdef Operator op
+
         for i0 in range(self.n0):
             for i1 in range(self.n1):
-                self.op[i0, i1].c_apply(x[i0, i1, :], y[i0, i1, :])
+                op = self.op[i0, i1]
+                op.c_apply(x[i0, i1, :], y[i0, i1, :])
 
     @boundscheck(False)
     @wraparound(False)
