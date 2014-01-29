@@ -67,7 +67,7 @@ cdef class TruncatedGreenOperator:
     cdef readonly int nrows
     cdef readonly int ncols
 
-    cdef Py_ssize_t *n
+    cdef int *n
     cdef double* k
     cdef double two_pi_over_h
 
@@ -85,9 +85,9 @@ cdef class TruncatedGreenOperator:
         self.ncols = green.ncols
         self.k = <double *> malloc(self.dim * sizeof(double))
 
-        self.n = <Py_ssize_t *> malloc(self.dim * sizeof(Py_ssize_t))
+        self.n = <int *> malloc(self.dim * sizeof(int))
         cdef int i
-        cdef Py_ssize_t ni
+        cdef int ni
         for i in range(self.dim):
             ni = shape[i]
             if ni < 0:
@@ -100,11 +100,11 @@ cdef class TruncatedGreenOperator:
         free(self.n)
         free(self.k)
 
-    cdef inline void check_b(self, Py_ssize_t[::1] b) except *:
+    cdef inline void check_b(self, int[::1] b) except *:
         if b.shape[0] != self.dim:
             raise ValueError('invalid shape: expected ({0},), actual ({1},)'
                              .format(self.dim, b.shape[0]))
-        cdef Py_ssize_t i, ni, bi
+        cdef int i, ni, bi
         for i in range(self.dim):
             ni = self.n[i]
             bi = b[i]
@@ -113,9 +113,9 @@ cdef class TruncatedGreenOperator:
                                  .format(ni, bi))
 
     @cdivision(True)
-    cdef inline void update(self, Py_ssize_t *b):
+    cdef inline void update(self, int *b):
         cdef:
-            Py_ssize_t i, ni, bi
+            int i, ni, bi
             double s
         for i in range(self.dim):
             ni = self.n[i]
@@ -126,25 +126,25 @@ cdef class TruncatedGreenOperator:
             else:
                 self.k[i] = s * bi
 
-    cdef void c_as_array(self, Py_ssize_t *b, double[:, :] out):
+    cdef void c_as_array(self, int *b, double[:, :] out):
         self.update(b)
         self.green.c_as_array(self.k, out)
 
     @boundscheck(False)
     @wraparound(False)
-    def as_array(self, Py_ssize_t[::1] b, double[:, :] out=None):
+    def as_array(self, int[::1] b, double[:, :] out=None):
         self.check_b(b)
         out = create_or_check_shape_2d(out, self.nrows, self.ncols)
         self.c_as_array(&b[0], out)
         return out
 
-    cdef void c_apply(self, Py_ssize_t *b, double[:] tau, double[:] eta):
+    cdef void c_apply(self, int *b, double[:] tau, double[:] eta):
         self.update(b)
         self.green.c_apply(self.k, tau, eta)
 
     @boundscheck(False)
     @wraparound(False)
-    def apply(self, Py_ssize_t[::1] b, double[:] tau, double[:] eta=None):
+    def apply(self, int[::1] b, double[:] tau, double[:] eta=None):
         self.check_b(b)
         check_shape_1d(tau, self.ncols)
         eta = create_or_check_shape_1d(eta, self.nrows)
@@ -153,7 +153,7 @@ cdef class TruncatedGreenOperator:
 
     
 cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
-    cdef Py_ssize_t n0, n1
+    cdef int n0, n1
     cdef double s0, s1
     cdef _RealFFT2D transform
     cdef tuple dft_tau_shape, dft_eta_shape
@@ -196,9 +196,9 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
             self.transform.r2c(tau_as_mv[:, :, i], dft_tau[:, :, i])
 
         # Apply Green operator frequency-wise
-        cdef Py_ssize_t n0 = dft_tau.shape[0]
-        cdef Py_ssize_t n1 = dft_tau.shape[1] / 2
-        cdef Py_ssize_t i0, i1, b0, b1
+        cdef int n0 = dft_tau.shape[0]
+        cdef int n1 = dft_tau.shape[1] / 2
+        cdef int i0, i1, b0, b1
         cdef double k[2]
 
         for i0 in range(n0):
@@ -235,7 +235,7 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
 
     
 cdef class TruncatedGreenOperator3D(TruncatedGreenOperator):
-    cdef Py_ssize_t n0, n1, n2
+    cdef int n0, n1, n2
     cdef double s0, s1, s2
     cdef _RealFFT3D transform
     cdef tuple dft_tau_shape, dft_eta_shape
@@ -287,10 +287,10 @@ cdef class TruncatedGreenOperator3D(TruncatedGreenOperator):
             self.transform.r2c(tau_as_mv[:, :, :, i], dft_tau[:, :, :, i])
 
         # Apply Green operator frequency-wise
-        cdef Py_ssize_t n0 = dft_tau.shape[0]
-        cdef Py_ssize_t n1 = dft_tau.shape[1]
-        cdef Py_ssize_t n2 = dft_tau.shape[2] / 2
-        cdef Py_ssize_t i0, i2, b0, b1, b2
+        cdef int n0 = dft_tau.shape[0]
+        cdef int n1 = dft_tau.shape[1]
+        cdef int n2 = dft_tau.shape[2] / 2
+        cdef int i0, i2, b0, b1, b2
         cdef double k[3]
 
         for i0 in range(n0):

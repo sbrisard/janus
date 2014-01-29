@@ -42,7 +42,7 @@ def multi_indices(n):
 
     """
     iterables = [range(ni) for ni in n]
-    return [np.asarray(b, dtype=np.intp)
+    return [np.asarray(b, dtype=np.intc)
             for b in itertools.product(*iterables)]
 
 
@@ -52,12 +52,12 @@ def invalid_multi_indices(n):
 
     """
     def f(i, x):
-        b = np.zeros(len(n), dtype=np.intp)
+        b = np.zeros(len(n), dtype=np.intc)
         b[i] = x
         return b
 
     indices = [f(i, x) for i in range(len(n)) for x in [n[i], -1]]
-    indices.append(np.zeros((len(n) + 1,), dtype=np.intp))
+    indices.append(np.zeros((len(n) + 1,), dtype=np.intc))
     return indices
 
 def increment_element(a, i):
@@ -160,7 +160,7 @@ def test_as_array_invalid_parameters():
     for dim in [2, 3]:
         n = tuple(2**(i + 3) for i in range(dim))
         green = discrete_green_operator(n, 1.)
-        b0 = np.zeros((green.dim,), dtype=np.intp)
+        b0 = np.zeros((green.dim,), dtype=np.intc)
         out1 = np.zeros((green.nrows + 1, green.ncols), dtype=np.float64)
         out2 = np.zeros((green.nrows, green.ncols + 1), dtype=np.float64)
         params = ([(b, None) for b in invalid_multi_indices(n)]
@@ -231,7 +231,7 @@ def test_apply_invalid_params():
         n = tuple(2**(i + 3) for i in range(dim))
         green = discrete_green_operator(n, 1.)
 
-        b_valid = np.zeros((dim,), dtype=np.intp)
+        b_valid = np.zeros((dim,), dtype=np.intc)
         tau_valid = np.zeros((green.ncols,), dtype=np.float64)
         tau_invalid = np.zeros((green.ncols + 1,), dtype=np.float64)
         eta_invalid = np.zeros((green.nrows + 1,), dtype=np.float64)

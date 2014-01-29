@@ -1,9 +1,9 @@
 from cpython cimport bool
 
 #
-# Arrays of Py_ssize_t
+# Arrays of int
 #
-cdef void check_shape_ssize_t_1D(Py_ssize_t[:] a, int n0) except *
+cdef void check_shape_1i(int[:] a, int n0) except *
 
 #
 # Arrays of double

@@ -47,7 +47,7 @@ cdef inline double[:, :, :, :] create_or_check_shape_4d(double[:, :, :, :] a,
     check_shape_4d(a, n0, n1, n2, n3)
     return a
 
-cdef inline void check_shape_ssize_t_1D(Py_ssize_t[:] a, int n0) except *:
+cdef inline void check_shape_1i(int[:] a, int n0) except *:
     if a.shape[0] != n0:
         raise ValueError('invalid shape: expected ({0},), actual ({1},)'
                          .format(n0, a.shape[0]))
