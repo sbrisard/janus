@@ -11,9 +11,12 @@ from Cython.Distutils import build_ext
 include_dirs = [numpy.get_include()]
 library_dirs = []
 
+fftw3 = 'fftw3'
+
 if get_platform() in ('win32', 'win-amd64'):
     include_dirs.append('C:\\opt\\fftw-3.3.3-dll32\\')
     library_dirs.append('C:\\opt\\fftw-3.3.3-dll32\\')
+    fftw3 = 'fftw3-3'
 
 # TODO Test for Mac platform and add this path '/opt/local/include'
 
@@ -49,7 +52,7 @@ extensions.append(Extension('janus.fft.serial._serial_fft',
                             sources=['janus/fft/serial/_serial_fft.pyx',
                                      'janus/fft/serial/_serial_fft.pxd',
                                      'janus/fft/serial/fftw.pxd'],
-                            libraries=['fftw3-3'],
+                            libraries=[fftw3],
                             library_dirs=library_dirs,
                             include_dirs=include_dirs))
 
