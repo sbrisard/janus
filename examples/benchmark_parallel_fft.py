@@ -4,13 +4,13 @@ import time
 import numpy as np
 import numpy.random as nprnd
 
-sys.path.append('../src')
-import fft.parallel
+sys.path.append('..')
+import janus.fft.parallel
 
 from mpi4py import MPI
 
 def benchmark(n, niter):
-    transform = fft.parallel.create_real((n, n), comm)
+    transform = janus.fft.parallel.create_real((n, n), comm)
     local_sizes = comm.gather((transform.rshape[0], transform.offset0))
 
     if comm.rank == 0:
@@ -33,12 +33,12 @@ def benchmark(n, niter):
 if __name__ == '__main__':
 
     comm = MPI.COMM_WORLD
-    fft.parallel.init()
+    janus.fft.parallel.init()
     nprnd.seed(20140121)
 
     #params = [64, 128, 256, 512, 1024, 2048, 4096]
     #params = [(64, 50000), (128, 10000), (256, 5000), (512, 5000), (1024, 100), (2048, 100)]
-    params = [(4096, 100)]
+    params = [(128, 100)]
     
     for n, niter in params:
         """
