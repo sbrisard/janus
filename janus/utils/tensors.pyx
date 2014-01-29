@@ -5,13 +5,14 @@ Functions and classes for the creation and manipulation of tensors.
 
 Functions:
 
-- isotropic_4 -- Create a fourth-rank, isotropic tensor with minor symmetries.
+- :func:`isotropic_4` -- create a fourth-rank, isotropic tensor with minor
+  symmetries.
 
 Classes:
 
-- FourthRankIsotropicTensor -- Fourth-rank, isotropic tensor.
-- FourthRankIsotropicTensor2D
-- FourthRankIsotropicTensor3D
+- :class:`FourthRankIsotropicTensor` -- fourth-rank, isotropic tensor.
+- :class:`FourthRankIsotropicTensor2D`
+- :class:`FourthRankIsotropicTensor3D`
 
 """
 from cython cimport boundscheck
