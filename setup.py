@@ -57,9 +57,6 @@ extensions.append(Extension('janus.fft.serial._serial_fft',
                             library_dirs=library_dirs,
                             include_dirs=include_dirs))
 
-extensions.append(Extension('janus.local_operator',
-                            sources=['janus/local_operator.pyx']))
-
 if not(get_platform() in ('win32', 'win-amd64')):
     # TODO improve this uggly hack
     gcc = 'gcc'

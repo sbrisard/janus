@@ -9,3 +9,6 @@ cdef class AbstractStructuredOperator2D:
     cdef readonly tuple ishape, oshape
 
     cdef void c_apply(self, double[:, :, :] x, double[:, :, :] y)
+
+cdef class BlockDiagonalOperator2D(AbstractStructuredOperator2D):
+    cdef Operator[:, :] op

@@ -3,7 +3,7 @@ import itertools
 import numpy as np
 import numpy.random as rnd
 
-import janus.local_operator as local_operator
+import janus.utils.operators as operators
 import janus.utils.tensors as tensors
 
 from nose.tools import nottest
@@ -34,7 +34,7 @@ def do_test_apply(shape, nulp):
         ops[index].apply(x[index], expected[index])
 
     actual = np.empty_like(expected)
-    local_operator.BlockDiagonalOperator2D(ops).apply(x, actual)
+    operators.BlockDiagonalOperator2D(ops).apply(x, actual)
 
     assert_array_almost_equal_nulp(expected, np.asarray(actual), nulp)
 

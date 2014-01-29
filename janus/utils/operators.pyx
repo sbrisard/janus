@@ -11,6 +11,9 @@ Classes:
   the (tensorial) data
 
 """
+from cython cimport boundscheck
+from cython cimport wraparound
+
 from janus.utils.checkarray cimport check_shape_1d
 from janus.utils.checkarray cimport check_shape_3d
 from janus.utils.checkarray cimport create_or_check_shape_1d
@@ -134,3 +137,43 @@ cdef class AbstractStructuredOperator2D:
                                      self.oshape2)
         self.c_apply(x, y)
         return y
+
+cdef class BlockDiagonalOperator2D(AbstractStructuredOperator2D):
+
+    def __cinit__(self, Operator[:, :] op):
+        self.ishape0 = op.shape[0]
+        self.ishape1 = op.shape[1]
+        self.ishape2 = op[0, 0].ncols
+        self.oshape0 = op.shape[0]
+        self.oshape1 = op.shape[1]
+        self.oshape2 = op[0, 0].nrows
+        self.ishape = (self.ishape0, self.ishape1, self.ishape2)
+        self.oshape = (self.oshape0, self.oshape1, self.oshape2)
+        self.op = op.copy()
+
+        cdef int i0, i1, ishape2, oshape2
+        for i0 in range(self.ishape0):
+            for i1 in range(self.ishape1):
+                ishape2 = op[i0, i1].ncols
+                oshape2 = op[i0, i1].nrows
+                if ishape2 != self.ishape2:
+                    raise ValueError('invalid dimension block operator input: '
+                                     'expected {0}, '
+                                     'actual {1}'.format(self.ishape2,
+                                                         ishape2))
+                if oshape2 != self.oshape2:
+                    raise ValueError('invalid dimension block operator output: '
+                                     'expected {0}, '
+                                     'actual {1}'.format(self.oshape2,
+                                                         oshape2))
+
+    @boundscheck(False)
+    @wraparound(False)
+    cdef void c_apply(self, double[:, :, :] x, double[:, :, :] y):
+        cdef int i0, i1
+        cdef Operator op
+
+        for i0 in range(self.ishape0):
+            for i1 in range(self.ishape1):
+                op = self.op[i0, i1]
+                op.c_apply(x[i0, i1, :], y[i0, i1, :])
