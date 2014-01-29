@@ -1,3 +1,5 @@
+import os.path
+
 import numpy as np
 
 import janus.discretegreenop
@@ -64,6 +66,9 @@ def do_test_convolve(path_to_ref, rel_err):
 
 def test_convolve():
 
+    directory = os.path.join('..', 'parallel',
+                             os.path.dirname(os.path.realpath(__file__)))
+
     params = [('truncated_green_operator_200x300_unit_tau_xx_10x10+95+145.npy',
                1.2E-10),
               ('truncated_green_operator_200x300_unit_tau_yy_10x10+95+145.npy',
@@ -83,5 +88,6 @@ def test_convolve():
               ('truncated_green_operator_40x50x60_unit_tau_xy_10x10x10+15+20+25.npy',
                1.6E-9),
                ]
-    for path_to_ref, rel_err in params:
-        yield do_test_convolve, path_to_ref, rel_err
+    for filename, rel_err in params:
+        path = os.path.join(directory, 'data', filename)
+        yield do_test_convolve, path, rel_err
