@@ -4,7 +4,7 @@ from cython cimport wraparound
 
 from janus.utils.checkarray cimport check_shape_3d
 from janus.utils.checkarray cimport create_or_check_shape_3d
-from janus.utils.interfaces cimport Operator
+from janus.utils.operators cimport Operator
 
 cdef class BlockDiagonalOperator2D:
     cdef readonly tuple global_shape, local_shape
