@@ -34,7 +34,7 @@ def do_test_apply(shape, nulp):
         ops[index].apply(x[index], expected[index])
 
     actual = np.empty_like(expected)
-    local_operator.LocalOperator2D(ops).apply(x, actual)
+    local_operator.BlockDiagonalOperator2D(ops).apply(x, actual)
 
     assert_array_almost_equal_nulp(expected, np.asarray(actual), nulp)
 

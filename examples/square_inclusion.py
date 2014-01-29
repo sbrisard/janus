@@ -47,7 +47,7 @@ class SquareInclusion:
                 else:
                     ops[i0, i1] = aux_m
 
-        self.tau2eps = local_operator.LocalOperator2D(ops)
+        self.tau2eps = local_operator.BlockDiagonalOperator2D(ops)
 
     def create_vector(self):
         return PETSc.Vec().createMPI(size=(self.n1 * self.n1 * 3),

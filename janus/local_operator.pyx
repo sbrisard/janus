@@ -6,7 +6,7 @@ from janus.utils.checkarray cimport check_shape_3d
 from janus.utils.checkarray cimport create_or_check_shape_3d
 from janus.utils.interfaces cimport Operator
 
-cdef class LocalOperator2D:
+cdef class BlockDiagonalOperator2D:
     cdef readonly tuple global_shape, local_shape
     cdef readonly int dim
     cdef Operator[:, :] op
