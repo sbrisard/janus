@@ -27,7 +27,7 @@ def create(green, n, h, transform=None):
     else:
         raise ValueError('dim must be 2 or 3 (was {0})'.format(green.dim))
 
-    
+
 cdef class TruncatedGreenOperator:
 
     """
@@ -151,7 +151,7 @@ cdef class TruncatedGreenOperator:
         self.c_apply(&b[0], tau, eta)
         return eta
 
-    
+
 cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
     cdef int n0, n1
     cdef double s0, s1
@@ -233,7 +233,7 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
 
         return eta
 
-    
+
 cdef class TruncatedGreenOperator3D(TruncatedGreenOperator):
     cdef int n0, n1, n2
     cdef double s0, s1, s2
