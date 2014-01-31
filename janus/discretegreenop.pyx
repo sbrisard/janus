@@ -1,3 +1,4 @@
+# TODO do not use pointers, but memoryviews.
 from cython cimport boundscheck
 from cython cimport cdivision
 from cython cimport Py_ssize_t
@@ -28,7 +29,7 @@ def create(green, n, h, transform=None):
         raise ValueError('dim must be 2 or 3 (was {0})'.format(green.dim))
 
 
-cdef class TruncatedGreenOperator:
+cdef class DiscreteGreenOperator:
 
     """
 
@@ -68,8 +69,6 @@ cdef class TruncatedGreenOperator:
     cdef readonly int ncols
 
     cdef int *n
-    cdef double* k
-    cdef double two_pi_over_h
 
     def __cinit__(self, GreenOperator green, shape, double h, transform=None):
         self.dim = len(shape)
@@ -80,10 +79,8 @@ cdef class TruncatedGreenOperator:
             raise ValueError('h must be > 0 (was {0})'.format(h))
         self.green = green
         self.h = h
-        self.two_pi_over_h = 2. * M_PI / h
         self.nrows = green.nrows
         self.ncols = green.ncols
-        self.k = <double *> malloc(self.dim * sizeof(double))
 
         self.n = <int *> malloc(self.dim * sizeof(int))
         cdef int i
@@ -98,7 +95,6 @@ cdef class TruncatedGreenOperator:
 
     def __dealloc__(self):
         free(self.n)
-        free(self.k)
 
     cdef inline void check_b(self, int[::1] b) except *:
         if b.shape[0] != self.dim:
@@ -111,6 +107,73 @@ cdef class TruncatedGreenOperator:
             if (bi < 0) or (bi >= ni):
                 raise ValueError('index must be >= 0 and < {0} (was {1})'
                                  .format(ni, bi))
+
+    cdef void c_as_array(self, int *b, double[:, :] out):
+        raise NotImplementedError
+
+    cdef void c_apply(self, int *b, double[:] tau, double[:] eta):
+        raise NotImplementedError
+
+    @boundscheck(False)
+    @wraparound(False)
+    def as_array(self, int[::1] b, double[:, :] out=None):
+        self.check_b(b)
+        out = create_or_check_shape_2d(out, self.nrows, self.ncols)
+        self.c_as_array(&b[0], out)
+        return out
+
+    @boundscheck(False)
+    @wraparound(False)
+    def apply(self, int[::1] b, double[:] tau, double[:] eta=None):
+        self.check_b(b)
+        check_shape_1d(tau, self.ncols)
+        eta = create_or_check_shape_1d(eta, self.nrows)
+        self.c_apply(&b[0], tau, eta)
+        return eta
+
+
+cdef class TruncatedGreenOperator(DiscreteGreenOperator):
+
+    """
+
+    Parameters
+    ----------
+    green:
+        The underlying continuous green operator.
+    shape:
+        The shape of the spatial grid used to discretize the Green operator.
+    h: float
+        The size of each cell of the grid.
+    transform:
+        The FFT object to be used to carry out discrete Fourier transforms.
+
+    Attributes
+    ----------
+    green:
+        The underlying continuous green operator.
+    shape:
+        The shape of the spatial grid used to discretize the Green operator.
+    h: float
+        The size of each cell of the grid.
+    dim: int
+        The dimension of the physical space.
+    nrows: int
+        The number of rows of the Green tensor, for each frequency (dimension
+        of the space of polarizations).
+    ncols: int
+        The number of columns of the Green tensor, for each frequency (dimension
+        of the space of strains).
+    """
+
+    cdef double* k
+    cdef double two_pi_over_h
+
+    def __cinit__(self, GreenOperator green, shape, double h, transform=None):
+        self.two_pi_over_h = 2. * M_PI / h
+        self.k = <double *> malloc(self.dim * sizeof(double))
+
+    def __dealloc__(self):
+        free(self.k)
 
     @cdivision(True)
     cdef inline void update(self, int *b):
@@ -130,26 +193,9 @@ cdef class TruncatedGreenOperator:
         self.update(b)
         self.green.c_as_array(self.k, out)
 
-    @boundscheck(False)
-    @wraparound(False)
-    def as_array(self, int[::1] b, double[:, :] out=None):
-        self.check_b(b)
-        out = create_or_check_shape_2d(out, self.nrows, self.ncols)
-        self.c_as_array(&b[0], out)
-        return out
-
     cdef void c_apply(self, int *b, double[:] tau, double[:] eta):
         self.update(b)
         self.green.c_apply(self.k, tau, eta)
-
-    @boundscheck(False)
-    @wraparound(False)
-    def apply(self, int[::1] b, double[:] tau, double[:] eta=None):
-        self.check_b(b)
-        check_shape_1d(tau, self.ncols)
-        eta = create_or_check_shape_1d(eta, self.nrows)
-        self.c_apply(&b[0], tau, eta)
-        return eta
 
 
 cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
