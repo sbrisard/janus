@@ -14,9 +14,6 @@ from distutils.util import get_platform
 
 from Cython.Distutils import build_ext
 
-FFTW3_DEFAULT = 'fftw3'
-FFTW3_MPI_DEFAULT = 'fftw3-mpi'
-
 include_dirs = [numpy.get_include()]
 library_dirs = []
 
@@ -28,32 +25,17 @@ config = args.config
 
 parser = ConfigParser()
 parser.read('janus.cfg')
-if (config is not None) and (config in parser):
-    fftw3 = parser.get(config, 'fftw3',
-                       fallback=FFTW3_DEFAULT)
-    fftw3_mpi = parser.get(config, 'fftw3-mpi',
-                           fallback=FFTW3_MPI_DEFAULT)
-
-    try:
-        include_dirs.append(parser.get(config, 'fftw3_include'))
-    except NoOptionError:
-        pass
-
-    try:
-        library_dirs.append(parser.get(config, 'fftw3_library'))
-    except NoOptionError:
-        pass
+if config is not None:
+    fftw3 = parser.get(config, 'fftw3')
+    include_dirs.append(parser.get(config, 'fftw3-include'))
+    library_dirs.append(parser.get(config, 'fftw3-library'))
+    with_mpi = parser.getboolean(config, 'with-mpi')
+    if with_mpi:
+        fftw3_mpi = parser.get(config, 'fftw3-mpi')
 else:
-    fftw3 = FFTW3_DEFAULT
-    fftw3_mpi = FFTW3_MPI_DEFAULT
-
-# TODO Test for Mac platform and add this path '/opt/local/include'
-
-try:
-    import mpi4py
-    include_dirs.append(mpi4py.get_include())
-except ImportError:
-    pass
+    fftw3 = 'fftw3'
+    fftw3_mpi = 'fftw3-mpi'
+    with_mpi = True
 
 extensions = []
 extensions.append(Extension('janus.utils.checkarray',
@@ -85,22 +67,23 @@ extensions.append(Extension('janus.fft.serial._serial_fft',
                             library_dirs=library_dirs,
                             include_dirs=include_dirs))
 
-if not(get_platform() in ('win32', 'win-amd64')):
+if with_mpi:
+    import mpi4py
+    include_dirs.append(mpi4py.get_include())
+
     # TODO improve this uggly hack
     gcc = 'gcc'
     mpicc = '/usr/bin/mpicc'
     os.environ['CC'] = get_config_var('CC').replace(gcc, mpicc)
     os.environ['LDSHARED'] = get_config_var('LDSHARED').replace(gcc, mpicc)
 
-    extensions.append(
-               Extension('janus.fft.parallel._parallel_fft',
-                         sources=['janus/fft/parallel/_parallel_fft.pyx',
-                                  'janus/fft/parallel/_parallel_fft.pxd',
-                                  'janus/fft/parallel/fftw_mpi.pxd'],
-                         libraries=['fftw3', 'fftw3_mpi'],
-                         include_dirs = [mpi4py.get_include(),
-                                         '/opt/local/include'],
-))
+    extensions.append(Extension('janus.fft.parallel._parallel_fft',
+                                sources=['janus/fft/parallel/_parallel_fft.pyx',
+                                         'janus/fft/parallel/_parallel_fft.pxd',
+                                         'janus/fft/parallel/fftw_mpi.pxd'],
+                                libraries=[fftw3, fftw3_mpi],
+                                library_dirs=library_dirs,
+                                include_dirs = include_dirs))
 
 setup(name = 'Homogenization through FFT',
       packages=[''],
