@@ -82,7 +82,9 @@ cdef class _RealFFT2D:
                                ptrdiff_t n0, ptrdiff_t n1, int padding):
         cdef:
             ptrdiff_t s0, s1, i0, i1
-            double *pbuf, *row, *cell
+            double *pbuf
+            double *row
+            double *cell
         s0 = a.strides[0] / SIZEOF_DOUBLE
         s1 = a.strides[1] / SIZEOF_DOUBLE
         pbuf = self.buffer
@@ -104,7 +106,9 @@ cdef class _RealFFT2D:
                                  double scaling):
         cdef:
             ptrdiff_t s0, s1, i0, i1
-            double *pbuf, *row, *cell
+            double *pbuf
+            double *row
+            double *cell
         s0 = a.strides[0] / SIZEOF_DOUBLE
         s1 = a.strides[1] / SIZEOF_DOUBLE
         pbuf = self.buffer
@@ -204,7 +208,10 @@ cdef class _RealFFT3D:
                                int padding):
         cdef:
             int s0, s1, s2, i0, i1, i2
-            double *pbuf, *pslice, *prow, *pcell
+            double *pbuf
+            double *pslice
+            double *prow
+            double *pcell
         s0 = a.strides[0] / SIZEOF_DOUBLE
         s1 = a.strides[1] / SIZEOF_DOUBLE
         s2 = a.strides[2] / SIZEOF_DOUBLE
@@ -230,7 +237,10 @@ cdef class _RealFFT3D:
                                  int padding, double scaling):
         cdef:
             int s0, s1, s2, i0, i1, i2
-            double *pbuf, *pslice, *prow, *pcell
+            double *pbuf
+            double *pslice
+            double *prow
+            double *pcell
         s0 = a.strides[0] / SIZEOF_DOUBLE
         s1 = a.strides[1] / SIZEOF_DOUBLE
         s2 = a.strides[2] / SIZEOF_DOUBLE
