@@ -1,7 +1,6 @@
 # TODO do not use pointers, but memoryviews.
 from cython cimport boundscheck
 from cython cimport cdivision
-from cython cimport Py_ssize_t
 from cython cimport sizeof
 from cython cimport wraparound
 from cython.view cimport array
