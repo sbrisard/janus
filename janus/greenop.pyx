@@ -30,7 +30,7 @@ cdef class GreenOperator:
         self.daux3 = 0.25 / g
         self.daux4 = 0.5 / g
 
-    cdef void c_apply(self, double *k, double[:] tau, double[:] eta):
+    cdef void c_apply(self, double[:] k, double[:] tau, double[:] eta):
         """apply(k, tau, eta)
 
         Apply the Green operator to the specified prestress. C version of the
@@ -52,7 +52,7 @@ cdef class GreenOperator:
         """
         pass
 
-    def apply(self, double[::1] k, double[:] tau, double[:] eta=None):
+    def apply(self, double[:] k, double[:] tau, double[:] eta=None):
         """apply(k, tau, eta=None)
 
         Apply the Green operator to the specified prestress.
@@ -73,10 +73,10 @@ cdef class GreenOperator:
         """
         pass
 
-    cdef void c_as_array(self, double *k, double[:, :] out):
+    cdef void c_as_array(self, double[:] k, double[:, :] out):
         pass
 
-    def as_array(self, double[::1] k, double[:, :] out=None):
+    def as_array(self, double[:] k, double[:, :] out=None):
         """as_array(k, out=None)
 
         Return the array representation of the Green operator for the
@@ -106,7 +106,8 @@ cdef class GreenOperator2D(GreenOperator):
 
     @boundscheck(False)
     @cdivision(True)
-    cdef inline void _update(self, double *k):
+    @wraparound(False)
+    cdef inline void _update(self, double[:] k):
         """Compute the coefficients of the underlying matrix for the specified
         value of the wave vector.
 
@@ -145,7 +146,7 @@ cdef class GreenOperator2D(GreenOperator):
 
     @boundscheck(False)
     @wraparound(False)
-    cdef void c_apply(self, double* k, double[:] tau, double[:] eta):
+    cdef void c_apply(self, double[:] k, double[:] tau, double[:] eta):
         cdef double tau0, tau1, tau2, eta0, eta1, eta2
         self._update(k)
         tau0 = tau[0]
@@ -155,18 +156,16 @@ cdef class GreenOperator2D(GreenOperator):
         eta[1] = self.g01 * tau0 + self.g11 * tau1 + self.g12 * tau2
         eta[2] = self.g02 * tau0 + self.g12 * tau1 + self.g22 * tau2
 
-    @boundscheck(False)
-    @wraparound(False)
-    def apply(self, double[::1] k, double[:] tau, double[:] eta=None):
+    def apply(self, double[:] k, double[:] tau, double[:] eta=None):
         check_shape_1d(k, self.dim)
         check_shape_1d(tau, self.ncols)
         eta = create_or_check_shape_1d(eta, self.nrows)
-        self.c_apply(&k[0], tau, eta)
+        self.c_apply(k, tau, eta)
         return eta
 
     @boundscheck(False)
     @wraparound(False)
-    cdef void c_as_array(self, double *k, double[:, :] out):
+    cdef void c_as_array(self, double[:] k, double[:, :] out):
         self._update(k)
         out[0, 0] = self.g00
         out[0, 1] = self.g01
@@ -178,12 +177,10 @@ cdef class GreenOperator2D(GreenOperator):
         out[2, 1] = self.g12
         out[2, 2] = self.g22
 
-    @boundscheck(False)
-    @wraparound(False)
-    def as_array(self, double[::1] k, double[:, :] out=None):
+    def as_array(self, double[:] k, double[:, :] out=None):
         check_shape_1d(k, self.dim)
         out = create_or_check_shape_2d(out, self.nrows, self.ncols)
-        self.c_as_array(&k[0], out)
+        self.c_as_array(k, out)
         return out
 
 cdef class GreenOperator3D(GreenOperator):
@@ -198,7 +195,8 @@ cdef class GreenOperator3D(GreenOperator):
 
     @boundscheck(False)
     @cdivision(True)
-    cdef inline void _update(self, double *k):
+    @wraparound(False)
+    cdef inline void _update(self, double[:] k):
         """Compute the coefficients of the underlying matrix for the
         specified value of the wave vector.
 
@@ -274,7 +272,7 @@ cdef class GreenOperator3D(GreenOperator):
 
     @boundscheck(False)
     @wraparound(False)
-    cdef void c_apply(self, double *k, double[:] tau, double[:] eta):
+    cdef void c_apply(self, double[:] k, double[:] tau, double[:] eta):
         cdef double tau0, tau1, tau2, tau3, tau4, tau5
         self._update(k)
         tau0 = tau[0]
@@ -296,18 +294,16 @@ cdef class GreenOperator3D(GreenOperator):
         eta[5] = (self.g05 * tau0 + self.g15 * tau1 + self.g25 * tau2
                   + self.g35 * tau3 + self.g45 * tau4 + self.g55 * tau5)
 
-    @boundscheck(False)
-    @wraparound(False)
-    def apply(self, double[::1] k, double[:] tau, double[:] eta=None):
+    def apply(self, double[:] k, double[:] tau, double[:] eta=None):
         check_shape_1d(k, self.dim)
         check_shape_1d(tau, self.ncols)
         eta = create_or_check_shape_1d(eta, self.nrows)
-        self.c_apply(&k[0], tau, eta)
+        self.c_apply(k, tau, eta)
         return eta
 
     @boundscheck(False)
     @wraparound(False)
-    cdef void c_as_array(self, double *k, double[:, :] out):
+    cdef void c_as_array(self, double[:] k, double[:, :] out):
         self._update(k)
         out[0, 0] = self.g00
         out[0, 1] = self.g01
@@ -346,10 +342,8 @@ cdef class GreenOperator3D(GreenOperator):
         out[5, 4] = self.g45
         out[5, 5] = self.g55
 
-    @boundscheck(False)
-    @wraparound(False)
-    def as_array(self, double[::1] k, double[:, :] out=None):
+    def as_array(self, double[:] k, double[:, :] out=None):
         check_shape_1d(k, self.dim)
         out = create_or_check_shape_2d(out, self.nrows, self.ncols)
-        self.c_as_array(&k[0], out)
+        self.c_as_array(k, out)
         return out
