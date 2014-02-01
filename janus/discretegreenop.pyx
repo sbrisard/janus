@@ -68,7 +68,7 @@ cdef class DiscreteGreenOperator:
     cdef readonly int nrows
     cdef readonly int ncols
 
-    cdef int *n
+    cdef int[:] n
 
     def __cinit__(self, GreenOperator green, shape, double h, transform=None):
         self.dim = len(shape)
@@ -82,7 +82,7 @@ cdef class DiscreteGreenOperator:
         self.nrows = green.nrows
         self.ncols = green.ncols
 
-        self.n = <int *> malloc(self.dim * sizeof(int))
+        self.n = array(shape=(self.dim,), itemsize=sizeof(int), format='i')
         cdef int i
         cdef int ni
         for i in range(self.dim):
@@ -93,10 +93,7 @@ cdef class DiscreteGreenOperator:
             self.n[i] = shape[i]
         self.shape = tuple(shape)
 
-    def __dealloc__(self):
-        free(self.n)
-
-    cdef inline void check_b(self, int[::1] b) except *:
+    cdef inline void check_b(self, int[:] b) except *:
         if b.shape[0] != self.dim:
             raise ValueError('invalid shape: expected ({0},), actual ({1},)'
                              .format(self.dim, b.shape[0]))
@@ -108,27 +105,27 @@ cdef class DiscreteGreenOperator:
                 raise ValueError('index must be >= 0 and < {0} (was {1})'
                                  .format(ni, bi))
 
-    cdef void c_as_array(self, int *b, double[:, :] out):
+    cdef void c_as_array(self, int[:] b, double[:, :] out):
         raise NotImplementedError
 
-    cdef void c_apply(self, int *b, double[:] tau, double[:] eta):
+    cdef void c_apply(self, int[:] b, double[:] tau, double[:] eta):
         raise NotImplementedError
 
     @boundscheck(False)
     @wraparound(False)
-    def as_array(self, int[::1] b, double[:, :] out=None):
+    def as_array(self, int[:] b, double[:, :] out=None):
         self.check_b(b)
         out = create_or_check_shape_2d(out, self.nrows, self.ncols)
-        self.c_as_array(&b[0], out)
+        self.c_as_array(b, out)
         return out
 
     @boundscheck(False)
     @wraparound(False)
-    def apply(self, int[::1] b, double[:] tau, double[:] eta=None):
+    def apply(self, int[:] b, double[:] tau, double[:] eta=None):
         self.check_b(b)
         check_shape_1d(tau, self.ncols)
         eta = create_or_check_shape_1d(eta, self.nrows)
-        self.c_apply(&b[0], tau, eta)
+        self.c_apply(b, tau, eta)
         return eta
 
 
@@ -165,18 +162,15 @@ cdef class TruncatedGreenOperator(DiscreteGreenOperator):
         of the space of strains).
     """
 
-    cdef double* k
+    cdef double[:] k
     cdef double two_pi_over_h
 
     def __cinit__(self, GreenOperator green, shape, double h, transform=None):
         self.two_pi_over_h = 2. * M_PI / h
-        self.k = <double *> malloc(self.dim * sizeof(double))
-
-    def __dealloc__(self):
-        free(self.k)
+        self.k = array(shape=(self.dim,), itemsize=sizeof(double), format='d')
 
     @cdivision(True)
-    cdef inline void update(self, int *b):
+    cdef inline void update(self, int[:] b):
         cdef:
             int i, ni, bi
             double s
@@ -189,11 +183,11 @@ cdef class TruncatedGreenOperator(DiscreteGreenOperator):
             else:
                 self.k[i] = s * bi
 
-    cdef void c_as_array(self, int *b, double[:, :] out):
+    cdef void c_as_array(self, int[:] b, double[:, :] out):
         self.update(b)
         self.green.c_as_array(self.k, out)
 
-    cdef void c_apply(self, int *b, double[:] tau, double[:] eta):
+    cdef void c_apply(self, int[:] b, double[:] tau, double[:] eta):
         self.update(b)
         self.green.c_apply(self.k, tau, eta)
 
