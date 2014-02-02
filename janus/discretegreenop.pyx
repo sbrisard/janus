@@ -5,6 +5,7 @@ from cython cimport sizeof
 from cython cimport wraparound
 from cython.view cimport array
 from libc.math cimport M_PI
+from libc.math cimport cos
 from libc.stdlib cimport malloc
 from libc.stdlib cimport free
 
@@ -200,8 +201,7 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
     def __cinit__(self, GreenOperator green, shape, double h, transform=None):
         self.transform = transform
         if self.transform is not None:
-            if ((self.transform.shape[0] != shape[0]) or
-                (self.transform.shape[1] != shape[1])):
+            if self.transform.shape != shape:
                 raise ValueError('shape of transform must be {0} [was {1}]'
                                  .format(self.shape, transform.shape))
         self.n0 = self.n[0]
@@ -282,9 +282,7 @@ cdef class TruncatedGreenOperator3D(TruncatedGreenOperator):
     def __cinit__(self, GreenOperator green, shape, double h, transform=None):
         self.transform = transform
         if self.transform is not None:
-            if ((self.transform.shape[0] != shape[0]) or
-                (self.transform.shape[1] != shape[1]) or
-                (self.transform.shape[2] != shape[2])):
+            if self.transform.shape != shape:
                 raise ValueError('shape of transform must be {0} [was {1}]'
                                  .format(self.shape, transform.shape))
         self.n0 = self.n[0]
@@ -369,3 +367,73 @@ cdef class TruncatedGreenOperator3D(TruncatedGreenOperator):
             self.transform.c2r(dft_eta[:, :, :, i], eta[:, :, :, i])
 
         return eta
+
+
+cdef class FilteredGreenOperator2D(DiscreteGreenOperator):
+    cdef int ishape0, ishape1, ishape2
+    cdef int oshape0, oshape1, oshape2
+    cdef double k0_prefactor, k1_prefactor
+    cdef double[:] k
+    cdef double[:, :] g
+    cdef double g00, g01, g02
+    cdef double g11, g12
+    cdef double g22
+
+    def __cinit__(self, GreenOperator green, shape, double h, transform=None):
+        self.transform = transform
+        if self.transform is not None:
+            if self.transform.shape != shape:
+                raise ValueError('shape of transform must be {0} [was {1}]'
+                                 .format(self.shape, transform.shape))
+        self.ishape0 = shape[0]
+        self.ishape1 = shape[1]
+        self.ishape2 = green.ncols
+        self.oshape0 = self.ishape0
+        self.oshape1 = self.ishape1
+        self.oshape2 = green.nrows
+        self.k = array((2,), sizeof(double), 'd')
+        self.g = array((green.nrows, green.ncols), sizeof(double), 'd')
+
+    cdef inline _add_single_mode(self, k0, k1, w):
+        self.k[0] = k0
+        self.k[1] = k1
+        self.green.c_as_array(self.k, self.g)
+        self.g00 += w * self.g[0, 0]
+        self.g01 += w * self.g[0, 1]
+        self.g02 += w * self.g[0, 2]
+        self.g11 += w * self.g[1, 1]
+        self.g12 += w * self.g[1, 2]
+        self.g22 += w * self.g[2, 2]
+
+    cdef void update(self, int[:] b):
+        self.g00 = 0.
+        self.g01 = 0.
+        self.g02 = 0.
+        self.g11 = 0.
+        self.g12 = 0.
+        self.g22 = 0.
+
+        cdef int b0 = b[0]
+        cdef int b1 = b[1]
+        cdef double aux
+
+        aux = 2. * M_PI / (self.h * self.ishape0)
+        cdef double k00 = aux * b0
+        cdef double k0m = aux * (b0 - self.ishape0)
+        cdef double w00 = cos(0.25 * self.h * k00)
+        cdef double w0m = cos(0.25 * self.h * k0m)
+        w00 *= w00
+        w0m *= w0m
+
+        aux = 2. * M_PI / (self.h * self.ishape1)
+        cdef double k10 = aux * b1
+        cdef double k1m = aux * (b1 - self.ishape1)
+        cdef double w10 = cos(0.25 * self.h * k10)
+        cdef double w1m = cos(0.25 * self.h * k1m)
+        w10 *= w10
+        w1m *= w1m
+
+        self._add_single_mode(k00, k10, w00 * w10)
+        self._add_single_mode(k00, k1m, w00 * w1m)
+        self._add_single_mode(k0m, k10, w0m * w10)
+        self._add_single_mode(k0m, k1m, w0m * w1m)
