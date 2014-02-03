@@ -1,8 +1,5 @@
 cdef class Operator:
-    # TODO rename
-    #   - ncols -> isize
-    #   - nrows -> osize
-    cdef readonly int nrows, ncols
+    cdef readonly int isize, osize
 
     cdef void c_apply(self, double[:] x, double[:] y)
 

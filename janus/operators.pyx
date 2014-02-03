@@ -64,14 +64,10 @@ cdef class Operator:
 
     Attributes
     ----------
-    ncols : int
-        The dimension of the domain of the operator. For a linear
-        operator, `ncols` is the number of columns of the underlying
-        matrix.
-    nrows : int
-        The dimension of the codomain (range) of the operator. For a
-        linear operator, `ncols` is the number of columns of the
-        underlying matrix.
+    isize : int
+        The dimension of the input of the operator.
+    osize : int
+        The dimension of the output of the operator.
 
     """
 
@@ -102,8 +98,8 @@ cdef class Operator:
             view of the parameter `y` (if not ``None``).
 
         """
-        check_shape_1d(x, self.ncols)
-        y = create_or_check_shape_1d(y, self.nrows)
+        check_shape_1d(x, self.isize)
+        y = create_or_check_shape_1d(y, self.osize)
         self.c_apply(x, y)
         return y
 
@@ -205,10 +201,10 @@ cdef class BlockDiagonalOperator2D(AbstractStructuredOperator2D):
     def __cinit__(self, Operator[:, :] a_loc):
         self.ishape0 = a_loc.shape[0]
         self.ishape1 = a_loc.shape[1]
-        self.ishape2 = a_loc[0, 0].ncols
+        self.ishape2 = a_loc[0, 0].isize
         self.oshape0 = a_loc.shape[0]
         self.oshape1 = a_loc.shape[1]
-        self.oshape2 = a_loc[0, 0].nrows
+        self.oshape2 = a_loc[0, 0].osize
         self.ishape = (self.ishape0, self.ishape1, self.ishape2)
         self.oshape = (self.oshape0, self.oshape1, self.oshape2)
         self.a_loc = a_loc.copy()
@@ -216,8 +212,8 @@ cdef class BlockDiagonalOperator2D(AbstractStructuredOperator2D):
         cdef int i0, i1, ishape2, oshape2
         for i0 in range(self.ishape0):
             for i1 in range(self.ishape1):
-                ishape2 = a_loc[i0, i1].ncols
-                oshape2 = a_loc[i0, i1].nrows
+                ishape2 = a_loc[i0, i1].isize
+                oshape2 = a_loc[i0, i1].osize
                 if ishape2 != self.ishape2:
                     raise ValueError('invalid dimension block operator input: '
                                      'expected {0}, '
@@ -289,8 +285,8 @@ cdef class FourthRankIsotropicTensor(Operator):
     @cdivision(True)
     def __cinit__(self, double sph, double dev, int dim):
         self.dim = dim
-        self.nrows = (self.dim * (self.dim + 1)) / 2
-        self.ncols = self.nrows
+        self.isize = (self.dim * (self.dim + 1)) / 2
+        self.osize = self.isize
         self.sph = sph
         self.dev = dev
         self.tr = (sph - dev) / <double> self.dim
