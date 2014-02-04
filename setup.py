@@ -31,10 +31,10 @@ if config is not None:
     library_dirs.append(parser.get(config, 'fftw3-library'))
     with_mpi = parser.getboolean(config, 'with-mpi')
     if with_mpi:
-        fftw3_mpi = parser.get(config, 'fftw3-mpi')
+        fftw3_mpi = parser.get(config, 'fftw3_mpi')
 else:
     fftw3 = 'fftw3'
-    fftw3_mpi = 'fftw3-mpi'
+    fftw3_mpi = 'fftw3_mpi'
     with_mpi = True
 
 extensions = []
