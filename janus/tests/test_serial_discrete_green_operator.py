@@ -162,8 +162,8 @@ def test_to_memoryview_invalid_parameters():
         n = tuple(2**(i + 3) for i in range(dim))
         green = discrete_green_operator(n, 1.)
         b0 = np.zeros((green.dim,), dtype=np.intc)
-        out1 = np.zeros((green.nrows + 1, green.ncols), dtype=np.float64)
-        out2 = np.zeros((green.nrows, green.ncols + 1), dtype=np.float64)
+        out1 = np.zeros((green.osize + 1, green.isize), dtype=np.float64)
+        out2 = np.zeros((green.osize, green.isize + 1), dtype=np.float64)
         params = ([(b, None) for b in invalid_multi_indices(n)]
                   + [(b0, out1), (b0, out2)])
 
@@ -230,9 +230,9 @@ def test_apply_invalid_params():
         green = discrete_green_operator(n, 1.)
 
         b_valid = np.zeros((dim,), dtype=np.intc)
-        tau_valid = np.zeros((green.ncols,), dtype=np.float64)
-        tau_invalid = np.zeros((green.ncols + 1,), dtype=np.float64)
-        eta_invalid = np.zeros((green.nrows + 1,), dtype=np.float64)
+        tau_valid = np.zeros((green.isize,), dtype=np.float64)
+        tau_invalid = np.zeros((green.isize + 1,), dtype=np.float64)
+        eta_invalid = np.zeros((green.osize + 1,), dtype=np.float64)
 
         params = ([(b, tau_valid, None)
                    for b in invalid_multi_indices(n)]
@@ -262,8 +262,8 @@ def test_apply_invalid_params():
 #       - flag = 2: apply_all_freqs(tau, eta)
 #     """
 #     green = discrete_green_operator(n, 1.)
-#     tau = rnd.rand(*(n + (green.ncols,)))
-#     expected = np.empty(n + (green.nrows,), dtype=np.float64)
+#     tau = rnd.rand(*(n + (green.isize,)))
+#     expected = np.empty(n + (green.osize,), dtype=np.float64)
 #     for b in multi_indices(n):
 #         index = tuple(b)
 #         green.apply_single_freq(b, tau[index], expected[index])
@@ -294,8 +294,8 @@ def test_apply_invalid_params():
 #     for dim in [2, 3]:
 #         n = tuple(2**(i + 3) for i in range(dim))
 #         green = discrete_green_operator(n, 1.)
-#         params = invalid_tau_eta(n + (green.ncols,),
-#                                  n + (green.nrows,))
+#         params = invalid_tau_eta(n + (green.isize,),
+#                                  n + (green.osize,))
 
 #         @raises(ValueError)
 #         def test(tau, eta):
@@ -326,13 +326,13 @@ def do_test_convolve(path_to_ref, rel_err):
 
     # TODO This is uggly
     if green.dim == 2:
-        tau = dummy[:, :, 0:green.ncols]
-        expected = dummy[:, :, green.ncols:]
+        tau = dummy[:, :, 0:green.isize]
+        expected = dummy[:, :, green.isize:]
     else:
-        tau = dummy[:, :, :, 0:green.ncols]
-        expected = dummy[:, :, :, green.ncols:]
+        tau = dummy[:, :, :, 0:green.isize]
+        expected = dummy[:, :, :, green.isize:]
 
-    actual = np.zeros(transform.rshape + (green.nrows,), np.float64)
+    actual = np.zeros(transform.rshape + (green.osize,), np.float64)
     green.convolve(tau, actual)
 
     error = actual - expected
@@ -377,8 +377,8 @@ def test_convolve_invalid_params():
         n = tuple(2**(i + 3) for i in range(dim))
         transform = janus.fft.serial.create_real(n)
         green = discrete_green_operator(n, 1., transform)
-        params = invalid_tau_eta(n + (green.ncols,),
-                                 n + (green.nrows,))
+        params = invalid_tau_eta(n + (green.isize,),
+                                 n + (green.osize,))
 
         @raises(ValueError)
         def test(tau, eta):

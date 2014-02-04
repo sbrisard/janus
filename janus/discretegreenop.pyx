@@ -54,10 +54,10 @@ cdef class DiscreteGreenOperator:
         The size of each cell of the grid.
     dim: int
         The dimension of the physical space.
-    nrows: int
+    osize: int
         The number of rows of the Green tensor, for each frequency (dimension
         of the space of polarizations).
-    ncols: int
+    isize: int
         The number of columns of the Green tensor, for each frequency (dimension
         of the space of strains).
     """
@@ -65,8 +65,8 @@ cdef class DiscreteGreenOperator:
     cdef readonly tuple shape
     cdef readonly double h
     cdef readonly int dim
-    cdef readonly int nrows
-    cdef readonly int ncols
+    cdef readonly int osize
+    cdef readonly int isize
 
     cdef int[:] n
 
@@ -80,8 +80,8 @@ cdef class DiscreteGreenOperator:
             raise ValueError('h must be > 0 (was {0})'.format(h))
         self.green = green
         self.h = h
-        self.ncols = green.isize
-        self.nrows = green.osize
+        self.isize = green.isize
+        self.osize = green.osize
 
         self.n = array(shape=(self.dim,), itemsize=sizeof(int), format='i')
         cdef int i
@@ -116,7 +116,7 @@ cdef class DiscreteGreenOperator:
     @wraparound(False)
     def to_memoryview(self, int[:] b, double[:, :] out=None):
         self.check_b(b)
-        out = create_or_check_shape_2d(out, self.nrows, self.ncols)
+        out = create_or_check_shape_2d(out, self.osize, self.isize)
         self.c_to_memoryview(b, out)
         return out
 
@@ -124,8 +124,8 @@ cdef class DiscreteGreenOperator:
     @wraparound(False)
     def apply(self, int[:] b, double[:] tau, double[:] eta=None):
         self.check_b(b)
-        check_shape_1d(tau, self.ncols)
-        eta = create_or_check_shape_1d(eta, self.nrows)
+        check_shape_1d(tau, self.isize)
+        eta = create_or_check_shape_1d(eta, self.osize)
         self.c_apply(b, tau, eta)
         return eta
 
@@ -155,10 +155,10 @@ cdef class TruncatedGreenOperator(DiscreteGreenOperator):
         The size of each cell of the grid.
     dim: int
         The dimension of the physical space.
-    nrows: int
+    osize: int
         The number of rows of the Green tensor, for each frequency (dimension
         of the space of polarizations).
-    ncols: int
+    isize: int
         The number of columns of the Green tensor, for each frequency (dimension
         of the space of strains).
     """
@@ -212,9 +212,9 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
         self.n0 = self.n[0]
         self.n1 = self.n[1]
         self.dft_tau_shape = (self.transform.cshape0, self.transform.cshape1,
-                              self.ncols)
+                              self.isize)
         self.dft_eta_shape = (self.transform.cshape0, self.transform.cshape1,
-                              self.nrows)
+                              self.osize)
         self.s0 = 2. * M_PI / (self.h * self.n0)
         self.s1 = 2. * M_PI / (self.h * self.n1)
 
@@ -224,9 +224,9 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
     def convolve(self, tau, eta=None):
         cdef double[:, :, :] tau_as_mv = tau
         check_shape_3d(tau_as_mv, self.transform.rshape0,
-                       self.transform.rshape1, self.ncols)
+                       self.transform.rshape1, self.isize)
         eta = create_or_check_shape_3d(eta, self.transform.rshape0,
-                                       self.transform.rshape1, self.nrows)
+                                       self.transform.rshape1, self.osize)
 
         cdef double[:, :, :] dft_tau = array(self.dft_tau_shape,
                                              sizeof(double), 'd')
@@ -236,7 +236,7 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
         cdef int i
 
         # Compute DFT of tau
-        for i in range(self.ncols):
+        for i in range(self.isize):
             self.transform.r2c(tau_as_mv[:, :, i], dft_tau[:, :, i])
 
         # Apply Green operator frequency-wise
@@ -270,7 +270,7 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
                 i1 += 1
 
         # Compute inverse DFT of eta
-        for i in range(self.nrows):
+        for i in range(self.osize):
             self.transform.c2r(dft_eta[:, :, i], eta[:, :, i])
 
         return eta
@@ -293,9 +293,9 @@ cdef class TruncatedGreenOperator3D(TruncatedGreenOperator):
         self.n1 = self.n[1]
         self.n2 = self.n[2]
         self.dft_tau_shape = (self.transform.cshape0, self.transform.cshape1,
-                              self.transform.cshape2, self.ncols)
+                              self.transform.cshape2, self.isize)
         self.dft_eta_shape = (self.transform.cshape0, self.transform.cshape1,
-                              self.transform.cshape2, self.nrows)
+                              self.transform.cshape2, self.osize)
         self.s0 = 2. * M_PI / (self.h * self.n0)
         self.s1 = 2. * M_PI / (self.h * self.n1)
         self.s2 = 2. * M_PI / (self.h * self.n2)
@@ -309,12 +309,12 @@ cdef class TruncatedGreenOperator3D(TruncatedGreenOperator):
                        self.transform.rshape0,
                        self.transform.rshape1,
                        self.transform.rshape2,
-                       self.ncols)
+                       self.isize)
         eta = create_or_check_shape_4d(eta,
                                        self.transform.rshape0,
                                        self.transform.rshape1,
                                        self.transform.rshape2,
-                                       self.nrows)
+                                       self.osize)
 
         cdef double[:, :, :, :] dft_tau = array(self.dft_tau_shape,
                                                 sizeof(double), 'd')
@@ -324,7 +324,7 @@ cdef class TruncatedGreenOperator3D(TruncatedGreenOperator):
         cdef int i
 
         # Compute DFT of tau
-        for i in range(self.ncols):
+        for i in range(self.isize):
             self.transform.r2c(tau_as_mv[:, :, :, i], dft_tau[:, :, :, i])
 
         # Apply Green operator frequency-wise
@@ -365,7 +365,7 @@ cdef class TruncatedGreenOperator3D(TruncatedGreenOperator):
                     i2 += 1
 
         # Compute inverse DFT of eta
-        for i in range(self.nrows):
+        for i in range(self.osize):
             self.transform.c2r(dft_eta[:, :, :, i], eta[:, :, :, i])
 
         return eta
@@ -391,10 +391,10 @@ cdef class FilteredGreenOperator2D(DiscreteGreenOperator):
                                  .format(self.shape, transform.shape))
         self.ishape0 = shape[0]
         self.ishape1 = shape[1]
-        self.ishape2 = green.ncols
+        self.ishape2 = green.isize
         self.oshape0 = self.ishape0
         self.oshape1 = self.ishape1
-        self.oshape2 = green.nrows
+        self.oshape2 = green.osize
 
         shape = (2,)
         self.k1 = array(shape, sizeof(double), 'd')
@@ -402,7 +402,7 @@ cdef class FilteredGreenOperator2D(DiscreteGreenOperator):
         self.k3 = array(shape, sizeof(double), 'd')
         self.k4 = array(shape, sizeof(double), 'd')
 
-        shape = (green.nrows, green.ncols)
+        shape = (green.osize, green.isize)
         self.g1 = array(shape, sizeof(double), 'd')
         self.g2 = array(shape, sizeof(double), 'd')
         self.g3 = array(shape, sizeof(double), 'd')
