@@ -134,15 +134,16 @@ def do_test_to_memoryview(n, inplace):
         k[i] = 2. * np.pi * (b[i] - n[i]) / n[i]
         k[~i] = 2. * np.pi * b[~i] / n[~i]
 
+        greend.set_frequency(b)
         greenc.set_frequency(k)
         expected = greenc.to_memoryview()
 
         if inplace:
             base = np.empty_like(expected)
-            actual = greend.to_memoryview(b, base)
+            actual = greend.to_memoryview(base)
             assert get_base(actual) is base
         else:
-            actual = greend.to_memoryview(b)
+            actual = greend.to_memoryview()
         print(np.asarray(expected), np.asarray(actual))
         assert_array_almost_equal_nulp(np.asarray(expected),
                                        np.asarray(actual), 1)
@@ -161,18 +162,15 @@ def test_to_memoryview_invalid_parameters():
     for dim in [2, 3]:
         n = tuple(2**(i + 3) for i in range(dim))
         green = discrete_green_operator(n, 1.)
-        b0 = np.zeros((green.dim,), dtype=np.intc)
         out1 = np.zeros((green.osize + 1, green.isize), dtype=np.float64)
         out2 = np.zeros((green.osize, green.isize + 1), dtype=np.float64)
-        params = ([(b, None) for b in invalid_multi_indices(n)]
-                  + [(b0, out1), (b0, out2)])
 
         @raises(ValueError)
-        def test(b, out):
-            green.to_memoryview(b, out)
+        def test(out):
+            green.to_memoryview(out)
 
-        for b, out in params:
-            yield test, b, out
+        for out in [out1, out2]:
+            yield test, out
 
 #
 # 2 Test of the method apply
@@ -193,7 +191,8 @@ def do_test_apply(n, tau, flag):
     green = discrete_green_operator(n, 1.)
 
     for b in multi_indices(n):
-        g = np.asarray(green.to_memoryview(b))
+        green.set_frequency(b)
+        g = np.asarray(green.to_memoryview())
         # expected is by default a matrix, so that it has two dimensions.
         # First convert to ndarray so as to reshape is to a 1D array.
         expected = np.dot(g, tau)
@@ -205,7 +204,7 @@ def do_test_apply(n, tau, flag):
             base = np.empty_like(expected)
         else:
             raise(ValueError)
-        actual = green.apply(b, tau, base)
+        actual = green.apply(tau, base)
         if flag != 0:
             assert get_base(actual) is base
         assert_array_almost_equal_nulp(expected, np.asarray(actual), 1)
@@ -229,22 +228,16 @@ def test_apply_invalid_params():
         n = tuple(2**(i + 3) for i in range(dim))
         green = discrete_green_operator(n, 1.)
 
-        b_valid = np.zeros((dim,), dtype=np.intc)
         tau_valid = np.zeros((green.isize,), dtype=np.float64)
         tau_invalid = np.zeros((green.isize + 1,), dtype=np.float64)
         eta_invalid = np.zeros((green.osize + 1,), dtype=np.float64)
 
-        params = ([(b, tau_valid, None)
-                   for b in invalid_multi_indices(n)]
-                  + [(b_valid, tau_invalid, None),
-                     (b_valid, tau_valid, eta_invalid)])
-
         @raises(ValueError)
-        def test(b, tau, eta):
-            green.apply(b, tau, eta)
+        def test(tau, eta):
+            green.apply(tau, eta)
 
-        for b, tau, eta in params:
-            yield test, b, tau, eta
+        for tau, eta in [(tau_invalid, None), (tau_valid, eta_invalid)]:
+            yield test, tau, eta
 
 # #
 # # 3 Test of the method apply_all_freqs

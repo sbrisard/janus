@@ -106,27 +106,32 @@ cdef class DiscreteGreenOperator:
                 raise ValueError('index must be >= 0 and < {0} (was {1})'
                                  .format(ni, bi))
 
-    cdef void c_to_memoryview(self, int[:] b, double[:, :] out):
+    cdef void c_set_frequency(self, int[:] b):
         raise NotImplementedError
 
-    cdef void c_apply(self, int[:] b, double[:] tau, double[:] eta):
+    def set_frequency(self, int[:] b):
+        self.check_b(b)
+        self.c_set_frequency(b)
+
+    cdef void c_to_memoryview(self, double[:, :] out):
         raise NotImplementedError
 
     @boundscheck(False)
     @wraparound(False)
-    def to_memoryview(self, int[:] b, double[:, :] out=None):
-        self.check_b(b)
+    def to_memoryview(self, double[:, :] out=None):
         out = create_or_check_shape_2d(out, self.osize, self.isize)
-        self.c_to_memoryview(b, out)
+        self.c_to_memoryview(out)
         return out
 
+    cdef void c_apply(self, double[:] tau, double[:] eta):
+        raise NotImplementedError
+
     @boundscheck(False)
     @wraparound(False)
-    def apply(self, int[:] b, double[:] tau, double[:] eta=None):
-        self.check_b(b)
+    def apply(self, double[:] tau, double[:] eta=None):
         check_shape_1d(tau, self.isize)
         eta = create_or_check_shape_1d(eta, self.osize)
-        self.c_apply(b, tau, eta)
+        self.c_apply(tau, eta)
         return eta
 
 
@@ -172,7 +177,7 @@ cdef class TruncatedGreenOperator(DiscreteGreenOperator):
         self.k = array(shape=(self.dim,), itemsize=sizeof(double), format='d')
 
     @cdivision(True)
-    cdef inline void update(self, int[:] b):
+    cdef void c_set_frequency(self, int[:] b):
         cdef:
             int i, ni, bi
             double s
@@ -184,15 +189,12 @@ cdef class TruncatedGreenOperator(DiscreteGreenOperator):
                 self.k[i] = s * (bi - ni)
             else:
                 self.k[i] = s * bi
-
-    cdef void c_to_memoryview(self, int[:] b, double[:, :] out):
-        self.update(b)
         self.green.set_frequency(self.k)
+
+    cdef void c_to_memoryview(self, double[:, :] out):
         self.green.c_to_memoryview(out)
 
-    cdef void c_apply(self, int[:] b, double[:] tau, double[:] eta):
-        self.update(b)
-        self.green.set_frequency(self.k)
+    cdef void c_apply(self, double[:] tau, double[:] eta):
         self.green.c_apply(tau, eta)
 
 

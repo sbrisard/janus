@@ -48,7 +48,7 @@ def do_test_convolve(path_to_ref, rel_err):
     if rank == root:
         tau_locs = [tau[offset0:offset0 + n0] for n0, offset0 in n_locs]
     tau_loc = comm.scatter(tau_locs, root)
-    eta_loc = np.empty(transform.rshape + (green.nrows,), dtype=np.float64)
+    eta_loc = np.empty(transform.rshape + (green.osize,), dtype=np.float64)
     green.convolve(tau_loc, eta_loc)
 
     # Gather eta
