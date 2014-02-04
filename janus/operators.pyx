@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """Classes defining operators (:mod:`janus.operators`)
 ===================================================
 
@@ -14,6 +16,7 @@ Functions:
 Classes:
 
 - :class:`Operator` -- general operator
+- :class:`AbstractLinearOperator` -- general linear operator
 - :class:`AbstractStructuredOperator2D` -- operator with 2D layout of
          the (vectorial) data
 - :class:`BlockDiagonalOperator2D` -- block-diagonal, structured operator
@@ -31,6 +34,7 @@ from cython cimport wraparound
 from janus.utils.checkarray cimport check_shape_1d
 from janus.utils.checkarray cimport check_shape_3d
 from janus.utils.checkarray cimport create_or_check_shape_1d
+from janus.utils.checkarray cimport create_or_check_shape_2d
 from janus.utils.checkarray cimport create_or_check_shape_3d
 
 
@@ -102,6 +106,41 @@ cdef class Operator:
         y = create_or_check_shape_1d(y, self.osize)
         self.c_apply(x, y)
         return y
+
+
+cdef class AbstractLinearOperator(Operator):
+
+    """Specialization of :class:`Operator` to linear operators.
+
+    This abstract class defines the method :func:`to_memoryview` which
+    returns the matrix of this linear operator as a memoryview.
+    """
+
+    cdef void c_to_memoryview(self, double[:, :] out):
+        raise NotImplementedError
+
+    def to_memoryview(self, double[:, :] out=None):
+        """to_memoryview(out=None)
+
+        Return the matrix of this operator as a memoryview.
+
+        Parameters
+        ----------
+        out : 2D memoryview of float64
+            The output array, in which the matrix is to be stored. If
+            ``None``, a new array is created and returned; otherwise,
+            this method returns a view of this object.
+
+        Returns
+        -------
+        out : 2D memoryview of float64
+            The matrix of this operator. This is a view of the parameter
+            `out` (if not ``None``).
+
+        """
+        out = create_or_check_shape_2d(out, self.osize, self.isize)
+        self.c_to_memoryview(out)
+        return out
 
 
 cdef class AbstractStructuredOperator2D:
@@ -314,7 +353,7 @@ cdef class FourthRankIsotropicTensor2D(FourthRankIsotropicTensor):
 
 cdef class FourthRankIsotropicTensor3D(FourthRankIsotropicTensor):
 
-    """Specialization of :class:`FourthRankIsotropicTensor`to 3D."""
+    """Specialization of :class:`FourthRankIsotropicTensor` to 3D."""
 
     @boundscheck(False)
     @wraparound(False)
