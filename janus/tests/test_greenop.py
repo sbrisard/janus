@@ -65,26 +65,27 @@ def wave_vectors(dim):
 @nottest
 def do_test_apply(k, mat, flag):
     """flag allows the specification of various calling sequences:
-      - flag = 0: apply_single_freq(b, tau)
-      - flag = 1: apply_single_freq(b, tau, tau)
-      - flag = 2: apply_single_freq(b, tau, eta)
+      - flag = 0: apply(b, tau)
+      - flag = 1: apply(b, tau, tau)
+      - flag = 2: apply(b, tau, eta)
     """
     expected = green_matrix(k,  mat)
     green = greenop.create(mat)
-    tau = np.zeros((green.ncols,), np.float64)
+    tau = np.zeros((green.isize,), np.float64)
     if flag == 0:
         base = None
     elif flag == 1:
         base = tau
     elif flag == 2:
-        base = np.empty((green.nrows,), np.float64)
+        base = np.empty((green.osize,), np.float64)
     else:
         raise ValueError()
 
-    for j in range(green.ncols):
+    for j in range(green.isize):
         tau[:] = 0.
         tau[j] = 1.
-        actual = green.apply(k, tau, base)
+        green.set_frequency(k)
+        actual = green.apply(tau, base)
         if flag != 0:
             assert actual.base is base
         assert_array_almost_equal_nulp(expected[:, j], actual, 325)
@@ -100,12 +101,13 @@ def test_apply():
 def do_test_as_array(k, mat, inplace):
     expected = green_matrix(k,  mat)
     green = greenop.create(mat)
+    green.set_frequency(k)
     if inplace:
-        base = np.empty((green.nrows, green.ncols), np.float64)
-        actual = green.as_array(k, base)
+        base = np.empty((green.osize, green.isize), np.float64)
+        actual = green.as_array(base)
         assert actual.base is base
     else:
-        actual = green.as_array(k)
+        actual = green.as_array()
     assert_array_almost_equal_nulp(expected, actual, 325)
 
 def test_as_array():
@@ -123,57 +125,60 @@ def test_init_2D_invalid_dimension():
 def test_init_3D_invalid_dimension():
     greenop.GreenOperator3D(Material(MU, NU, 2))
 
+@raises(ValueError)
+def test_invalid_frequency_2D():
+    k = np.zeros((3,), dtype=np.float64)
+    greenop.create(Material(MU, NU, 2)).set_frequency(k)
+
+@raises(ValueError)
+def test_invalid_frequency_3D():
+    k = np.zeros((2,), dtype=np.float64)
+    greenop.create(Material(MU, NU, 3)).set_frequency(k)
+
 @nottest
 @raises(ValueError)
-def do_test_apply_invalid_params(green, k, tau, eps):
-    green.apply(k, tau, eps)
+def do_test_apply_invalid_params(green, tau, eps):
+    green.apply(tau, eps)
 
 def test_apply_invalid_params():
     g2 = greenop.create(Material(MU, NU, 2))
     @raises(ValueError)
-    def apply2(k, tau, eps):
-        return g2.apply(k, tau, eps)
+    def apply2(tau, eps):
+        return g2.apply(tau, eps)
 
     g3 = greenop.create(Material(MU, NU, 3))
     @raises(ValueError)
-    def apply3(k, tau, eps):
-        return g3.apply(k, tau, eps)
+    def apply3(tau, eps):
+        return g3.apply(tau, eps)
 
-    k2 = np.empty((2,), dtype=np.float64)
-    k3 = np.empty((3,), dtype=np.float64)
     tau3 = np.empty((3,), dtype=np.float64)
     tau6 = np.empty((6,), dtype=np.float64)
     eps3 = np.empty((3,), dtype=np.float64)
     eps6 = np.empty((6,), dtype=np.float64)
-    all_apply = [apply2, apply2, apply2, apply3, apply3, apply3]
-    all_k = [k3, k2, k2, k2, k3, k3]
-    all_tau = [tau3, tau6, tau3, tau6, tau3, tau6]
-    all_eps = [eps3, eps3, eps6, eps6, eps6, eps3]
+    all_apply = [apply2, apply2, apply3, apply3]
+    all_tau = [tau6, tau3, tau3, tau6]
+    all_eps = [eps3, eps6, eps6, eps3]
 
-    for f, k, tau, eps in zip(all_apply, all_k, all_tau, all_eps):
-        yield f, k, tau, eps
+    for f, tau, eps in zip(all_apply, all_tau, all_eps):
+        yield f, tau, eps
 
 def test_as_array_invalid_params():
     g2 = greenop.create(Material(MU, NU, 2))
     @raises(ValueError)
-    def as_array2(k, arr):
-        return g2.as_array(k, arr)
+    def as_array2(arr):
+        return g2.as_array(arr)
 
     g3 = greenop.create(Material(MU, NU, 3))
     @raises(ValueError)
-    def as_array3(k, arr):
-        return g3.as_array(k, arr)
+    def as_array3(arr):
+        return g3.as_array(arr)
 
-    k2 = np.empty((2,))
-    k3 = np.empty((3,))
     arr3x3 = np.empty((3, 3), dtype=np.float64)
     arr6x6 = np.empty((6, 6), dtype=np.float64)
     arr3x6 = np.empty((3, 6), dtype=np.float64)
     arr6x3 = np.empty((6, 3), dtype=np.float64)
-    all_as_array = [as_array2, as_array2, as_array2,
-                    as_array3, as_array3, as_array3]
-    all_k = [k3, k2, k2, k2, k3, k3]
-    all_arr = [arr3x3, arr6x3, arr3x6, arr6x6, arr6x3, arr3x6]
+    all_as_array = [as_array2, as_array2, as_array3, as_array3]
+    all_arr = [arr6x3, arr3x6, arr6x3, arr3x6]
 
-    for as_array, k, arr in zip(all_as_array, all_k, all_arr):
-        yield as_array, k, arr
+    for as_array, arr in zip(all_as_array, all_arr):
+        yield as_array, arr
