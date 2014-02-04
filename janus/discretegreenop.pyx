@@ -11,7 +11,7 @@ from libc.stdlib cimport free
 
 from janus.fft.serial._serial_fft cimport _RealFFT2D
 from janus.fft.serial._serial_fft cimport _RealFFT3D
-from janus.greenop cimport GreenOperator
+from janus.greenop cimport AbstractGreenOperator
 from janus.utils.checkarray cimport create_or_check_shape_1d
 from janus.utils.checkarray cimport create_or_check_shape_2d
 from janus.utils.checkarray cimport create_or_check_shape_3d
@@ -61,7 +61,7 @@ cdef class DiscreteGreenOperator:
         The number of columns of the Green tensor, for each frequency (dimension
         of the space of strains).
     """
-    cdef readonly GreenOperator green
+    cdef readonly AbstractGreenOperator green
     cdef readonly tuple shape
     cdef readonly double h
     cdef readonly int dim
@@ -70,7 +70,8 @@ cdef class DiscreteGreenOperator:
 
     cdef int[:] n
 
-    def __cinit__(self, GreenOperator green, shape, double h, transform=None):
+    def __cinit__(self, AbstractGreenOperator green, shape, double h,
+                  transform=None):
         self.dim = len(shape)
         if self.dim != green.mat.dim:
             raise ValueError('length of shape must be {0} (was {1})'
@@ -79,8 +80,8 @@ cdef class DiscreteGreenOperator:
             raise ValueError('h must be > 0 (was {0})'.format(h))
         self.green = green
         self.h = h
-        self.nrows = green.nrows
-        self.ncols = green.ncols
+        self.ncols = green.isize
+        self.nrows = green.osize
 
         self.n = array(shape=(self.dim,), itemsize=sizeof(int), format='i')
         cdef int i
@@ -105,7 +106,7 @@ cdef class DiscreteGreenOperator:
                 raise ValueError('index must be >= 0 and < {0} (was {1})'
                                  .format(ni, bi))
 
-    cdef void c_as_array(self, int[:] b, double[:, :] out):
+    cdef void c_to_memoryview(self, int[:] b, double[:, :] out):
         raise NotImplementedError
 
     cdef void c_apply(self, int[:] b, double[:] tau, double[:] eta):
@@ -113,10 +114,10 @@ cdef class DiscreteGreenOperator:
 
     @boundscheck(False)
     @wraparound(False)
-    def as_array(self, int[:] b, double[:, :] out=None):
+    def to_memoryview(self, int[:] b, double[:, :] out=None):
         self.check_b(b)
         out = create_or_check_shape_2d(out, self.nrows, self.ncols)
-        self.c_as_array(b, out)
+        self.c_to_memoryview(b, out)
         return out
 
     @boundscheck(False)
@@ -165,7 +166,8 @@ cdef class TruncatedGreenOperator(DiscreteGreenOperator):
     cdef double[:] k
     cdef double two_pi_over_h
 
-    def __cinit__(self, GreenOperator green, shape, double h, transform=None):
+    def __cinit__(self, AbstractGreenOperator green, shape, double h,
+                  transform=None):
         self.two_pi_over_h = 2. * M_PI / h
         self.k = array(shape=(self.dim,), itemsize=sizeof(double), format='d')
 
@@ -183,13 +185,15 @@ cdef class TruncatedGreenOperator(DiscreteGreenOperator):
             else:
                 self.k[i] = s * bi
 
-    cdef void c_as_array(self, int[:] b, double[:, :] out):
+    cdef void c_to_memoryview(self, int[:] b, double[:, :] out):
         self.update(b)
-        self.green.c_as_array(self.k, out)
+        self.green.set_frequency(self.k)
+        self.green.c_to_memoryview(out)
 
     cdef void c_apply(self, int[:] b, double[:] tau, double[:] eta):
         self.update(b)
-        self.green.c_apply(self.k, tau, eta)
+        self.green.set_frequency(self.k)
+        self.green.c_apply(tau, eta)
 
 
 cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
@@ -198,7 +202,8 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
     cdef _RealFFT2D transform
     cdef tuple dft_tau_shape, dft_eta_shape
 
-    def __cinit__(self, GreenOperator green, shape, double h, transform=None):
+    def __cinit__(self, AbstractGreenOperator green, shape, double h,
+                  transform=None):
         self.transform = transform
         if self.transform is not None:
             if self.transform.shape != shape:
@@ -238,31 +243,29 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
         cdef int n0 = dft_tau.shape[0]
         cdef int n1 = dft_tau.shape[1] / 2
         cdef int i0, i1, b0, b1
-        cdef double k[2]
 
         for i0 in range(n0):
             b0 = i0 + self.transform.offset0
             if 2 * b0 > self.n0:
-                k[0] = self.s0 * (b0 - self.n0)
+                self.k[0] = self.s0 * (b0 - self.n0)
             else:
-                k[0] = self.s0 * b0
+                self.k[0] = self.s0 * b0
 
             i1 = 0
             for b1 in range(n1):
                 # At this point, i1 = 2 * b1
                 if i1 > self.n1:
-                    k[1] = self.s1 * (b1 - self.n1)
+                    self.k[1] = self.s1 * (b1 - self.n1)
                 else:
-                    k[1] = self.s1 * b1
+                    self.k[1] = self.s1 * b1
 
                 # Apply Green operator to real part
-                self.green.c_apply(k,
-                                   dft_tau[i0, i1, :],
+                self.green.set_frequency(self.k)
+                self.green.c_apply(dft_tau[i0, i1, :],
                                    dft_eta[i0, i1, :])
                 i1 += 1
                 # Apply Green operator to imaginary part
-                self.green.c_apply(k,
-                                   dft_tau[i0, i1, :],
+                self.green.c_apply(dft_tau[i0, i1, :],
                                    dft_eta[i0, i1, :])
                 i1 += 1
 
@@ -279,7 +282,8 @@ cdef class TruncatedGreenOperator3D(TruncatedGreenOperator):
     cdef _RealFFT3D transform
     cdef tuple dft_tau_shape, dft_eta_shape
 
-    def __cinit__(self, GreenOperator green, shape, double h, transform=None):
+    def __cinit__(self, AbstractGreenOperator green, shape, double h,
+                  transform=None):
         self.transform = transform
         if self.transform is not None:
             if self.transform.shape != shape:
@@ -328,37 +332,35 @@ cdef class TruncatedGreenOperator3D(TruncatedGreenOperator):
         cdef int n1 = dft_tau.shape[1]
         cdef int n2 = dft_tau.shape[2] / 2
         cdef int i0, i2, b0, b1, b2
-        cdef double k[3]
 
         for i0 in range(n0):
             b0 = i0 + self.transform.offset0
             if 2 * b0 > self.n0:
-                k[0] = self.s0 * (b0 - self.n0)
+                self.k[0] = self.s0 * (b0 - self.n0)
             else:
-                k[0] = self.s0 * b0
+                self.k[0] = self.s0 * b0
 
             for b1 in range(n1):
                 if 2 * b1 > self.n1:
-                    k[1] = self.s1 * (b1 - self.n1)
+                    self.k[1] = self.s1 * (b1 - self.n1)
                 else:
-                    k[1] = self.s1 * b1
+                    self.k[1] = self.s1 * b1
 
                 i2 = 0
                 for b2 in range(n2):
                     # At this point, i2 = 2 * b2
                     if i2 > self.n2:
-                        k[2] = self.s2 * (b2 - self.n2)
+                        self.k[2] = self.s2 * (b2 - self.n2)
                     else:
-                        k[2] = self.s2 * b2
+                        self.k[2] = self.s2 * b2
 
                     # Apply Green operator to real part
-                    self.green.c_apply(k,
-                                       dft_tau[i0, b1, i2, :],
+                    self.green.set_frequency(self.k)
+                    self.green.c_apply(dft_tau[i0, b1, i2, :],
                                        dft_eta[i0, b1, i2, :])
                     i2 += 1
                     # Apply Green operator to imaginary part
-                    self.green.c_apply(k,
-                                       dft_tau[i0, b1, i2, :],
+                    self.green.c_apply(dft_tau[i0, b1, i2, :],
                                        dft_eta[i0, b1, i2, :])
                     i2 += 1
 
@@ -368,18 +370,20 @@ cdef class TruncatedGreenOperator3D(TruncatedGreenOperator):
 
         return eta
 
-
+"""
 cdef class FilteredGreenOperator2D(DiscreteGreenOperator):
     cdef int ishape0, ishape1, ishape2
     cdef int oshape0, oshape1, oshape2
-    cdef double k0_prefactor, k1_prefactor
-    cdef double[:] k
-    cdef double[:, :] g
     cdef double g00, g01, g02
     cdef double g11, g12
     cdef double g22
 
-    def __cinit__(self, GreenOperator green, shape, double h, transform=None):
+    # Cached arrays to store the four terms of the weighted sum defining the
+    # filtered Green operator.
+    cdef double[:] k1, k2, k3, k4
+    cdef double[:, :] g
+
+    def __cinit__(self, AbstractGreenOperator green, shape, double h, transform=None):
         self.transform = transform
         if self.transform is not None:
             if self.transform.shape != shape:
@@ -391,49 +395,106 @@ cdef class FilteredGreenOperator2D(DiscreteGreenOperator):
         self.oshape0 = self.ishape0
         self.oshape1 = self.ishape1
         self.oshape2 = green.nrows
-        self.k = array((2,), sizeof(double), 'd')
-        self.g = array((green.nrows, green.ncols), sizeof(double), 'd')
 
-    cdef inline _add_single_mode(self, k0, k1, w):
-        self.k[0] = k0
-        self.k[1] = k1
-        self.green.c_as_array(self.k, self.g)
-        self.g00 += w * self.g[0, 0]
-        self.g01 += w * self.g[0, 1]
-        self.g02 += w * self.g[0, 2]
-        self.g11 += w * self.g[1, 1]
-        self.g12 += w * self.g[1, 2]
-        self.g22 += w * self.g[2, 2]
+        shape = (2,)
+        self.k1 = array(shape, sizeof(double), 'd')
+        self.k2 = array(shape, sizeof(double), 'd')
+        self.k3 = array(shape, sizeof(double), 'd')
+        self.k4 = array(shape, sizeof(double), 'd')
+
+        shape = (green.nrows, green.ncols)
+        self.g1 = array(shape, sizeof(double), 'd')
+        self.g2 = array(shape, sizeof(double), 'd')
+        self.g3 = array(shape, sizeof(double), 'd')
+        self.g4 = array(shape, sizeof(double), 'd')
 
     cdef void update(self, int[:] b):
-        self.g00 = 0.
-        self.g01 = 0.
-        self.g02 = 0.
-        self.g11 = 0.
-        self.g12 = 0.
-        self.g22 = 0.
-
         cdef int b0 = b[0]
         cdef int b1 = b[1]
-        cdef double aux
+        cdef double dk, k, w
+        cdef double w1, w2, w3, w4
 
-        aux = 2. * M_PI / (self.h * self.ishape0)
-        cdef double k00 = aux * b0
-        cdef double k0m = aux * (b0 - self.ishape0)
-        cdef double w00 = cos(0.25 * self.h * k00)
-        cdef double w0m = cos(0.25 * self.h * k0m)
-        w00 *= w00
-        w0m *= w0m
+        # Computation of the first component of k1, k2, k3, k4 and the first
+        # factor of the corresponding weights.
+        dk = 2. * M_PI / (self.h * self.ishape0)
 
-        aux = 2. * M_PI / (self.h * self.ishape1)
-        cdef double k10 = aux * b1
-        cdef double k1m = aux * (b1 - self.ishape1)
-        cdef double w10 = cos(0.25 * self.h * k10)
-        cdef double w1m = cos(0.25 * self.h * k1m)
-        w10 *= w10
-        w1m *= w1m
+        k = dk * (b0 - self.ishape0)
+        w = cos(0.25 * self.h * k)
+        w *= w
+        self.k1[0] = k
+        self.k2[0] = k
+        w1 = w
+        w2 = w
 
-        self._add_single_mode(k00, k10, w00 * w10)
-        self._add_single_mode(k00, k1m, w00 * w1m)
-        self._add_single_mode(k0m, k10, w0m * w10)
-        self._add_single_mode(k0m, k1m, w0m * w1m)
+        k = dk * b0
+        w = cos(0.25 * self.h * k)
+        w *= w
+        self.k3[0] = k
+        self.k4[0] = k
+        w3 = w
+        w4 = w
+
+        # Computation of the second component of k1, k2, k3, k4 and the second
+        # factor of the corresponding weights.
+        dk = 2. * M_PI / (self.h * self.ishape1)
+
+        k = dk * (b1 - self.ishape1)
+        w = cos(0.25 * self.h * k)
+        w *= w
+        self.k1[1] = k
+        self.k3[1] = k
+        w1 *= w
+        w3 *= w
+
+        k = dk * b1
+        w = cos(0.25 * self.h * k)
+        w *= w
+        self.k2[1] = k
+        self.k4[1] = k
+        w2 *= w
+        w4 *= w
+
+        self.green.c_apply(k1, g1)
+        self.green.c_apply(k2, g2)
+        self.green.c_apply(k3, g3)
+        self.green.c_apply(k4, g4)
+
+        self.g00 = (w1 * self.g1[0, 0] + w2 * self.g2[0, 0]
+                    + w3 * self.g3[0, 0] + w4 * self.g4[0, 0])
+        self.g01 = (w1 * self.g1[0, 1] + w2 * self.g2[0, 1]
+                    + w3 * self.g3[0, 1] + w4 * self.g4[0, 1])
+        self.g02 = (w1 * self.g1[0, 2] + w2 * self.g2[0, 2]
+                    + w3 * self.g3[0, 2] + w4 * self.g4[0, 2])
+        self.g11 = (w1 * self.g1[1, 1] + w2 * self.g2[1, 1]
+                    + w3 * self.g3[1, 1] + w4 * self.g4[1, 1])
+        self.g12 = (w1 * self.g1[1, 2] + w2 * self.g2[1, 2]
+                    + w3 * self.g3[1, 2] + w4 * self.g4[1, 2])
+        self.g22 = (w1 * self.g1[2, 2] + w2 * self.g2[2, 2]
+                    + w3 * self.g3[2, 2] + w4 * self.g4[2, 2])
+
+    @boundscheck(False)
+    @wraparound(False)
+    cdef void c_to_memoryview(self, int[:] b, double[:, :] out):
+        self.update(b)
+        out[0, 0] = self.g00
+        out[0, 1] = self.g01
+        out[0, 2] = self.g02
+        out[1, 0] = self.g01
+        out[1, 1] = self.g11
+        out[1, 2] = self.g12
+        out[2, 0] = self.g02
+        out[2, 1] = self.g12
+        out[2, 2] = self.g22
+
+    @boundscheck(False)
+    @wraparound(False)
+    cdef void c_apply(self, int[:] b, double[:] tau, double[:] eta):
+        cdef double tau0, tau1, tau2, eta0, eta1, eta2
+        self.update(b)
+        tau0 = tau[0]
+        tau1 = tau[1]
+        tau2 = tau[2]
+        eta[0] = self.g00 * tau0 + self.g01 * tau1 + self.g02 * tau2
+        eta[1] = self.g01 * tau0 + self.g11 * tau1 + self.g12 * tau2
+        eta[2] = self.g02 * tau0 + self.g12 * tau1 + self.g22 * tau2
+"""
