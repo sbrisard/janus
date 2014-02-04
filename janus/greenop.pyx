@@ -81,11 +81,11 @@ cdef class GreenOperator(Operator):
         """
         pass
 
-    cdef void c_as_array(self, double[:, :] out):
+    cdef void c_to_memoryview(self, double[:, :] out):
         pass
 
-    def as_array(self, double[:] k, double[:, :] out=None):
-        """as_array(k, out=None)
+    def to_memoryview(self, double[:] k, double[:, :] out=None):
+        """to_memoryview(k, out=None)
 
         Return the array representation of the Green operator for the
         specified wave vector. Uses the Mandel-Voigt convention.
@@ -171,7 +171,7 @@ cdef class GreenOperator2D(GreenOperator):
 
     @boundscheck(False)
     @wraparound(False)
-    cdef void c_as_array(self, double[:, :] out):
+    cdef void c_to_memoryview(self, double[:, :] out):
         out[0, 0] = self.g00
         out[0, 1] = self.g01
         out[0, 2] = self.g02
@@ -182,9 +182,9 @@ cdef class GreenOperator2D(GreenOperator):
         out[2, 1] = self.g12
         out[2, 2] = self.g22
 
-    def as_array(self, double[:, :] out=None):
+    def to_memoryview(self, double[:, :] out=None):
         out = create_or_check_shape_2d(out, self.osize, self.isize)
-        self.c_as_array(out)
+        self.c_to_memoryview(out)
         return out
 
 cdef class GreenOperator3D(GreenOperator):
@@ -305,7 +305,7 @@ cdef class GreenOperator3D(GreenOperator):
 
     @boundscheck(False)
     @wraparound(False)
-    cdef void c_as_array(self, double[:, :] out):
+    cdef void c_to_memoryview(self, double[:, :] out):
         out[0, 0] = self.g00
         out[0, 1] = self.g01
         out[0, 2] = self.g02
@@ -343,7 +343,7 @@ cdef class GreenOperator3D(GreenOperator):
         out[5, 4] = self.g45
         out[5, 5] = self.g55
 
-    def as_array(self, double[:, :] out=None):
+    def to_memoryview(self, double[:, :] out=None):
         out = create_or_check_shape_2d(out, self.osize, self.isize)
-        self.c_as_array(out)
+        self.c_to_memoryview(out)
         return out

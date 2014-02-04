@@ -32,5 +32,5 @@ cdef class GreenOperator(Operator):
     # reference material.
     cdef double daux1, daux2, daux3, daux4
 
-    cdef void c_as_array(self, double[:, :] out)
+    cdef void c_to_memoryview(self, double[:, :] out)
     cdef void c_set_frequency(self, double[:] k)

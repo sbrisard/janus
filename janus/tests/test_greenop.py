@@ -98,24 +98,24 @@ def test_apply():
                 yield do_test_apply, k, mat, flag
 
 @nottest
-def do_test_as_array(k, mat, inplace):
+def do_test_to_memoryview(k, mat, inplace):
     expected = green_matrix(k,  mat)
     green = greenop.create(mat)
     green.set_frequency(k)
     if inplace:
         base = np.empty((green.osize, green.isize), np.float64)
-        actual = green.as_array(base)
+        actual = green.to_memoryview(base)
         assert actual.base is base
     else:
-        actual = green.as_array()
+        actual = green.to_memoryview()
     assert_array_almost_equal_nulp(expected, actual, 325)
 
-def test_as_array():
+def test_to_memoryview():
     for dim in DIMS:
         mat = Material(MU, NU, dim)
         for k in wave_vectors(dim):
             for inplace in [True, False]:
-                yield do_test_as_array, k, mat, inplace
+                yield do_test_to_memoryview, k, mat, inplace
 
 @raises(ValueError)
 def test_init_2D_invalid_dimension():
@@ -162,23 +162,24 @@ def test_apply_invalid_params():
     for f, tau, eps in zip(all_apply, all_tau, all_eps):
         yield f, tau, eps
 
-def test_as_array_invalid_params():
+def test_to_memoryview_invalid_params():
     g2 = greenop.create(Material(MU, NU, 2))
     @raises(ValueError)
-    def as_array2(arr):
-        return g2.as_array(arr)
+    def to_memoryview2(arr):
+        return g2.to_memoryview(arr)
 
     g3 = greenop.create(Material(MU, NU, 3))
     @raises(ValueError)
-    def as_array3(arr):
-        return g3.as_array(arr)
+    def to_memoryview3(arr):
+        return g3.to_memoryview(arr)
 
     arr3x3 = np.empty((3, 3), dtype=np.float64)
     arr6x6 = np.empty((6, 6), dtype=np.float64)
     arr3x6 = np.empty((3, 6), dtype=np.float64)
     arr6x3 = np.empty((6, 3), dtype=np.float64)
-    all_as_array = [as_array2, as_array2, as_array3, as_array3]
+    all_to_memoryview = [to_memoryview2, to_memoryview2,
+                         to_memoryview3, to_memoryview3]
     all_arr = [arr6x3, arr3x6, arr6x3, arr3x6]
 
-    for as_array, arr in zip(all_as_array, all_arr):
-        yield as_array, arr
+    for to_memoryview, arr in zip(all_to_memoryview, all_arr):
+        yield to_memoryview, arr
