@@ -1,8 +1,8 @@
 from cython.view cimport array
 from janus.matprop cimport IsotropicLinearElasticMaterial as Material
-from janus.operators cimport Operator
+from janus.operators cimport AbstractLinearOperator
 
-cdef class GreenOperator(Operator):
+cdef class AbstractGreenOperator(AbstractLinearOperator):
 
     """This class defines the periodic Green operator for linear elasticity.
 
@@ -32,5 +32,4 @@ cdef class GreenOperator(Operator):
     # reference material.
     cdef double daux1, daux2, daux3, daux4
 
-    cdef void c_to_memoryview(self, double[:, :] out)
     cdef void c_set_frequency(self, double[:] k)

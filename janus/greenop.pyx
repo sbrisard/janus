@@ -5,10 +5,9 @@ from cython.view cimport array
 from libc.math cimport M_SQRT2
 
 from janus.matprop cimport IsotropicLinearElasticMaterial as Material
-from janus.operators cimport Operator
+from janus.operators cimport AbstractLinearOperator
 from janus.utils.checkarray cimport check_shape_1d
-from janus.utils.checkarray cimport create_or_check_shape_1d
-from janus.utils.checkarray cimport create_or_check_shape_2d
+
 
 def create(mat):
     if mat.dim == 2:
@@ -16,7 +15,8 @@ def create(mat):
     elif mat.dim == 3:
         return GreenOperator3D(mat)
 
-cdef class GreenOperator(Operator):
+
+cdef class AbstractGreenOperator(AbstractLinearOperator):
 
     @cdivision(True)
     def __cinit__(self, Material mat):
@@ -32,79 +32,39 @@ cdef class GreenOperator(Operator):
         self.daux4 = 0.5 / g
 
     cdef void c_set_frequency(self, double[:] k):
+        """Set the current wave-vector of this Green operator.
+
+        Any subsequent call to e.g. :func:`c_apply`,
+        :func:`c_to_memoryview` are performed with the specified value
+        of `k`.
+
+        Concrete implementations of this method are not required to
+        perform any test on the validity (size) of `k`.
+
+        Parameters
+        ----------
+        k : memoryview of float64
+            The current wave-vector.
+
+        """
         raise NotImplementedError
 
     def set_frequency(self, double[:] k):
+        """Set the current wave-vector of this Green operator.
+
+        Any subsequent call to e.g. :func:`apply`, :func:`to_memoryview`
+        are performed with the specified value of `k`.
+
+        Parameters
+        ----------
+        k : memoryview of float64
+            The current wave-vector.
+
+        """
         check_shape_1d(k, self.dim)
         self.c_set_frequency(k)
 
-    cdef void c_apply(self, double[:] tau, double[:] eta):
-        """apply(k, tau, eta)
-
-        Apply the Green operator to the specified prestress. C version of the
-        ``apply`` method, which performs no checks on the parameters.
-
-        Parameters
-        ----------
-        k : pointer to double
-            Wave-vector.
-        tau : array_like
-            Value of the prestress for the specified mode `k`.
-        eta : array_like, optional
-            Result of the operation `Gamma(k) : tau`.
-
-        Returns
-        -------
-        eta : array_like
-            The result of the linear operation `Gamma(k) : tau`.
-        """
-        pass
-
-    def apply(self, double[:] k, double[:] tau, double[:] eta=None):
-        """apply(k, tau, eta=None)
-
-        Apply the Green operator to the specified prestress.
-
-        Parameters
-        ----------
-        k : array_like
-            Wave-vector.
-        tau : array_like
-            Value of the prestress for the specified mode `k`.
-        eta : array_like, optional
-            Result of the operation `Gamma(k) : tau`.
-
-        Returns
-        -------
-        eta : array_like
-            The result of the linear operation `Gamma(k) : tau`.
-        """
-        pass
-
-    cdef void c_to_memoryview(self, double[:, :] out):
-        pass
-
-    def to_memoryview(self, double[:] k, double[:, :] out=None):
-        """to_memoryview(k, out=None)
-
-        Return the array representation of the Green operator for the
-        specified wave vector. Uses the Mandel-Voigt convention.
-
-        Parameters
-        ----------
-        k : array_like
-            Wave-vector.
-        g : array_like, optional
-            Matrix, to be updated.
-
-        Returns
-        -------
-        g : array_like
-            Matrix of the Green operator.
-        """
-        pass
-
-cdef class GreenOperator2D(GreenOperator):
+cdef class GreenOperator2D(AbstractGreenOperator):
 
     cdef double g00, g01, g02, g11, g12, g22
 
@@ -116,23 +76,12 @@ cdef class GreenOperator2D(GreenOperator):
     @cdivision(True)
     @wraparound(False)
     cdef inline void c_set_frequency(self, double[:] k):
-        """Compute the coefficients of the underlying matrix for the specified
-        value of the wave vector.
-
-        No checks are performed on the parameters.
-
-        Parameters
-        ----------
-        k : pointer to double
-            Components of the wave-vector.
-
-        """
-        cdef double kx = k[0]
-        cdef double ky = k[1]
-        cdef double kxkx = kx * kx
-        cdef double kyky = ky * ky
-        cdef double s, kxky
-        if kxkx + kyky == 0.:
+        cdef double k0 = k[0]
+        cdef double k1 = k[1]
+        cdef double k0k0 = k0 * k0
+        cdef double k1k1 = k1 * k1
+        cdef double s, k0k1
+        if k0k0 + k1k1 == 0.:
             self.g00 = 0.
             self.g01 = 0.
             self.g02 = 0.
@@ -140,34 +89,28 @@ cdef class GreenOperator2D(GreenOperator):
             self.g12 = 0.
             self.g22 = 0.
         else:
-            s = 1.0 / (kxkx + kyky)
-            kxkx *= s
-            kyky *= s
-            kxky = s * kx * ky
-            self.g00 = kxkx * (self.daux1 - self.daux2 * kxkx)
-            self.g11 = kyky * (self.daux1 - self.daux2 * kyky)
-            dummy = -self.daux2 * kxkx * kyky
+            s = 1.0 / (k0k0 + k1k1)
+            k0k0 *= s
+            k1k1 *= s
+            k0k1 = s * k0 * k1
+            self.g00 = k0k0 * (self.daux1 - self.daux2 * k0k0)
+            self.g11 = k1k1 * (self.daux1 - self.daux2 * k1k1)
+            dummy = -self.daux2 * k0k0 * k1k1
             self.g01 = dummy
             self.g22 = 2 * (self.daux3 + dummy)
-            self.g02 = M_SQRT2 * kxky * (self.daux4 - self.daux2 * kxkx)
-            self.g12 = M_SQRT2 * kxky * (self.daux4 - self.daux2 * kyky)
+            self.g02 = M_SQRT2 * k0k1 * (self.daux4 - self.daux2 * k0k0)
+            self.g12 = M_SQRT2 * k0k1 * (self.daux4 - self.daux2 * k1k1)
 
     @boundscheck(False)
     @wraparound(False)
-    cdef void c_apply(self, double[:] tau, double[:] eta):
-        cdef double tau0, tau1, tau2, eta0, eta1, eta2
-        tau0 = tau[0]
-        tau1 = tau[1]
-        tau2 = tau[2]
-        eta[0] = self.g00 * tau0 + self.g01 * tau1 + self.g02 * tau2
-        eta[1] = self.g01 * tau0 + self.g11 * tau1 + self.g12 * tau2
-        eta[2] = self.g02 * tau0 + self.g12 * tau1 + self.g22 * tau2
-
-    def apply(self, double[:] tau, double[:] eta=None):
-        check_shape_1d(tau, self.isize)
-        eta = create_or_check_shape_1d(eta, self.osize)
-        self.c_apply(tau, eta)
-        return eta
+    cdef void c_apply(self, double[:] x, double[:] y):
+        cdef double x0, x1, x2, y0, y1, y2
+        x0 = x[0]
+        x1 = x[1]
+        x2 = x[2]
+        y[0] = self.g00 * x0 + self.g01 * x1 + self.g02 * x2
+        y[1] = self.g01 * x0 + self.g11 * x1 + self.g12 * x2
+        y[2] = self.g02 * x0 + self.g12 * x1 + self.g22 * x2
 
     @boundscheck(False)
     @wraparound(False)
@@ -182,12 +125,8 @@ cdef class GreenOperator2D(GreenOperator):
         out[2, 1] = self.g12
         out[2, 2] = self.g22
 
-    def to_memoryview(self, double[:, :] out=None):
-        out = create_or_check_shape_2d(out, self.osize, self.isize)
-        self.c_to_memoryview(out)
-        return out
 
-cdef class GreenOperator3D(GreenOperator):
+cdef class GreenOperator3D(AbstractGreenOperator):
 
     cdef:
         double g00, g01, g02, g03, g04, g05, g11, g12, g13, g14, g15
@@ -201,23 +140,14 @@ cdef class GreenOperator3D(GreenOperator):
     @cdivision(True)
     @wraparound(False)
     cdef inline void c_set_frequency(self, double[:] k):
-        """Compute the coefficients of the underlying matrix for the
-        specified value of the wave vector.
-
-        Parameters
-        ----------
-        k : pointer to double
-            Components of the wave-vector.
-
-        """
-        cdef double kx = k[0]
-        cdef double ky = k[1]
-        cdef double kz = k[2]
-        cdef double kxkx = kx * kx
-        cdef double kyky = ky * ky
-        cdef double kzkz = kz * kz
-        cdef double s, kykz, kzkx, kxky
-        if kxkx + kyky +kzkz == 0.:
+        cdef double k0 = k[0]
+        cdef double k1 = k[1]
+        cdef double k2 = k[2]
+        cdef double k0k0 = k0 * k0
+        cdef double k1k1 = k1 * k1
+        cdef double k2k2 = k2 * k2
+        cdef double s, k1k2, k2k0, k0k1
+        if k0k0 + k1k1 +k2k2 == 0.:
             self.g00 = 0.
             self.g01 = 0.
             self.g02 = 0.
@@ -241,67 +171,61 @@ cdef class GreenOperator3D(GreenOperator):
             self.g55 = 0.
             return
         else:
-            s = 1.0 / (kxkx + kyky + kzkz)
-            kxkx *= s
-            kyky *= s
-            kzkz *= s
-            kykz = s * ky * kz
-            kzkx = s * kz * kx
-            kxky = s * kx * ky
+            s = 1.0 / (k0k0 + k1k1 + k2k2)
+            k0k0 *= s
+            k1k1 *= s
+            k2k2 *= s
+            k1k2 = s * k1 * k2
+            k2k0 = s * k2 * k0
+            k0k1 = s * k0 * k1
 
-            self.g00 = kxkx * (self.daux1 - self.daux2 * kxkx)
-            self.g11 = kyky * (self.daux1 - self.daux2 * kyky)
-            self.g22 = kzkz * (self.daux1 - self.daux2 * kzkz)
-            self.g33 = 2. * (self.daux3 * (kyky + kzkz)
-                             - self.daux2 * kyky * kzkz)
-            self.g44 = 2. * (self.daux3 * (kzkz + kxkx)
-                             - self.daux2 * kzkz * kxkx)
-            self.g55 = 2. * (self.daux3 * (kxkx + kyky)
-                             - self.daux2 * kxkx * kyky)
-            self.g01 = -self.daux2 * kxkx * kyky
-            self.g02 = -self.daux2 * kxkx * kzkz
-            self.g03 = -M_SQRT2 * self.daux2 * kxkx * kykz
-            self.g04 = M_SQRT2 * kzkx * (self.daux4 - self.daux2 * kxkx)
-            self.g05 = M_SQRT2 * kxky * (self.daux4 - self.daux2 * kxkx)
-            self.g12 = -self.daux2 * kyky * kzkz
-            self.g13 = M_SQRT2 * kykz * (self.daux4 - self.daux2 * kyky)
-            self.g14 = -M_SQRT2 * self.daux2 * kyky * kzkx
-            self.g15 = M_SQRT2 * kxky * (self.daux4 - self.daux2 * kyky)
-            self.g23 = M_SQRT2 * kykz * (self.daux4 - self.daux2 * kzkz)
-            self.g24 = M_SQRT2 * kzkx * (self.daux4 - self.daux2 * kzkz)
-            self.g25 = -M_SQRT2 * self.daux2 * kzkz * kxky
-            self.g34 = 2 * kxky * (self.daux3 - self.daux2 * kzkz)
-            self.g35 = 2 * kzkx * (self.daux3 - self.daux2 * kyky)
-            self.g45 = 2 * kykz * (self.daux3 - self.daux2 * kxkx)
+            self.g00 = k0k0 * (self.daux1 - self.daux2 * k0k0)
+            self.g11 = k1k1 * (self.daux1 - self.daux2 * k1k1)
+            self.g22 = k2k2 * (self.daux1 - self.daux2 * k2k2)
+            self.g33 = 2. * (self.daux3 * (k1k1 + k2k2)
+                             - self.daux2 * k1k1 * k2k2)
+            self.g44 = 2. * (self.daux3 * (k2k2 + k0k0)
+                             - self.daux2 * k2k2 * k0k0)
+            self.g55 = 2. * (self.daux3 * (k0k0 + k1k1)
+                             - self.daux2 * k0k0 * k1k1)
+            self.g01 = -self.daux2 * k0k0 * k1k1
+            self.g02 = -self.daux2 * k0k0 * k2k2
+            self.g03 = -M_SQRT2 * self.daux2 * k0k0 * k1k2
+            self.g04 = M_SQRT2 * k2k0 * (self.daux4 - self.daux2 * k0k0)
+            self.g05 = M_SQRT2 * k0k1 * (self.daux4 - self.daux2 * k0k0)
+            self.g12 = -self.daux2 * k1k1 * k2k2
+            self.g13 = M_SQRT2 * k1k2 * (self.daux4 - self.daux2 * k1k1)
+            self.g14 = -M_SQRT2 * self.daux2 * k1k1 * k2k0
+            self.g15 = M_SQRT2 * k0k1 * (self.daux4 - self.daux2 * k1k1)
+            self.g23 = M_SQRT2 * k1k2 * (self.daux4 - self.daux2 * k2k2)
+            self.g24 = M_SQRT2 * k2k0 * (self.daux4 - self.daux2 * k2k2)
+            self.g25 = -M_SQRT2 * self.daux2 * k2k2 * k0k1
+            self.g34 = 2 * k0k1 * (self.daux3 - self.daux2 * k2k2)
+            self.g35 = 2 * k2k0 * (self.daux3 - self.daux2 * k1k1)
+            self.g45 = 2 * k1k2 * (self.daux3 - self.daux2 * k0k0)
 
     @boundscheck(False)
     @wraparound(False)
-    cdef void c_apply(self, double[:] tau, double[:] eta):
-        cdef double tau0, tau1, tau2, tau3, tau4, tau5
-        tau0 = tau[0]
-        tau1 = tau[1]
-        tau2 = tau[2]
-        tau3 = tau[3]
-        tau4 = tau[4]
-        tau5 = tau[5]
-        eta[0] = (self.g00 * tau0 + self.g01 * tau1 + self.g02 * tau2
-                  + self.g03 * tau3 + self.g04 * tau4 + self.g05 * tau5)
-        eta[1] = (self.g01 * tau0 + self.g11 * tau1 + self.g12 * tau2
-                  + self.g13 * tau3 + self.g14 * tau4 + self.g15 * tau5)
-        eta[2] = (self.g02 * tau0 + self.g12 * tau1 + self.g22 * tau2
-                  + self.g23 * tau3 + self.g24 * tau4 + self.g25 * tau5)
-        eta[3] = (self.g03 * tau0 + self.g13 * tau1 + self.g23 * tau2
-                  + self.g33 * tau3 + self.g34 * tau4 + self.g35 * tau5)
-        eta[4] = (self.g04 * tau0 + self.g14 * tau1 + self.g24 * tau2
-                  + self.g34 * tau3 + self.g44 * tau4 + self.g45 * tau5)
-        eta[5] = (self.g05 * tau0 + self.g15 * tau1 + self.g25 * tau2
-                  + self.g35 * tau3 + self.g45 * tau4 + self.g55 * tau5)
-
-    def apply(self, double[:] tau, double[:] eta=None):
-        check_shape_1d(tau, self.isize)
-        eta = create_or_check_shape_1d(eta, self.osize)
-        self.c_apply(tau, eta)
-        return eta
+    cdef void c_apply(self, double[:] x, double[:] y):
+        cdef double x0, x1, x2, x3, x4, x5
+        x0 = x[0]
+        x1 = x[1]
+        x2 = x[2]
+        x3 = x[3]
+        x4 = x[4]
+        x5 = x[5]
+        y[0] = (self.g00 * x0 + self.g01 * x1 + self.g02 * x2
+                + self.g03 * x3 + self.g04 * x4 + self.g05 * x5)
+        y[1] = (self.g01 * x0 + self.g11 * x1 + self.g12 * x2
+                + self.g13 * x3 + self.g14 * x4 + self.g15 * x5)
+        y[2] = (self.g02 * x0 + self.g12 * x1 + self.g22 * x2
+                + self.g23 * x3 + self.g24 * x4 + self.g25 * x5)
+        y[3] = (self.g03 * x0 + self.g13 * x1 + self.g23 * x2
+                + self.g33 * x3 + self.g34 * x4 + self.g35 * x5)
+        y[4] = (self.g04 * x0 + self.g14 * x1 + self.g24 * x2
+                + self.g34 * x3 + self.g44 * x4 + self.g45 * x5)
+        y[5] = (self.g05 * x0 + self.g15 * x1 + self.g25 * x2
+                + self.g35 * x3 + self.g45 * x4 + self.g55 * x5)
 
     @boundscheck(False)
     @wraparound(False)
@@ -342,8 +266,3 @@ cdef class GreenOperator3D(GreenOperator):
         out[5, 3] = self.g35
         out[5, 4] = self.g45
         out[5, 5] = self.g55
-
-    def to_memoryview(self, double[:, :] out=None):
-        out = create_or_check_shape_2d(out, self.osize, self.isize)
-        self.c_to_memoryview(out)
-        return out
