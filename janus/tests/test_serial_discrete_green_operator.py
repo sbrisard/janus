@@ -173,8 +173,8 @@ def test_to_memoryview_invalid_parameters():
             yield test, out
 
 #
-# 2 Test of the method apply
-#   ========================
+# 2 Test of the method apply_by_freq
+#   ================================
 #
 # 2.1 Valid parameters
 #     ----------------
@@ -204,7 +204,7 @@ def do_test_apply(n, tau, flag):
             base = np.empty_like(expected)
         else:
             raise(ValueError)
-        actual = green.apply(tau, base)
+        actual = green.apply_by_freq(tau, base)
         if flag != 0:
             assert get_base(actual) is base
         assert_array_almost_equal_nulp(expected, np.asarray(actual), 1)
@@ -234,7 +234,7 @@ def test_apply_invalid_params():
 
         @raises(ValueError)
         def test(tau, eta):
-            green.apply(tau, eta)
+            green.apply_by_freq(tau, eta)
 
         for tau, eta in [(tau_invalid, None), (tau_valid, eta_invalid)]:
             yield test, tau, eta

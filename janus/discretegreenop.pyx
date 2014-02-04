@@ -116,22 +116,18 @@ cdef class DiscreteGreenOperator:
     cdef void c_to_memoryview(self, double[:, :] out):
         raise NotImplementedError
 
-    @boundscheck(False)
-    @wraparound(False)
     def to_memoryview(self, double[:, :] out=None):
         out = create_or_check_shape_2d(out, self.osize, self.isize)
         self.c_to_memoryview(out)
         return out
 
-    cdef void c_apply(self, double[:] tau, double[:] eta):
+    cdef void c_apply_by_freq(self, double[:] tau, double[:] eta):
         raise NotImplementedError
 
-    @boundscheck(False)
-    @wraparound(False)
-    def apply(self, double[:] tau, double[:] eta=None):
+    def apply_by_freq(self, double[:] tau, double[:] eta=None):
         check_shape_1d(tau, self.isize)
         eta = create_or_check_shape_1d(eta, self.osize)
-        self.c_apply(tau, eta)
+        self.c_apply_by_freq(tau, eta)
         return eta
 
 
@@ -194,7 +190,7 @@ cdef class TruncatedGreenOperator(DiscreteGreenOperator):
     cdef void c_to_memoryview(self, double[:, :] out):
         self.green.c_to_memoryview(out)
 
-    cdef void c_apply(self, double[:] tau, double[:] eta):
+    cdef void c_apply_by_freq(self, double[:] tau, double[:] eta):
         self.green.c_apply(tau, eta)
 
 
@@ -490,7 +486,7 @@ cdef class FilteredGreenOperator2D(DiscreteGreenOperator):
 
     @boundscheck(False)
     @wraparound(False)
-    cdef void c_apply(self, int[:] b, double[:] tau, double[:] eta):
+    cdef void c_apply_by_freq(self, int[:] b, double[:] tau, double[:] eta):
         cdef double tau0, tau1, tau2, eta0, eta1, eta2
         self.update(b)
         tau0 = tau[0]
