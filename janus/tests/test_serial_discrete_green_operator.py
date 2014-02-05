@@ -162,8 +162,10 @@ def test_to_memoryview_invalid_parameters():
     for dim in [2, 3]:
         n = tuple(2**(i + 3) for i in range(dim))
         green = discrete_green_operator(n, 1.)
-        out1 = np.zeros((green.osize + 1, green.isize), dtype=np.float64)
-        out2 = np.zeros((green.osize, green.isize + 1), dtype=np.float64)
+        out1 = np.zeros((green.oshape[-1] + 1, green.ishape[-1]),
+                        dtype=np.float64)
+        out2 = np.zeros((green.oshape[-1], green.ishape[-1] + 1),
+                        dtype=np.float64)
 
         @raises(ValueError)
         def test(out):
@@ -228,9 +230,9 @@ def test_apply_invalid_params():
         n = tuple(2**(i + 3) for i in range(dim))
         green = discrete_green_operator(n, 1.)
 
-        tau_valid = np.zeros((green.isize,), dtype=np.float64)
-        tau_invalid = np.zeros((green.isize + 1,), dtype=np.float64)
-        eta_invalid = np.zeros((green.osize + 1,), dtype=np.float64)
+        tau_valid = np.zeros((green.ishape[-1],), dtype=np.float64)
+        tau_invalid = np.zeros((green.ishape[-1] + 1,), dtype=np.float64)
+        eta_invalid = np.zeros((green.oshape[-1] + 1,), dtype=np.float64)
 
         @raises(ValueError)
         def test(tau, eta):
@@ -319,13 +321,13 @@ def do_test_convolve(path_to_ref, rel_err):
 
     # TODO This is uggly
     if green.dim == 2:
-        tau = dummy[:, :, 0:green.isize]
-        expected = dummy[:, :, green.isize:]
+        tau = dummy[:, :, 0:green.ishape[-1]]
+        expected = dummy[:, :, green.ishape[-1]:]
     else:
-        tau = dummy[:, :, :, 0:green.isize]
-        expected = dummy[:, :, :, green.isize:]
+        tau = dummy[:, :, :, 0:green.ishape[-1]]
+        expected = dummy[:, :, :, green.ishape[-1]:]
 
-    actual = np.zeros(transform.rshape + (green.osize,), np.float64)
+    actual = np.zeros(transform.rshape + (green.oshape[-1],), np.float64)
     green.convolve(tau, actual)
 
     error = actual - expected
@@ -370,8 +372,8 @@ def test_convolve_invalid_params():
         n = tuple(2**(i + 3) for i in range(dim))
         transform = janus.fft.serial.create_real(n)
         green = discrete_green_operator(n, 1., transform)
-        params = invalid_tau_eta(n + (green.isize,),
-                                 n + (green.osize,))
+        params = invalid_tau_eta(n + (green.ishape[-1],),
+                                 n + (green.oshape[-1],))
 
         @raises(ValueError)
         def test(tau, eta):

@@ -247,9 +247,6 @@ cdef class TruncatedGreenOperator2D(DiscreteGreenOperator2D):
     cdef tuple dft_tau_shape, dft_eta_shape
     cdef double[:] k
 
-    # TODO Remove
-    cdef readonly int isize, osize
-
     def __cinit__(self, AbstractGreenOperator green, shape, double h,
                   transform=None):
         self.transform = transform
@@ -266,10 +263,6 @@ cdef class TruncatedGreenOperator2D(DiscreteGreenOperator2D):
         self.s0 = 2. * M_PI / (self.h * self.ishape0)
         self.s1 = 2. * M_PI / (self.h * self.ishape1)
         self.k = array(shape=(2,), itemsize=sizeof(double), format='d')
-
-        # TODO Remove
-        self.isize = self.ishape2
-        self.osize = self.oshape2
 
     @boundscheck(False)
     @wraparound(False)
@@ -356,9 +349,6 @@ cdef class TruncatedGreenOperator3D(DiscreteGreenOperator3D):
     cdef tuple dft_tau_shape, dft_eta_shape
     cdef double[:] k
 
-    # TODO Remove
-    cdef readonly int isize, osize
-
     def __cinit__(self, AbstractGreenOperator green, shape, double h,
                   transform=None):
         self.transform = transform
@@ -376,10 +366,6 @@ cdef class TruncatedGreenOperator3D(DiscreteGreenOperator3D):
         self.s1 = 2. * M_PI / (self.h * self.ishape1)
         self.s2 = 2. * M_PI / (self.h * self.ishape2)
         self.k = array(shape=(3,), itemsize=sizeof(double), format='d')
-
-        # TODO Remove
-        self.isize = self.ishape3
-        self.osize = self.oshape3
 
     @boundscheck(False)
     @wraparound(False)
@@ -416,12 +402,12 @@ cdef class TruncatedGreenOperator3D(DiscreteGreenOperator3D):
                        self.transform.rshape0,
                        self.transform.rshape1,
                        self.transform.rshape2,
-                       self.isize)
+                       self.ishape3)
         eta = create_or_check_shape_4d(eta,
                                        self.transform.rshape0,
                                        self.transform.rshape1,
                                        self.transform.rshape2,
-                                       self.osize)
+                                       self.oshape3)
 
         cdef double[:, :, :, :] dft_tau = array(self.dft_tau_shape,
                                                 sizeof(double), 'd')
@@ -431,7 +417,7 @@ cdef class TruncatedGreenOperator3D(DiscreteGreenOperator3D):
         cdef int i
 
         # Compute DFT of tau
-        for i in range(self.isize):
+        for i in range(self.ishape3):
             self.transform.r2c(tau_as_mv[:, :, :, i], dft_tau[:, :, :, i])
 
         # Apply Green operator frequency-wise
@@ -472,7 +458,7 @@ cdef class TruncatedGreenOperator3D(DiscreteGreenOperator3D):
                     i2 += 1
 
         # Compute inverse DFT of eta
-        for i in range(self.osize):
+        for i in range(self.oshape3):
             self.transform.c2r(dft_eta[:, :, :, i], eta[:, :, :, i])
 
         return eta
