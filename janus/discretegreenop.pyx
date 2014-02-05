@@ -33,6 +33,11 @@ def create(green, n, h, transform=None):
 cdef class DiscreteGreenOperator2D(AbstractStructuredOperator2D):
     cdef readonly AbstractGreenOperator green
     cdef readonly double h
+    # s[i] = 2 * pi / (h * n[i]),
+    # where n[i] is the size of the grid in the direction i.
+    cdef double s0, s1
+    cdef _RealFFT2D transform
+    cdef tuple dft_tau_shape, dft_eta_shape
 
     def __cinit__(self, AbstractGreenOperator green, shape, double h,
                   transform=None):
@@ -60,6 +65,18 @@ cdef class DiscreteGreenOperator2D(AbstractStructuredOperator2D):
         if self.ishape1 < 0:
             raise ValueError('shape[1] must be > 0 (was {0})'
                              .format(self.ishape1))
+        self.transform = transform
+        if self.transform is not None:
+            if self.transform.shape != shape:
+                raise ValueError('shape of transform must be {0} [was {1}]'
+                                 .format(shape, transform.shape))
+        self.dft_tau_shape = (self.transform.cshape0, self.transform.cshape1,
+                              self.ishape2)
+        self.dft_eta_shape = (self.transform.cshape0, self.transform.cshape1,
+                              self.oshape2)
+        self.s0 = 2. * M_PI / (self.h * self.ishape0)
+        self.s1 = 2. * M_PI / (self.h * self.ishape1)
+
 
     cdef void c_set_frequency(self, int[:] b):
         raise NotImplementedError
@@ -242,26 +259,10 @@ cdef class TruncatedGreenOperator2D(DiscreteGreenOperator2D):
         of the space of strains).
     """
 
-    cdef double s0, s1
-    cdef _RealFFT2D transform
-    cdef tuple dft_tau_shape, dft_eta_shape
     cdef double[:] k
 
     def __cinit__(self, AbstractGreenOperator green, shape, double h,
                   transform=None):
-        self.transform = transform
-        if self.transform is not None:
-            if self.transform.shape != (self.ishape0, self.ishape1):
-                raise ValueError('shape of transform must be ({0}, {1}) '
-                                 '[was {2}]'
-                                 .format(self.ishape0, self.ishape1,
-                                         transform.shape))
-        self.dft_tau_shape = (self.transform.cshape0, self.transform.cshape1,
-                              self.ishape2)
-        self.dft_eta_shape = (self.transform.cshape0, self.transform.cshape1,
-                              self.oshape2)
-        self.s0 = 2. * M_PI / (self.h * self.ishape0)
-        self.s1 = 2. * M_PI / (self.h * self.ishape1)
         self.k = array(shape=(2,), itemsize=sizeof(double), format='d')
 
     @boundscheck(False)
