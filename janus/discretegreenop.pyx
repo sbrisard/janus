@@ -45,7 +45,8 @@ cdef class DiscreteGreenOperator2D(AbstractStructuredOperator2D):
             raise ValueError('length of shape must be 2 (was {0})'
                              .format(len(shape)))
         if green.mat.dim != 2:
-            raise ValueError('continuous green operator must operate in a 2D space')
+            raise ValueError('continuous green operator must operate in '
+                             'a 2D space')
         if h <= 0.:
             raise ValueError('h must be > 0 (was {0})'.format(h))
 
@@ -76,7 +77,6 @@ cdef class DiscreteGreenOperator2D(AbstractStructuredOperator2D):
                               self.oshape2)
         self.s0 = 2. * M_PI / (self.h * self.ishape0)
         self.s1 = 2. * M_PI / (self.h * self.ishape1)
-
 
     cdef void c_set_frequency(self, int[:] b):
         raise NotImplementedError
@@ -149,6 +149,11 @@ cdef class DiscreteGreenOperator3D(AbstractStructuredOperator3D):
     """
     cdef readonly AbstractGreenOperator green
     cdef readonly double h
+    # s[i] = 2 * pi / (h * n[i]),
+    # where n[i] is the size of the grid in the direction i.
+    cdef double s0, s1, s2
+    cdef _RealFFT3D transform
+    cdef tuple dft_tau_shape, dft_eta_shape
 
     def __cinit__(self, AbstractGreenOperator green, shape, double h,
                   transform=None):
@@ -182,6 +187,18 @@ cdef class DiscreteGreenOperator3D(AbstractStructuredOperator3D):
         if self.ishape2 < 0:
             raise ValueError('shape[2] must be > 0 (was {0})'
                              .format(self.ishape2))
+        self.transform = transform
+        if self.transform is not None:
+            if self.transform.shape != shape:
+                raise ValueError('shape of transform must be {0} [was {1}]'
+                                 .format(shape, transform.shape))
+        self.dft_tau_shape = (self.transform.cshape0, self.transform.cshape1,
+                              self.transform.cshape2, self.ishape3)
+        self.dft_eta_shape = (self.transform.cshape0, self.transform.cshape1,
+                              self.transform.cshape2, self.oshape3)
+        self.s0 = 2. * M_PI / (self.h * self.ishape0)
+        self.s1 = 2. * M_PI / (self.h * self.ishape1)
+        self.s2 = 2. * M_PI / (self.h * self.ishape2)
 
     cdef void c_set_frequency(self, int[:] b):
         raise NotImplementedError
@@ -345,27 +362,10 @@ cdef class TruncatedGreenOperator2D(DiscreteGreenOperator2D):
 
 
 cdef class TruncatedGreenOperator3D(DiscreteGreenOperator3D):
-    cdef double s0, s1, s2
-    cdef _RealFFT3D transform
-    cdef tuple dft_tau_shape, dft_eta_shape
     cdef double[:] k
 
     def __cinit__(self, AbstractGreenOperator green, shape, double h,
                   transform=None):
-        self.transform = transform
-        if self.transform is not None:
-            if self.transform.shape != shape:
-                raise ValueError('shape of transform must be ({0}, {1}, {2}) '
-                                 '[was {3}]'
-                                 .format(self.ishape0, self.ishape1,
-                                         self.ishape2, transform.shape))
-        self.dft_tau_shape = (self.transform.cshape0, self.transform.cshape1,
-                              self.transform.cshape2, self.ishape3)
-        self.dft_eta_shape = (self.transform.cshape0, self.transform.cshape1,
-                              self.transform.cshape2, self.oshape3)
-        self.s0 = 2. * M_PI / (self.h * self.ishape0)
-        self.s1 = 2. * M_PI / (self.h * self.ishape1)
-        self.s2 = 2. * M_PI / (self.h * self.ishape2)
         self.k = array(shape=(3,), itemsize=sizeof(double), format='d')
 
     @boundscheck(False)
