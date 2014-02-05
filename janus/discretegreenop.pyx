@@ -12,6 +12,7 @@ from libc.stdlib cimport free
 from janus.fft.serial._serial_fft cimport _RealFFT2D
 from janus.fft.serial._serial_fft cimport _RealFFT3D
 from janus.greenop cimport AbstractGreenOperator
+from janus.operators cimport AbstractStructuredOperator2D
 from janus.utils.checkarray cimport create_or_check_shape_1d
 from janus.utils.checkarray cimport create_or_check_shape_2d
 from janus.utils.checkarray cimport create_or_check_shape_3d
@@ -28,6 +29,73 @@ def create(green, n, h, transform=None):
     else:
         raise ValueError('dim must be 2 or 3 (was {0})'.format(green.dim))
 
+cdef class DiscreteGreenOperator2D(AbstractStructuredOperator2D):
+    cdef readonly AbstractGreenOperator green
+    cdef readonly double h
+
+    def __cinit__(self, AbstractGreenOperator green, shape, double h,
+                  transform=None):
+        if len(shape) != 2:
+            raise ValueError('length of shape must be 2 (was {0})'
+                             .format(len(shape)))
+        if green.mat.dim != 2:
+            raise ValueError('continuous green operator must operate in a 2D space')
+        if h <= 0.:
+            raise ValueError('h must be > 0 (was {0})'.format(h))
+
+        self.green = green
+        self.h = h
+        self.ishape0 = shape[0]
+        self.ishape1 = shape[1]
+        self.ishape2 = green.isize
+        self.ishape = (self.ishape0, self.ishape1, self.ishape2)
+        self.oshape0 = shape[0]
+        self.oshape1 = shape[1]
+        self.oshape2 = green.osize
+        self.oshape = (self.oshape0, self.oshape1, self.oshape2)
+        if self.ishape0 < 0:
+            raise ValueError('shape[0] must be > 0 (was {0})'
+                             .format(self.ishape0))
+        if self.ishape1 < 0:
+            raise ValueError('shape[1] must be > 0 (was {0})'
+                             .format(self.ishape1))
+
+    cdef void c_set_frequency(self, int[:] b):
+        raise NotImplementedError
+
+    def set_frequency(self, int[:] b):
+        if b.shape[0] != 2:
+            raise ValueError('invalid shape: expected (2,), actual ({0},)'
+                             .format(b.shape[0]))
+
+        cdef int b0 = b[0]
+        if (b0 < 0) or (b0 >= self.ishape0):
+            raise ValueError('index must be >= 0 and < {0} (was {1})'
+                             .format(self.ishape0, b0))
+
+        cdef int b1 = b[1]
+        if (b1 < 0) or (b1 >= self.ishape1):
+            raise ValueError('index must be >= 0 and < {0} (was {1})'
+                             .format(self.ishape1, b1))
+
+        self.c_set_frequency(b)
+
+    cdef void c_to_memoryview(self, double[:, :] out):
+        raise NotImplementedError
+
+    def to_memoryview(self, double[:, :] out=None):
+        out = create_or_check_shape_2d(out, self.oshape2, self.ishape2)
+        self.c_to_memoryview(out)
+        return out
+
+    cdef void c_apply_by_freq(self, double[:] tau, double[:] eta):
+        raise NotImplementedError
+
+    def apply_by_freq(self, double[:] tau, double[:] eta=None):
+        check_shape_1d(tau, self.ishape2)
+        eta = create_or_check_shape_1d(eta, self.oshape2)
+        self.c_apply_by_freq(tau, eta)
+        return eta
 
 cdef class DiscreteGreenOperator:
 
@@ -194,27 +262,56 @@ cdef class TruncatedGreenOperator(DiscreteGreenOperator):
         self.green.c_apply(tau, eta)
 
 
-cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
-    cdef int n0, n1
+cdef class TruncatedGreenOperator2D(DiscreteGreenOperator2D):
     cdef double s0, s1
     cdef _RealFFT2D transform
     cdef tuple dft_tau_shape, dft_eta_shape
+    cdef double[:] k
+
+    # TODO Remove
+    cdef readonly int isize, osize
 
     def __cinit__(self, AbstractGreenOperator green, shape, double h,
                   transform=None):
         self.transform = transform
         if self.transform is not None:
-            if self.transform.shape != shape:
-                raise ValueError('shape of transform must be {0} [was {1}]'
-                                 .format(self.shape, transform.shape))
-        self.n0 = self.n[0]
-        self.n1 = self.n[1]
+            if self.transform.shape != (self.ishape0, self.ishape1):
+                raise ValueError('shape of transform must be ({0}, {1}) '
+                                 '[was {2}]'
+                                 .format(self.ishape0, self.ishape1,
+                                         transform.shape))
         self.dft_tau_shape = (self.transform.cshape0, self.transform.cshape1,
-                              self.isize)
+                              self.ishape2)
         self.dft_eta_shape = (self.transform.cshape0, self.transform.cshape1,
-                              self.osize)
-        self.s0 = 2. * M_PI / (self.h * self.n0)
-        self.s1 = 2. * M_PI / (self.h * self.n1)
+                              self.oshape2)
+        self.s0 = 2. * M_PI / (self.h * self.ishape0)
+        self.s1 = 2. * M_PI / (self.h * self.ishape1)
+        self.k = array(shape=(2,), itemsize=sizeof(double), format='d')
+
+        # TODO Remove
+        self.isize = self.ishape2
+        self.osize = self.oshape2
+
+    @boundscheck(False)
+    @wraparound(False)
+    cdef void c_set_frequency(self, int[:] b):
+        cdef b0 = b[0]
+        if 2 * b0 > self.ishape0:
+            self.k[0] = self.s0 * (b0 - self.ishape0)
+        else:
+            self.k[0] = self.s0 * b0
+        cdef b1 = b[1]
+        if 2 * b1 > self.ishape1:
+            self.k[1] = self.s1 * (b1 - self.ishape1)
+        else:
+            self.k[1] = self.s1 * b1
+        self.green.set_frequency(self.k)
+
+    cdef void c_to_memoryview(self, double[:, :] out):
+        self.green.c_to_memoryview(out)
+
+    cdef void c_apply_by_freq(self, double[:] tau, double[:] eta):
+        self.green.c_apply(tau, eta)
 
     @boundscheck(False)
     @cdivision(True)
@@ -222,9 +319,9 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
     def convolve(self, tau, eta=None):
         cdef double[:, :, :] tau_as_mv = tau
         check_shape_3d(tau_as_mv, self.transform.rshape0,
-                       self.transform.rshape1, self.isize)
+                       self.transform.rshape1, self.ishape2)
         eta = create_or_check_shape_3d(eta, self.transform.rshape0,
-                                       self.transform.rshape1, self.osize)
+                                       self.transform.rshape1, self.oshape2)
 
         cdef double[:, :, :] dft_tau = array(self.dft_tau_shape,
                                              sizeof(double), 'd')
@@ -234,7 +331,7 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
         cdef int i
 
         # Compute DFT of tau
-        for i in range(self.isize):
+        for i in range(self.ishape2):
             self.transform.r2c(tau_as_mv[:, :, i], dft_tau[:, :, i])
 
         # Apply Green operator frequency-wise
@@ -244,16 +341,16 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
 
         for i0 in range(n0):
             b0 = i0 + self.transform.offset0
-            if 2 * b0 > self.n0:
-                self.k[0] = self.s0 * (b0 - self.n0)
+            if 2 * b0 > self.ishape0:
+                self.k[0] = self.s0 * (b0 - self.ishape0)
             else:
                 self.k[0] = self.s0 * b0
 
             i1 = 0
             for b1 in range(n1):
                 # At this point, i1 = 2 * b1
-                if i1 > self.n1:
-                    self.k[1] = self.s1 * (b1 - self.n1)
+                if i1 > self.ishape1:
+                    self.k[1] = self.s1 * (b1 - self.ishape1)
                 else:
                     self.k[1] = self.s1 * b1
 
@@ -268,7 +365,7 @@ cdef class TruncatedGreenOperator2D(TruncatedGreenOperator):
                 i1 += 1
 
         # Compute inverse DFT of eta
-        for i in range(self.osize):
+        for i in range(self.oshape2):
             self.transform.c2r(dft_eta[:, :, i], eta[:, :, i])
 
         return eta
