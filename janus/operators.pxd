@@ -9,6 +9,7 @@ cdef class AbstractLinearOperator(Operator):
 
 
 cdef class AbstractStructuredOperator2D:
+    cdef readonly int dim
     cdef readonly int ishape0, ishape1, ishape2
     cdef readonly int oshape0, oshape1, oshape2
     cdef readonly tuple ishape, oshape

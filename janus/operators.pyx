@@ -159,6 +159,8 @@ cdef class AbstractStructuredOperator2D:
 
     Attributes
     ----------
+    dim : int
+        The dimension of the structured grid (``dim == 2``).
     ishape0 : int
         The first dimension of the input.
     ishape1 : int
@@ -179,7 +181,7 @@ cdef class AbstractStructuredOperator2D:
     """
 
     def __cinit__(self):
-        pass
+        self.dim = 2
 
     cdef void c_apply(self, double[:, :, :] x, double[:, :, :] y):
         raise NotImplementedError
