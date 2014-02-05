@@ -383,14 +383,6 @@ cdef class TruncatedGreenOperator2D(DiscreteGreenOperator2D):
         for i in range(self.oshape2):
             self.transform.c2r(dft_y[:, :, i], y[:, :, i])
 
-    def convolve(self, double[:, :, :] x, double[:, :, :] y=None):
-        check_shape_3d(x, self.transform.rshape0,
-                       self.transform.rshape1, self.ishape2)
-        y = create_or_check_shape_3d(y, self.transform.rshape0,
-                                     self.transform.rshape1, self.oshape2)
-        self.c_apply(x, y)
-        return y
-
 
 cdef class TruncatedGreenOperator3D(DiscreteGreenOperator3D):
     cdef double[:] k
@@ -479,23 +471,6 @@ cdef class TruncatedGreenOperator3D(DiscreteGreenOperator3D):
         # Compute inverse DFT of y
         for i in range(self.oshape3):
             self.transform.c2r(dft_y[:, :, :, i], y[:, :, :, i])
-
-    @boundscheck(False)
-    @cdivision(True)
-    @wraparound(False)
-    def convolve(self, double[:, :, :, :] x, double[:, :, :, :] y=None):
-        check_shape_4d(x,
-                       self.transform.rshape0,
-                       self.transform.rshape1,
-                       self.transform.rshape2,
-                       self.ishape3)
-        y = create_or_check_shape_4d(y,
-                                     self.transform.rshape0,
-                                     self.transform.rshape1,
-                                     self.transform.rshape2,
-                                     self.oshape3)
-        self.c_apply(x, y)
-        return y
 
 """
 cdef class FilteredGreenOperator2D(DiscreteGreenOperator):

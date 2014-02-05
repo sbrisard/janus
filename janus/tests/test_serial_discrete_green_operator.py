@@ -300,8 +300,8 @@ def test_apply_invalid_params():
 #             yield test, tau, eta
 
 #
-# 4 Test of the method convolve
-#   ===========================
+# 4 Test of the method apply
+#   ========================
 #
 # 4.1 Valid parameters
 #     ----------------
@@ -313,7 +313,7 @@ def test_apply_invalid_params():
 #   - ref[:, :, 3:6] = eta = - Gamma * tau
 
 @nottest
-def do_test_convolve(path_to_ref, rel_err):
+def do_test_apply(path_to_ref, rel_err):
     dummy = np.load(path_to_ref)
     n = dummy.shape[:-1]
     transform = janus.fft.serial.create_real(n)
@@ -328,14 +328,14 @@ def do_test_convolve(path_to_ref, rel_err):
         expected = dummy[:, :, :, green.ishape[-1]:]
 
     actual = np.zeros(transform.rshape + (green.oshape[-1],), np.float64)
-    green.convolve(tau, actual)
+    green.apply(tau, actual)
 
     error = actual - expected
     ulp = np.finfo(np.float64).eps
     nulp = rel_err / ulp
     assert_array_almost_equal_nulp(expected, np.asarray(actual), nulp)
 
-def test_convolve():
+def test_apply():
 
     directory = os.path.dirname(os.path.realpath(__file__))
 
@@ -360,14 +360,14 @@ def test_convolve():
                ]
     for filename, rel_err in params:
         path = os.path.join(directory, 'data', filename)
-        yield do_test_convolve, path, rel_err
+        yield do_test_apply, path, rel_err
 
 #
 # 4.2 Invalid parameters
 #     ------------------
 #
 
-def test_convolve_invalid_params():
+def test_apply_invalid_params():
     for dim in [2, 3]:
         n = tuple(2**(i + 3) for i in range(dim))
         transform = janus.fft.serial.create_real(n)
@@ -377,7 +377,7 @@ def test_convolve_invalid_params():
 
         @raises(ValueError)
         def test(tau, eta):
-            green.convolve(tau, eta)
+            green.apply(tau, eta)
 
         for tau, eta in params:
             yield test, tau, eta

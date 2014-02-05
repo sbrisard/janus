@@ -14,7 +14,7 @@ from numpy.testing import assert_array_almost_equal_nulp
 from janus.matprop import IsotropicLinearElasticMaterial as Material
 
 @nottest
-def do_test_convolve(path_to_ref, rel_err):
+def do_test_apply(path_to_ref, rel_err):
     comm = MPI.COMM_WORLD
     root = 0
     rank = comm.rank
@@ -50,7 +50,7 @@ def do_test_convolve(path_to_ref, rel_err):
     tau_loc = comm.scatter(tau_locs, root)
     eta_loc = np.empty(transform.rshape + (green.oshape[-1],),
                        dtype=np.float64)
-    green.convolve(tau_loc, eta_loc)
+    green.apply(tau_loc, eta_loc)
 
     # Gather eta
     eta_locs = comm.gather(eta_loc, root)
@@ -65,7 +65,7 @@ def do_test_convolve(path_to_ref, rel_err):
         nulp = rel_err / ulp
         assert_array_almost_equal_nulp(expected, np.asarray(actual), nulp)
 
-def test_convolve():
+def test_apply():
 
     directory = os.path.join('..', 'parallel',
                              os.path.dirname(os.path.realpath(__file__)))
@@ -91,4 +91,4 @@ def test_convolve():
                ]
     for filename, rel_err in params:
         path = os.path.join(directory, 'data', filename)
-        yield do_test_convolve, path, rel_err
+        yield do_test_apply, path, rel_err
