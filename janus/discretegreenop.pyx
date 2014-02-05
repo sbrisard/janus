@@ -1,4 +1,3 @@
-# TODO do not use pointers, but memoryviews.
 from cython cimport boundscheck
 from cython cimport cdivision
 from cython cimport sizeof
@@ -306,27 +305,20 @@ cdef class TruncatedGreenOperator2D(DiscreteGreenOperator2D):
     @boundscheck(False)
     @cdivision(True)
     @wraparound(False)
-    def convolve(self, tau, eta=None):
-        cdef double[:, :, :] tau_as_mv = tau
-        check_shape_3d(tau_as_mv, self.transform.rshape0,
-                       self.transform.rshape1, self.ishape2)
-        eta = create_or_check_shape_3d(eta, self.transform.rshape0,
-                                       self.transform.rshape1, self.oshape2)
-
-        cdef double[:, :, :] dft_tau = array(self.dft_tau_shape,
-                                             sizeof(double), 'd')
-        cdef double[:, :, :] dft_eta = array(self.dft_eta_shape,
-                                             sizeof(double), 'd')
-
+    cdef void c_apply(self, double[:, :, :] x, double[:, :, :] y):
+        cdef double[:, :, :] dft_x = array(self.dft_tau_shape,
+                                           sizeof(double), 'd')
+        cdef double[:, :, :] dft_y = array(self.dft_eta_shape,
+                                           sizeof(double), 'd')
         cdef int i
 
         # Compute DFT of tau
         for i in range(self.ishape2):
-            self.transform.r2c(tau_as_mv[:, :, i], dft_tau[:, :, i])
+            self.transform.r2c(x[:, :, i], dft_x[:, :, i])
 
         # Apply Green operator frequency-wise
-        cdef int n0 = dft_tau.shape[0]
-        cdef int n1 = dft_tau.shape[1] / 2
+        cdef int n0 = dft_x.shape[0]
+        cdef int n1 = dft_x.shape[1] / 2
         cdef int i0, i1, b0, b1
 
         for i0 in range(n0):
@@ -346,19 +338,25 @@ cdef class TruncatedGreenOperator2D(DiscreteGreenOperator2D):
 
                 # Apply Green operator to real part
                 self.green.set_frequency(self.k)
-                self.green.c_apply(dft_tau[i0, i1, :],
-                                   dft_eta[i0, i1, :])
+                self.green.c_apply(dft_x[i0, i1, :],
+                                   dft_y[i0, i1, :])
                 i1 += 1
                 # Apply Green operator to imaginary part
-                self.green.c_apply(dft_tau[i0, i1, :],
-                                   dft_eta[i0, i1, :])
+                self.green.c_apply(dft_x[i0, i1, :],
+                                   dft_y[i0, i1, :])
                 i1 += 1
 
-        # Compute inverse DFT of eta
+        # Compute inverse DFT of y
         for i in range(self.oshape2):
-            self.transform.c2r(dft_eta[:, :, i], eta[:, :, i])
+            self.transform.c2r(dft_y[:, :, i], y[:, :, i])
 
-        return eta
+    def convolve(self, double[:, :, :] x, double[:, :, :] y=None):
+        check_shape_3d(x, self.transform.rshape0,
+                       self.transform.rshape1, self.ishape2)
+        y = create_or_check_shape_3d(y, self.transform.rshape0,
+                                     self.transform.rshape1, self.oshape2)
+        self.c_apply(x, y)
+        return y
 
 
 cdef class TruncatedGreenOperator3D(DiscreteGreenOperator3D):
