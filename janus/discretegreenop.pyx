@@ -32,14 +32,16 @@ def create(green, n, h, transform=None):
 cdef class DiscreteGreenOperator2D(AbstractStructuredOperator2D):
     cdef readonly AbstractGreenOperator green
     cdef readonly double h
+    cdef int global_shape0
+    cdef int offset0
     # s[i] = 2 * pi / (h * n[i]),
-    # where n[i] is the size of the grid in the direction i.
+    # where n[i] is the size of the *global* grid in the direction i.
     cdef double s0, s1
     cdef _RealFFT2D transform
     cdef tuple dft_tau_shape, dft_eta_shape
 
     def __cinit__(self, AbstractGreenOperator green, shape, double h,
-                  transform=None):
+                  _RealFFT2D transform=None):
         if len(shape) != 2:
             raise ValueError('length of shape must be 2 (was {0})'
                              .format(len(shape)))
@@ -50,31 +52,42 @@ cdef class DiscreteGreenOperator2D(AbstractStructuredOperator2D):
             raise ValueError('h must be > 0 (was {0})'.format(h))
 
         self.green = green
-        self.h = h
-        self.ishape0 = shape[0]
-        self.ishape1 = shape[1]
         self.ishape2 = green.isize
-        self.ishape = (self.ishape0, self.ishape1, self.ishape2)
-        self.oshape0 = shape[0]
-        self.oshape1 = shape[1]
         self.oshape2 = green.osize
-        self.oshape = (self.oshape0, self.oshape1, self.oshape2)
-        if self.ishape0 < 0:
-            raise ValueError('shape[0] must be > 0 (was {0})'
-                             .format(self.ishape0))
-        if self.ishape1 < 0:
-            raise ValueError('shape[1] must be > 0 (was {0})'
-                             .format(self.ishape1))
-        self.transform = transform
-        if self.transform is not None:
-            if self.transform.shape != shape:
+        self.h = h
+
+        if transform is not None:
+            if transform.shape != shape:
                 raise ValueError('shape of transform must be {0} [was {1}]'
                                  .format(shape, transform.shape))
-        self.dft_tau_shape = (self.transform.cshape0, self.transform.cshape1,
-                              self.ishape2)
-        self.dft_eta_shape = (self.transform.cshape0, self.transform.cshape1,
-                              self.oshape2)
-        self.s0 = 2. * M_PI / (self.h * self.ishape0)
+            self.dft_tau_shape = (transform.cshape0, transform.cshape1,
+                                  self.ishape2)
+            self.dft_eta_shape = (transform.cshape0, transform.cshape1,
+                                  self.oshape2)
+            self.global_shape0 = transform.shape[0]
+            self.offset0 = transform.offset0
+            self.ishape0 = transform.rshape0
+            self.ishape1 = transform.rshape1
+            self.oshape0 = self.ishape0
+            self.oshape1 = self.ishape1
+        else:
+            self.global_shape0 = shape[0]
+            self.offset0 = 0
+            self.ishape0 = shape[0]
+            self.ishape1 = shape[1]
+            self.oshape0 = self.ishape0
+            self.oshape1 = self.ishape1
+            if self.ishape0 < 0:
+                raise ValueError('shape[0] must be > 0 (was {0})'
+                                 .format(self.ishape0))
+            if self.ishape1 < 0:
+                raise ValueError('shape[1] must be > 0 (was {0})'
+                                 .format(self.ishape1))
+
+        self.transform = transform
+        self.ishape = (self.ishape0, self.ishape1, self.ishape2)
+        self.oshape = (self.oshape0, self.oshape1, self.oshape2)
+        self.s0 = 2. * M_PI / (self.h * self.global_shape0)
         self.s1 = 2. * M_PI / (self.h * self.ishape1)
 
     cdef void c_set_frequency(self, int[:] b):
@@ -86,9 +99,11 @@ cdef class DiscreteGreenOperator2D(AbstractStructuredOperator2D):
                              .format(b.shape[0]))
 
         cdef int b0 = b[0]
-        if (b0 < 0) or (b0 >= self.ishape0):
-            raise ValueError('index must be >= 0 and < {0} (was {1})'
-                             .format(self.ishape0, b0))
+        if (b0 < self.offset0) or (b0 >= self.offset0 + self.ishape0):
+            raise ValueError('index must be >= {0} and < {1} (was {2})'
+                             .format(self.offset0,
+                                     self.offset0 + self.ishape0,
+                                     b0))
 
         cdef int b1 = b[1]
         if (b1 < 0) or (b1 >= self.ishape1):
@@ -285,8 +300,8 @@ cdef class TruncatedGreenOperator2D(DiscreteGreenOperator2D):
     @wraparound(False)
     cdef void c_set_frequency(self, int[:] b):
         cdef b0 = b[0]
-        if 2 * b0 > self.ishape0:
-            self.k[0] = self.s0 * (b0 - self.ishape0)
+        if 2 * b0 > self.global_shape0:
+            self.k[0] = self.s0 * (b0 - self.global_shape0)
         else:
             self.k[0] = self.s0 * b0
         cdef b1 = b[1]
@@ -322,9 +337,9 @@ cdef class TruncatedGreenOperator2D(DiscreteGreenOperator2D):
         cdef int i0, i1, b0, b1
 
         for i0 in range(n0):
-            b0 = i0 + self.transform.offset0
-            if 2 * b0 > self.ishape0:
-                self.k[0] = self.s0 * (b0 - self.ishape0)
+            b0 = i0 + self.offset0
+            if 2 * b0 > self.global_shape0:
+                self.k[0] = self.s0 * (b0 - self.global_shape0)
             else:
                 self.k[0] = self.s0 * b0
 
@@ -337,7 +352,7 @@ cdef class TruncatedGreenOperator2D(DiscreteGreenOperator2D):
                     self.k[1] = self.s1 * b1
 
                 # Apply Green operator to real part
-                self.green.set_frequency(self.k)
+                self.green.c_set_frequency(self.k)
                 self.green.c_apply(dft_x[i0, i1, :],
                                    dft_y[i0, i1, :])
                 i1 += 1
