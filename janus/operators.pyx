@@ -19,6 +19,8 @@ Classes:
 - :class:`AbstractLinearOperator` -- general linear operator
 - :class:`AbstractStructuredOperator2D` -- operator with 2D layout of
          the (vectorial) data
+- :class:`AbstractStructuredOperator3D` -- operator with 3D layout of
+         the (vectorial) data
 - :class:`BlockDiagonalOperator2D` -- block-diagonal, structured operator
 - :class:`FourthRankIsotropicTensor` -- fourth-rank, isotropic tensor with
          minor symmetries
@@ -33,9 +35,11 @@ from cython cimport wraparound
 
 from janus.utils.checkarray cimport check_shape_1d
 from janus.utils.checkarray cimport check_shape_3d
+from janus.utils.checkarray cimport check_shape_4d
 from janus.utils.checkarray cimport create_or_check_shape_1d
 from janus.utils.checkarray cimport create_or_check_shape_2d
 from janus.utils.checkarray cimport create_or_check_shape_3d
+from janus.utils.checkarray cimport create_or_check_shape_4d
 
 
 def isotropic_4(sph, dev, dim):
@@ -213,6 +217,89 @@ cdef class AbstractStructuredOperator2D:
         check_shape_3d(x, self.ishape0, self.ishape1, self.ishape2)
         y = create_or_check_shape_3d(y, self.oshape0, self.oshape1,
                                      self.oshape2)
+        self.c_apply(x, y)
+        return y
+
+
+cdef class AbstractStructuredOperator3D:
+
+    """Operator applied to vectorial data structured in a 3D grid.
+
+    Objects represented by this class map real vectors of dimension
+    ``isize`` to real vectors of dimension ``osize``. Input and output
+    vectors are structured in 3D grids, each grid-cell being a vector
+    itself. Therefore, the input (resp. output) is a (``float64``)
+    memoryview of shape ``(ishape0, ishape1, ishape2, ishape3)`` [resp.
+    ``(oshape0, oshape1, oshape2, oshape3)``], with::
+
+        isize = ishape0 * ishape1 * ishape2 * ishape3
+        osize = oshape0 * oshape1 * oshape2 * oshape3
+
+    Attributes
+    ----------
+    dim : int
+        The dimension of the structured grid (``dim == 2``).
+    ishape0 : int
+        The first dimension of the input.
+    ishape1 : int
+        The second dimension of the input.
+    ishape2 : int
+        The third dimension of the input.
+    ishape3 : int
+        The fourth dimension of the input.
+    oshape0 : int
+        The first dimension of the output.
+    oshape1 : int
+        The second dimension of the output.
+    oshape2 : int
+        The third dimension of the output.
+    oshape3 : int
+        The fourth dimension of the output.
+    ishape : tuple
+        The shape of the input [the tuple
+        ``(ishape0, ishape1, ishape2, ishape3)``].
+    oshape : tuple
+        The shape of the output [the tuple
+        ``(oshape0, oshape1, oshape2, oshape3)``].
+
+    """
+
+    def __cinit__(self):
+        self.dim = 3
+
+    cdef void c_apply(self, double[:, :, :, :] x, double[:, :, :, :] y):
+        raise NotImplementedError
+
+    def apply(self, double[:, :, :, :] x, double[:, :, :, :] y=None):
+        """apply(x, y=None)
+
+        Return the result of applying this operator to `x`.
+
+        The default implementation calls the (Cython) method
+        ``c_apply()``.
+
+        Parameters
+        ----------
+        x : 4D memoryview of float64
+            The input vector.
+        y : 4D memoryview of float64, optional
+            The output vector. Its content is altered by this method. If
+            ``None``, a new array is created and returned; otherwise,
+            this method returns a view of this object.
+
+        Returns
+        -------
+        y : 4D memoryview of float64
+            The result of applying this operator to `x`. This is a
+            view of the parameter `y` (if not ``None``).
+
+        """
+        check_shape_4d(x,
+                       self.ishape0, self.ishape1,
+                       self.ishape2, self.ishape3)
+        y = create_or_check_shape_4d(y,
+                                     self.oshape0, self.oshape1,
+                                     self.oshape2, self.oshape3)
         self.c_apply(x, y)
         return y
 
