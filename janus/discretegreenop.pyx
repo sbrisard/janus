@@ -209,70 +209,39 @@ cdef class DiscreteGreenOperator3D(AbstractStructuredOperator3D):
         return eta
 
 
-# cdef class TruncatedGreenOperator(DiscreteGreenOperator):
-
-#     """
-
-#     Parameters
-#     ----------
-#     green:
-#         The underlying continuous green operator.
-#     shape:
-#         The shape of the spatial grid used to discretize the Green operator.
-#     h: float
-#         The size of each cell of the grid.
-#     transform:
-#         The FFT object to be used to carry out discrete Fourier transforms.
-
-#     Attributes
-#     ----------
-#     green:
-#         The underlying continuous green operator.
-#     shape:
-#         The shape of the spatial grid used to discretize the Green operator.
-#     h: float
-#         The size of each cell of the grid.
-#     dim: int
-#         The dimension of the physical space.
-#     osize: int
-#         The number of rows of the Green tensor, for each frequency (dimension
-#         of the space of polarizations).
-#     isize: int
-#         The number of columns of the Green tensor, for each frequency (dimension
-#         of the space of strains).
-#     """
-
-#     cdef double[:] k
-#     cdef double two_pi_over_h
-
-#     def __cinit__(self, AbstractGreenOperator green, shape, double h,
-#                   transform=None):
-#         self.two_pi_over_h = 2. * M_PI / h
-#         self.k = array(shape=(self.dim,), itemsize=sizeof(double), format='d')
-
-#     @cdivision(True)
-#     cdef void c_set_frequency(self, int[:] b):
-#         cdef:
-#             int i, ni, bi
-#             double s
-#         for i in range(self.dim):
-#             ni = self.n[i]
-#             bi = b[i]
-#             s = self.two_pi_over_h / <double> ni
-#             if 2 * bi > ni:
-#                 self.k[i] = s * (bi - ni)
-#             else:
-#                 self.k[i] = s * bi
-#         self.green.set_frequency(self.k)
-
-#     cdef void c_to_memoryview(self, double[:, :] out):
-#         self.green.c_to_memoryview(out)
-
-#     cdef void c_apply_by_freq(self, double[:] tau, double[:] eta):
-#         self.green.c_apply(tau, eta)
-
-
 cdef class TruncatedGreenOperator2D(DiscreteGreenOperator2D):
+
+    """
+
+    Parameters
+    ----------
+    green:
+        The underlying continuous green operator.
+    shape:
+        The shape of the spatial grid used to discretize the Green operator.
+    h: float
+        The size of each cell of the grid.
+    transform:
+        The FFT object to be used to carry out discrete Fourier transforms.
+
+    Attributes
+    ----------
+    green:
+        The underlying continuous green operator.
+    shape:
+        The shape of the spatial grid used to discretize the Green operator.
+    h: float
+        The size of each cell of the grid.
+    dim: int
+        The dimension of the physical space.
+    osize: int
+        The number of rows of the Green tensor, for each frequency (dimension
+        of the space of polarizations).
+    isize: int
+        The number of columns of the Green tensor, for each frequency (dimension
+        of the space of strains).
+    """
+
     cdef double s0, s1
     cdef _RealFFT2D transform
     cdef tuple dft_tau_shape, dft_eta_shape
