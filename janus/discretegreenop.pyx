@@ -472,10 +472,8 @@ cdef class TruncatedGreenOperator3D(DiscreteGreenOperator3D):
         for i in range(self.oshape3):
             self.transform.c2r(dft_y[:, :, :, i], y[:, :, :, i])
 
-"""
-cdef class FilteredGreenOperator2D(DiscreteGreenOperator):
-    cdef int ishape0, ishape1, ishape2
-    cdef int oshape0, oshape1, oshape2
+
+cdef class FilteredGreenOperator2D(DiscreteGreenOperator2D):
     cdef double g00, g01, g02
     cdef double g11, g12
     cdef double g22
@@ -483,21 +481,10 @@ cdef class FilteredGreenOperator2D(DiscreteGreenOperator):
     # Cached arrays to store the four terms of the weighted sum defining the
     # filtered Green operator.
     cdef double[:] k1, k2, k3, k4
-    cdef double[:, :] g
+    cdef double[:, :] g1, g2, g3, g4
 
-    def __cinit__(self, AbstractGreenOperator green, shape, double h, transform=None):
-        self.transform = transform
-        if self.transform is not None:
-            if self.transform.shape != shape:
-                raise ValueError('shape of transform must be {0} [was {1}]'
-                                 .format(self.shape, transform.shape))
-        self.ishape0 = shape[0]
-        self.ishape1 = shape[1]
-        self.ishape2 = green.isize
-        self.oshape0 = self.ishape0
-        self.oshape1 = self.ishape1
-        self.oshape2 = green.osize
-
+    def __cinit__(self, AbstractGreenOperator green, shape, double h,
+                  transform=None):
         shape = (2,)
         self.k1 = array(shape, sizeof(double), 'd')
         self.k2 = array(shape, sizeof(double), 'd')
@@ -510,17 +497,16 @@ cdef class FilteredGreenOperator2D(DiscreteGreenOperator):
         self.g3 = array(shape, sizeof(double), 'd')
         self.g4 = array(shape, sizeof(double), 'd')
 
-    cdef void update(self, int[:] b):
+    @boundscheck(False)
+    @wraparound(False)
+    cdef void c_set_frequency(self, int[:] b):
         cdef int b0 = b[0]
         cdef int b1 = b[1]
-        cdef double dk, k, w
-        cdef double w1, w2, w3, w4
+        cdef double k, w, w1, w2, w3, w4
 
         # Computation of the first component of k1, k2, k3, k4 and the first
         # factor of the corresponding weights.
-        dk = 2. * M_PI / (self.h * self.ishape0)
-
-        k = dk * (b0 - self.ishape0)
+        k = self.s0 * (b0 - self.global_shape0)
         w = cos(0.25 * self.h * k)
         w *= w
         self.k1[0] = k
@@ -528,7 +514,7 @@ cdef class FilteredGreenOperator2D(DiscreteGreenOperator):
         w1 = w
         w2 = w
 
-        k = dk * b0
+        k = self.s0 * b0
         w = cos(0.25 * self.h * k)
         w *= w
         self.k3[0] = k
@@ -538,9 +524,7 @@ cdef class FilteredGreenOperator2D(DiscreteGreenOperator):
 
         # Computation of the second component of k1, k2, k3, k4 and the second
         # factor of the corresponding weights.
-        dk = 2. * M_PI / (self.h * self.ishape1)
-
-        k = dk * (b1 - self.ishape1)
+        k = self.s1 * (b1 - self.ishape1)
         w = cos(0.25 * self.h * k)
         w *= w
         self.k1[1] = k
@@ -548,7 +532,7 @@ cdef class FilteredGreenOperator2D(DiscreteGreenOperator):
         w1 *= w
         w3 *= w
 
-        k = dk * b1
+        k = self.s1 * b1
         w = cos(0.25 * self.h * k)
         w *= w
         self.k2[1] = k
@@ -556,10 +540,14 @@ cdef class FilteredGreenOperator2D(DiscreteGreenOperator):
         w2 *= w
         w4 *= w
 
-        self.green.c_apply(k1, g1)
-        self.green.c_apply(k2, g2)
-        self.green.c_apply(k3, g3)
-        self.green.c_apply(k4, g4)
+        self.green.c_set_frequency(self.k1)
+        self.green.c_to_memoryview(self.g1)
+        self.green.c_set_frequency(self.k2)
+        self.green.c_to_memoryview(self.g2)
+        self.green.c_set_frequency(self.k3)
+        self.green.c_to_memoryview(self.g3)
+        self.green.c_set_frequency(self.k4)
+        self.green.c_to_memoryview(self.g4)
 
         self.g00 = (w1 * self.g1[0, 0] + w2 * self.g2[0, 0]
                     + w3 * self.g3[0, 0] + w4 * self.g4[0, 0])
@@ -576,8 +564,7 @@ cdef class FilteredGreenOperator2D(DiscreteGreenOperator):
 
     @boundscheck(False)
     @wraparound(False)
-    cdef void c_to_memoryview(self, int[:] b, double[:, :] out):
-        self.update(b)
+    cdef void c_to_memoryview(self, double[:, :] out):
         out[0, 0] = self.g00
         out[0, 1] = self.g01
         out[0, 2] = self.g02
@@ -590,13 +577,49 @@ cdef class FilteredGreenOperator2D(DiscreteGreenOperator):
 
     @boundscheck(False)
     @wraparound(False)
-    cdef void c_apply_by_freq(self, int[:] b, double[:] tau, double[:] eta):
-        cdef double tau0, tau1, tau2, eta0, eta1, eta2
-        self.update(b)
-        tau0 = tau[0]
-        tau1 = tau[1]
-        tau2 = tau[2]
-        eta[0] = self.g00 * tau0 + self.g01 * tau1 + self.g02 * tau2
-        eta[1] = self.g01 * tau0 + self.g11 * tau1 + self.g12 * tau2
-        eta[2] = self.g02 * tau0 + self.g12 * tau1 + self.g22 * tau2
-"""
+    cdef void c_apply_by_freq(self, double[:] x, double[:] y):
+        cdef double x0, x1, x2, y0, y1, y2
+        x0 = x[0]
+        x1 = x[1]
+        x2 = x[2]
+        y[0] = self.g00 * x0 + self.g01 * x1 + self.g02 * x2
+        y[1] = self.g01 * x0 + self.g11 * x1 + self.g12 * x2
+        y[2] = self.g02 * x0 + self.g12 * x1 + self.g22 * x2
+
+    @boundscheck(False)
+    @cdivision(True)
+    @wraparound(False)
+    cdef void c_apply(self, double[:, :, :] x, double[:, :, :] y):
+        cdef int[:] b = array((2,), sizeof(int), 'i')
+        cdef double[:, :, :] dft_x = array(self.dft_tau_shape,
+                                           sizeof(double), 'd')
+        cdef double[:, :, :] dft_y = array(self.dft_eta_shape,
+                                           sizeof(double), 'd')
+        cdef int i
+
+        # Compute DFT of x
+        for i in range(self.ishape2):
+            self.transform.r2c(x[:, :, i], dft_x[:, :, i])
+
+        # Apply Green operator frequency-wise
+        cdef int n0 = dft_x.shape[0]
+        cdef int n1 = dft_x.shape[1] / 2
+        cdef int i0, i1, b0, b1
+
+        for i0 in range(n0):
+            b[0] = i0 + self.offset0
+            i1 = 0
+            for b1 in range(n1):
+                b[1] = b1
+                self.c_set_frequency(b)
+
+                # Apply Green operator to real part
+                self.c_apply_by_freq(dft_x[i0, i1, :], dft_y[i0, i1, :])
+                i1 += 1
+                # Apply Green operator to imaginary part
+                self.c_apply_by_freq(dft_x[i0, i1, :], dft_y[i0, i1, :])
+                i1 += 1
+
+        # Compute inverse DFT of y
+        for i in range(self.oshape2):
+            self.transform.c2r(dft_y[:, :, i], y[:, :, i])
