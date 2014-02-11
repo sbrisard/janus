@@ -64,6 +64,9 @@ cdef class AbstractGreenOperator(AbstractLinearOperator):
         check_shape_1d(k, self.dim)
         self.c_set_frequency(k)
 
+    def __repr__(self):
+        return 'Green Operator({0})'.format(self.mat)
+
 cdef class GreenOperator2D(AbstractGreenOperator):
 
     cdef double g00, g01, g02, g11, g12, g22
