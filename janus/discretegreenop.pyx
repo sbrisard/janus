@@ -623,3 +623,325 @@ cdef class FilteredGreenOperator2D(DiscreteGreenOperator2D):
         # Compute inverse DFT of y
         for i in range(self.oshape2):
             self.transform.c2r(dft_y[:, :, i], y[:, :, i])
+
+
+cdef class FilteredGreenOperator3D(DiscreteGreenOperator3D):
+    cdef double g00, g01, g02, g03, g04, g05
+    cdef double g11, g12, g13, g14, g15
+    cdef double g22, g23, g24, g25
+    cdef double g33, g34, g35
+    cdef double g44, g45
+    cdef double g55
+
+    cdef double[:] k1, k2, k3, k4, k5, k6, k7, k8
+    cdef double[:, :] g1, g2, g3, g4, g5, g6, g7, g8
+
+    def __cinit__(self, AbstractGreenOperator green, shape, double h,
+                  transform=None):
+        shape = (3,)
+        self.k1 = array(shape, sizeof(double), 'd')
+        self.k2 = array(shape, sizeof(double), 'd')
+        self.k3 = array(shape, sizeof(double), 'd')
+        self.k4 = array(shape, sizeof(double), 'd')
+        self.k5 = array(shape, sizeof(double), 'd')
+        self.k6 = array(shape, sizeof(double), 'd')
+        self.k7 = array(shape, sizeof(double), 'd')
+        self.k8 = array(shape, sizeof(double), 'd')
+
+        shape = (green.osize, green.isize)
+        self.g1 = array(shape, sizeof(double), 'd')
+        self.g2 = array(shape, sizeof(double), 'd')
+        self.g3 = array(shape, sizeof(double), 'd')
+        self.g4 = array(shape, sizeof(double), 'd')
+        self.g5 = array(shape, sizeof(double), 'd')
+        self.g6 = array(shape, sizeof(double), 'd')
+        self.g7 = array(shape, sizeof(double), 'd')
+        self.g8 = array(shape, sizeof(double), 'd')
+
+    @boundscheck(False)
+    @wraparound(False)
+    cdef void c_set_frequency(self, int[:] b):
+        cdef int b0 = b[0]
+        cdef int b1 = b[1]
+        cdef int b2 = b[2]
+        cdef double k, w, w1, w2, w3, w4, w5, w6, w7, w8
+
+        k = self.s0 * (b0 - self.global_shape0)
+        w = cos(0.25 * self.h * k)
+        w *= w
+        self.k1[0] = k
+        self.k2[0] = k
+        self.k3[0] = k
+        self.k4[0] = k
+        w1 = w
+        w2 = w
+        w3 = w
+        w4 = w
+
+        k = self.s0 * b0
+        w = cos(0.25 * self.h * k)
+        w *= w
+        self.k5[0] = k
+        self.k6[0] = k
+        self.k7[0] = k
+        self.k8[0] = k
+        w5 = w
+        w6 = w
+        w7 = w
+        w8 = w
+
+        k = self.s1 * (b1 - self.ishape1)
+        w = cos(0.25 * self.h * k)
+        w *= w
+        self.k1[1] = k
+        self.k2[1] = k
+        self.k5[1] = k
+        self.k6[1] = k
+        w1 *= w
+        w2 *= w
+        w5 *= w
+        w6 *= w
+
+        k = self.s1 * b1
+        w = cos(0.25 * self.h * k)
+        w *= w
+        self.k3[1] = k
+        self.k4[1] = k
+        self.k7[1] = k
+        self.k8[1] = k
+        w3 *= w
+        w4 *= w
+        w7 *= w
+        w8 *= w
+
+        k = self.s2 * (b2 - self.ishape2)
+        w = cos(0.25 * self.h * k)
+        w *= w
+        self.k1[2] = k
+        self.k3[2] = k
+        self.k5[2] = k
+        self.k7[2] = k
+        w1 *= w
+        w3 *= w
+        w5 *= w
+        w7 *= w
+
+        k = self.s2 * b2
+        w = cos(0.25 * self.h * k)
+        w *= w
+        self.k2[2] = k
+        self.k4[2] = k
+        self.k6[2] = k
+        self.k8[2] = k
+        w2 *= w
+        w4 *= w
+        w6 *= w
+        w8 *= w
+
+        self.green.c_set_frequency(self.k1)
+        self.green.c_to_memoryview(self.g1)
+        self.green.c_set_frequency(self.k2)
+        self.green.c_to_memoryview(self.g2)
+        self.green.c_set_frequency(self.k3)
+        self.green.c_to_memoryview(self.g3)
+        self.green.c_set_frequency(self.k4)
+        self.green.c_to_memoryview(self.g4)
+        self.green.c_set_frequency(self.k5)
+        self.green.c_to_memoryview(self.g5)
+        self.green.c_set_frequency(self.k6)
+        self.green.c_to_memoryview(self.g6)
+        self.green.c_set_frequency(self.k7)
+        self.green.c_to_memoryview(self.g7)
+        self.green.c_set_frequency(self.k8)
+        self.green.c_to_memoryview(self.g8)
+
+        self.g00 = (w1 * self.g1[0, 0] + w2 * self.g2[0, 0] +
+                    w3 * self.g3[0, 0] + w4 * self.g4[0, 0] +
+                    w5 * self.g5[0, 0] + w6 * self.g6[0, 0] +
+                    w7 * self.g7[0, 0] + w8 * self.g8[0, 0])
+        self.g01 = (w1 * self.g1[0, 1] + w2 * self.g2[0, 1] +
+                    w3 * self.g3[0, 1] + w4 * self.g4[0, 1] +
+                    w5 * self.g5[0, 1] + w6 * self.g6[0, 1] +
+                    w7 * self.g7[0, 1] + w8 * self.g8[0, 1])
+        self.g02 = (w1 * self.g1[0, 2] + w2 * self.g2[0, 2] +
+                    w3 * self.g3[0, 2] + w4 * self.g4[0, 2] +
+                    w5 * self.g5[0, 2] + w6 * self.g6[0, 2] +
+                    w7 * self.g7[0, 2] + w8 * self.g8[0, 2])
+        self.g03 = (w1 * self.g1[0, 3] + w2 * self.g2[0, 3] +
+                    w3 * self.g3[0, 3] + w4 * self.g4[0, 3] +
+                    w5 * self.g5[0, 3] + w6 * self.g6[0, 3] +
+                    w7 * self.g7[0, 3] + w8 * self.g8[0, 3])
+        self.g04 = (w1 * self.g1[0, 4] + w2 * self.g2[0, 4] +
+                    w3 * self.g3[0, 4] + w4 * self.g4[0, 4] +
+                    w5 * self.g5[0, 4] + w6 * self.g6[0, 4] +
+                    w7 * self.g7[0, 4] + w8 * self.g8[0, 4])
+        self.g05 = (w1 * self.g1[0, 5] + w2 * self.g2[0, 5] +
+                    w3 * self.g3[0, 5] + w4 * self.g4[0, 5] +
+                    w5 * self.g5[0, 5] + w6 * self.g6[0, 5] +
+                    w7 * self.g7[0, 5] + w8 * self.g8[0, 5])
+        self.g11 = (w1 * self.g1[1, 1] + w2 * self.g2[1, 1] +
+                    w3 * self.g3[1, 1] + w4 * self.g4[1, 1] +
+                    w5 * self.g5[1, 1] + w6 * self.g6[1, 1] +
+                    w7 * self.g7[1, 1] + w8 * self.g8[1, 1])
+        self.g12 = (w1 * self.g1[1, 2] + w2 * self.g2[1, 2] +
+                    w3 * self.g3[1, 2] + w4 * self.g4[1, 2] +
+                    w5 * self.g5[1, 2] + w6 * self.g6[1, 2] +
+                    w7 * self.g7[1, 2] + w8 * self.g8[1, 2])
+        self.g13 = (w1 * self.g1[1, 3] + w2 * self.g2[1, 3] +
+                    w3 * self.g3[1, 3] + w4 * self.g4[1, 3] +
+                    w5 * self.g5[1, 3] + w6 * self.g6[1, 3] +
+                    w7 * self.g7[1, 3] + w8 * self.g8[1, 3])
+        self.g14 = (w1 * self.g1[1, 4] + w2 * self.g2[1, 4] +
+                    w3 * self.g3[1, 4] + w4 * self.g4[1, 4] +
+                    w5 * self.g5[1, 4] + w6 * self.g6[1, 4] +
+                    w7 * self.g7[1, 4] + w8 * self.g8[1, 4])
+        self.g15 = (w1 * self.g1[1, 5] + w2 * self.g2[1, 5] +
+                    w3 * self.g3[1, 5] + w4 * self.g4[1, 5] +
+                    w5 * self.g5[1, 5] + w6 * self.g6[1, 5] +
+                    w7 * self.g7[1, 5] + w8 * self.g8[1, 5])
+        self.g22 = (w1 * self.g1[2, 2] + w2 * self.g2[2, 2] +
+                    w3 * self.g3[2, 2] + w4 * self.g4[2, 2] +
+                    w5 * self.g5[2, 2] + w6 * self.g6[2, 2] +
+                    w7 * self.g7[2, 2] + w8 * self.g8[2, 2])
+        self.g23 = (w1 * self.g1[2, 3] + w2 * self.g2[2, 3] +
+                    w3 * self.g3[2, 3] + w4 * self.g4[2, 3] +
+                    w5 * self.g5[2, 3] + w6 * self.g6[2, 3] +
+                    w7 * self.g7[2, 3] + w8 * self.g8[2, 3])
+        self.g24 = (w1 * self.g1[2, 4] + w2 * self.g2[2, 4] +
+                    w3 * self.g3[2, 4] + w4 * self.g4[2, 4] +
+                    w5 * self.g5[2, 4] + w6 * self.g6[2, 4] +
+                    w7 * self.g7[2, 4] + w8 * self.g8[2, 4])
+        self.g25 = (w1 * self.g1[2, 5] + w2 * self.g2[2, 5] +
+                    w3 * self.g3[2, 5] + w4 * self.g4[2, 5] +
+                    w5 * self.g5[2, 5] + w6 * self.g6[2, 5] +
+                    w7 * self.g7[2, 5] + w8 * self.g8[2, 5])
+        self.g33 = (w1 * self.g1[3, 3] + w2 * self.g2[3, 3] +
+                    w3 * self.g3[3, 3] + w4 * self.g4[3, 3] +
+                    w5 * self.g5[3, 3] + w6 * self.g6[3, 3] +
+                    w7 * self.g7[3, 3] + w8 * self.g8[3, 3])
+        self.g34 = (w1 * self.g1[3, 4] + w2 * self.g2[3, 4] +
+                    w3 * self.g3[3, 4] + w4 * self.g4[3, 4] +
+                    w5 * self.g5[3, 4] + w6 * self.g6[3, 4] +
+                    w7 * self.g7[3, 4] + w8 * self.g8[3, 4])
+        self.g35 = (w1 * self.g1[3, 5] + w2 * self.g2[3, 5] +
+                    w3 * self.g3[3, 5] + w4 * self.g4[3, 5] +
+                    w5 * self.g5[3, 5] + w6 * self.g6[3, 5] +
+                    w7 * self.g7[3, 5] + w8 * self.g8[3, 5])
+        self.g44 = (w1 * self.g1[4, 4] + w2 * self.g2[4, 4] +
+                    w3 * self.g3[4, 4] + w4 * self.g4[4, 4] +
+                    w5 * self.g5[4, 4] + w6 * self.g6[4, 4] +
+                    w7 * self.g7[4, 4] + w8 * self.g8[4, 4])
+        self.g45 = (w1 * self.g1[4, 5] + w2 * self.g2[4, 5] +
+                    w3 * self.g3[4, 5] + w4 * self.g4[4, 5] +
+                    w5 * self.g5[4, 5] + w6 * self.g6[4, 5] +
+                    w7 * self.g7[4, 5] + w8 * self.g8[4, 5])
+        self.g55 = (w1 * self.g1[5, 5] + w2 * self.g2[5, 5] +
+                    w3 * self.g3[5, 5] + w4 * self.g4[5, 5] +
+                    w5 * self.g5[5, 5] + w6 * self.g6[5, 5] +
+                    w7 * self.g7[5, 5] + w8 * self.g8[5, 5])
+
+    @boundscheck(False)
+    @wraparound(False)
+    cdef void c_to_memoryview(self, double[:, :] out):
+        out[0][0] = self.g00
+        out[0][1] = self.g01
+        out[0][2] = self.g02
+        out[0][3] = self.g03
+        out[0][4] = self.g04
+        out[0][5] = self.g05
+        out[1][0] = self.g01
+        out[1][1] = self.g11
+        out[1][2] = self.g12
+        out[1][3] = self.g13
+        out[1][4] = self.g14
+        out[1][5] = self.g15
+        out[2][0] = self.g02
+        out[2][1] = self.g12
+        out[2][2] = self.g22
+        out[2][3] = self.g23
+        out[2][4] = self.g24
+        out[2][5] = self.g25
+        out[3][0] = self.g03
+        out[3][1] = self.g13
+        out[3][2] = self.g23
+        out[3][3] = self.g33
+        out[3][4] = self.g34
+        out[3][5] = self.g35
+        out[4][0] = self.g04
+        out[4][1] = self.g14
+        out[4][2] = self.g24
+        out[4][3] = self.g34
+        out[4][4] = self.g44
+        out[4][5] = self.g45
+        out[5][0] = self.g05
+        out[5][1] = self.g15
+        out[5][2] = self.g25
+        out[5][3] = self.g35
+        out[5][4] = self.g45
+        out[5][5] = self.g55
+
+    @boundscheck(False)
+    @wraparound(False)
+    cdef void c_apply_by_freq(self, double[:] x, double[:] y):
+        cdef double x0, x1, x2, x3, x4, x5
+        x0 = x[0]
+        x1 = x[1]
+        x2 = x[2]
+        x3 = x[3]
+        x4 = x[4]
+        x5 = x[5]
+        y[0] = (self.g00 * x0 + self.g01 * x1 + self.g02 * x2 +
+                self.g03 * x3 + self.g04 * x4 + self.g05 * x5)
+        y[1] = (self.g01 * x0 + self.g11 * x1 + self.g12 * x2 +
+                self.g13 * x3 + self.g14 * x4 + self.g15 * x5)
+        y[2] = (self.g02 * x0 + self.g12 * x1 + self.g22 * x2 +
+                self.g23 * x3 + self.g24 * x4 + self.g25 * x5)
+        y[3] = (self.g03 * x0 + self.g13 * x1 + self.g23 * x2 +
+                self.g33 * x3 + self.g34 * x4 + self.g35 * x5)
+        y[4] = (self.g04 * x0 + self.g14 * x1 + self.g24 * x2 +
+                self.g34 * x3 + self.g44 * x4 + self.g45 * x5)
+        y[5] = (self.g05 * x0 + self.g15 * x1 + self.g25 * x2 +
+                self.g35 * x3 + self.g45 * x4 + self.g55 * x5)
+
+    @boundscheck(False)
+    @cdivision(True)
+    @wraparound(False)
+    cdef void c_apply(self, double[:, :, :, :] x, double[:, :, :, :] y):
+        cdef int[:] b = array((2,), sizeof(int), 'i')
+        cdef double[:, :, :, :] dft_x = array(self.dft_tau_shape,
+                                              sizeof(double), 'd')
+        cdef double[:, :, :, :] dft_y = array(self.dft_eta_shape,
+                                              sizeof(double), 'd')
+        cdef int i
+
+        # Compute DFT of x
+        for i in range(self.ishape2):
+            self.transform.r2c(x[:, :, :, i], dft_x[:, :, :, i])
+
+        # Apply Green operator frequency-wise
+        cdef int n0 = dft_x.shape[0]
+        cdef int n1 = dft_x.shape[1]
+        cdef int n2 = dft_x.shape[2] / 2
+        cdef int i0, i1, i2, b2
+
+        for i0 in range(n0):
+            b[0] = i0 + self.offset0
+            for i1 in range(n1):
+                b[1] = i1
+                i2 = 0
+                for b2 in range(n2):
+                    b[2] = b2
+                    self.c_set_frequency(b)
+
+                # Apply Green operator to real part
+                self.c_apply_by_freq(dft_x[i0, i1, i2, :],
+                                     dft_y[i0, i1, i2, :])
+                i2 += 1
+                # Apply Green operator to imaginary part
+                self.c_apply_by_freq(dft_x[i0, i1, i2, :],
+                                     dft_y[i0, i1, i2, :])
+                i2 += 1
+
+        # Compute inverse DFT of y
+        for i in range(self.oshape2):
+            self.transform.c2r(dft_y[:, :, :, i], y[:, :, :, i])
