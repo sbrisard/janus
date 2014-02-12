@@ -15,7 +15,6 @@ sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)),
 import janus.fft.serial
 import janus.greenop as greenop
 
-from numpy.testing import assert_array_almost_equal_nulp
 from numpy.testing import assert_allclose
 
 from janus.discretegreenop import DiscreteGreenOperator2D
