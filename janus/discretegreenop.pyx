@@ -915,7 +915,7 @@ cdef class FilteredGreenOperator3D(DiscreteGreenOperator3D):
         cdef int i
 
         # Compute DFT of x
-        for i in range(self.ishape2):
+        for i in range(self.ishape3):
             self.transform.r2c(x[:, :, :, i], dft_x[:, :, :, i])
 
         # Apply Green operator frequency-wise
@@ -933,15 +933,15 @@ cdef class FilteredGreenOperator3D(DiscreteGreenOperator3D):
                     b[2] = b2
                     self.c_set_frequency(b)
 
-                # Apply Green operator to real part
-                self.c_apply_by_freq(dft_x[i0, i1, i2, :],
-                                     dft_y[i0, i1, i2, :])
-                i2 += 1
-                # Apply Green operator to imaginary part
-                self.c_apply_by_freq(dft_x[i0, i1, i2, :],
-                                     dft_y[i0, i1, i2, :])
-                i2 += 1
+                    # Apply Green operator to real part
+                    self.c_apply_by_freq(dft_x[i0, i1, i2, :],
+                                         dft_y[i0, i1, i2, :])
+                    i2 += 1
+                    # Apply Green operator to imaginary part
+                    self.c_apply_by_freq(dft_x[i0, i1, i2, :],
+                                         dft_y[i0, i1, i2, :])
+                    i2 += 1
 
         # Compute inverse DFT of y
-        for i in range(self.oshape2):
+        for i in range(self.oshape3):
             self.transform.c2r(dft_y[:, :, :, i], y[:, :, :, i])
