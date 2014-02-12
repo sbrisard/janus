@@ -34,7 +34,7 @@ def npy2npz(npy_filename):
     np.savez_compressed(npz_filename, x=x, y=y)
 
 if __name__ == '__main__':
-    directory = os.path.abspath(os.path.join('.', 'janus', 'tests', 'data'))
+    directory = os.path.abspath(os.path.join('..', 'janus', 'tests', 'data'))
     print(directory)
 
     for name in os.listdir(directory):
