@@ -549,18 +549,18 @@ cdef class FilteredGreenOperator2D(DiscreteGreenOperator2D):
         self.green.c_set_frequency(self.k4)
         self.green.c_to_memoryview(self.g4)
 
-        self.g00 = (w1 * self.g1[0, 0] + w2 * self.g2[0, 0]
-                    + w3 * self.g3[0, 0] + w4 * self.g4[0, 0])
-        self.g01 = (w1 * self.g1[0, 1] + w2 * self.g2[0, 1]
-                    + w3 * self.g3[0, 1] + w4 * self.g4[0, 1])
-        self.g02 = (w1 * self.g1[0, 2] + w2 * self.g2[0, 2]
-                    + w3 * self.g3[0, 2] + w4 * self.g4[0, 2])
-        self.g11 = (w1 * self.g1[1, 1] + w2 * self.g2[1, 1]
-                    + w3 * self.g3[1, 1] + w4 * self.g4[1, 1])
-        self.g12 = (w1 * self.g1[1, 2] + w2 * self.g2[1, 2]
-                    + w3 * self.g3[1, 2] + w4 * self.g4[1, 2])
-        self.g22 = (w1 * self.g1[2, 2] + w2 * self.g2[2, 2]
-                    + w3 * self.g3[2, 2] + w4 * self.g4[2, 2])
+        self.g00 = (w1 * self.g1[0, 0] + w2 * self.g2[0, 0] +
+                    w3 * self.g3[0, 0] + w4 * self.g4[0, 0])
+        self.g01 = (w1 * self.g1[0, 1] + w2 * self.g2[0, 1] +
+                    w3 * self.g3[0, 1] + w4 * self.g4[0, 1])
+        self.g02 = (w1 * self.g1[0, 2] + w2 * self.g2[0, 2] +
+                    w3 * self.g3[0, 2] + w4 * self.g4[0, 2])
+        self.g11 = (w1 * self.g1[1, 1] + w2 * self.g2[1, 1] +
+                    w3 * self.g3[1, 1] + w4 * self.g4[1, 1])
+        self.g12 = (w1 * self.g1[1, 2] + w2 * self.g2[1, 2] +
+                    w3 * self.g3[1, 2] + w4 * self.g4[1, 2])
+        self.g22 = (w1 * self.g1[2, 2] + w2 * self.g2[2, 2] +
+                    w3 * self.g3[2, 2] + w4 * self.g4[2, 2])
 
     @boundscheck(False)
     @wraparound(False)
