@@ -23,6 +23,7 @@ from janus.discretegreenop import DiscreteGreenOperator3D
 from janus.discretegreenop import TruncatedGreenOperator2D
 from janus.discretegreenop import TruncatedGreenOperator3D
 from janus.discretegreenop import FilteredGreenOperator2D
+from janus.discretegreenop import FilteredGreenOperator3D
 from janus.matprop import IsotropicLinearElasticMaterial as Material
 
 # The value of one unit in the last place, for the float64 format.
@@ -298,20 +299,20 @@ def filtered_test_apply_params():
                    'unit_tau_{0}_10x10+95+145.npz')
     template_3D = ('filtered_green_operator_40x50x60_'
                    'unit_tau_{0}_10x10x10+15+20+25.npz')
-    params = [(template_2D.format('xx'), 2.38E-10),
-              (template_2D.format('yy'), 1.11E-10),
-              (template_2D.format('xy'), 7.7E-11),
-              (template_3D.format('xx'), 1.97E-10),
-              (template_3D.format('yy'), 8.46E-10),
-              (template_3D.format('zz'), 1.81E-9),
-              (template_3D.format('yz'), 3.1E-10),
-              (template_3D.format('zx'), 6.4E-10),
-              (template_3D.format('xy'), 1.81E-9),
+    params = [(template_2D.format('xx'), ULP),
+              (template_2D.format('yy'), ULP),
+              (template_2D.format('xy'), ULP),
+              (template_3D.format('xx'), ULP),
+              (template_3D.format('yy'), ULP),
+              (template_3D.format('zz'), ULP),
+              (template_3D.format('yz'), ULP),
+              (template_3D.format('zx'), ULP),
+              (template_3D.format('xy'), ULP),
                ]
     return [(os.path.join(directory, 'data', filename), rel_err)
             for filename, rel_err in params]
 
-"""
+
 class FilteredGreenOperatorTest(unittest.TestCase,
                                 metaclass=DiscreteGreenOperatorTestMetaclass,
                                 test_apply_params=filtered_test_apply_params()):
@@ -341,7 +342,7 @@ class FilteredGreenOperatorTest(unittest.TestCase,
             g += w * np.asarray(greenc.to_memoryview())
 
         return g
-"""
+
 
 if __name__ == '__main__':
     #unittest.main(verbosity=3)
