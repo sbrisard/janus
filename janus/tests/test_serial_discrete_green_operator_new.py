@@ -216,7 +216,7 @@ class DiscreteGreenOperatorTestMetaclass(type):
     #
     # Test of apply()
     #
-    def test_apply(self, path_to_ref, rel_err):
+    def test_apply(self, path_to_ref, rtol):
         npz_file = np.load(path_to_ref)
         x = npz_file['x']
         expected = npz_file['y']
@@ -231,10 +231,7 @@ class DiscreteGreenOperatorTestMetaclass(type):
         actual = np.zeros(transform.rshape + (green.oshape[-1],), np.float64)
         green.apply(x, actual)
 
-        error = actual - expected
-        ulp = np.finfo(np.float64).eps
-        nulp = rel_err / ulp
-        assert_array_almost_equal_nulp(expected, np.asarray(actual), nulp)
+        assert_allclose(actual, expected, rtol, 10 * ULP)
 
     def test_apply_invalid_params(self, dim,
                                   delta_ishape, delta_oshape):
@@ -254,15 +251,15 @@ def truncated_test_apply_params():
                    'unit_tau_{0}_10x10+95+145.npz')
     template_3D = ('truncated_green_operator_40x50x60_'
                    'unit_tau_{0}_10x10x10+15+20+25.npz')
-    params = [(template_2D.format('xx'), 2.38E-10),
-              (template_2D.format('yy'), 1.11E-10),
-              (template_2D.format('xy'), 7.7E-11),
-              (template_3D.format('xx'), 1.97E-10),
-              (template_3D.format('yy'), 8.46E-10),
-              (template_3D.format('zz'), 1.81E-9),
-              (template_3D.format('yz'), 3.1E-10),
-              (template_3D.format('zx'), 6.4E-10),
-              (template_3D.format('xy'), 1.81E-9),
+    params = [(template_2D.format('xx'), ULP),
+              (template_2D.format('yy'), ULP),
+              (template_2D.format('xy'), ULP),
+              (template_3D.format('xx'), ULP),
+              (template_3D.format('yy'), ULP),
+              (template_3D.format('zz'), ULP),
+              (template_3D.format('yz'), ULP),
+              (template_3D.format('zx'), ULP),
+              (template_3D.format('xy'), ULP),
                ]
     return [(os.path.join(directory, 'data', filename), rel_err)
             for filename, rel_err in params]
@@ -314,7 +311,7 @@ def filtered_test_apply_params():
     return [(os.path.join(directory, 'data', filename), rel_err)
             for filename, rel_err in params]
 
-
+"""
 class FilteredGreenOperatorTest(unittest.TestCase,
                                 metaclass=DiscreteGreenOperatorTestMetaclass,
                                 test_apply_params=filtered_test_apply_params()):
@@ -344,25 +341,8 @@ class FilteredGreenOperatorTest(unittest.TestCase,
             g += w * np.asarray(greenc.to_memoryview())
 
         return g
-
+"""
 
 if __name__ == '__main__':
-    unittest.main(verbosity=3)
-
-    n = (8, 8)
-    mat = Material(0.75, 0.3, 2)
-    greenc = greenop.create(mat)
-    greend = FilteredGreenOperator2D(greenc, n, 1.)
-    dummy = FilteredGreenOperatorTest()
-    b = np.array([0, 0], dtype=np.intc)
-    exp = dummy.to_memoryview_expected(greenc, n, b)
-    print(exp)
-
-    greend.set_frequency(b)
-    act = np.asarray(greend.to_memoryview())
-    print(act)
-
-    rel = np.abs((act - exp) / act)
-    print(rel)
-
-    print(np.max(np.abs(act - exp)))
+    #unittest.main(verbosity=3)
+    unittest.main()
