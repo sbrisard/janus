@@ -10,8 +10,7 @@ cdef class AbstractLinearOperator(AbstractOperator):
 
 cdef class AbstractStructuredOperator2D:
     cdef readonly int dim
-    cdef readonly int ishape0, ishape1, ishape2
-    cdef readonly int oshape0, oshape1, oshape2
+    cdef readonly int shape0, shape1, ishape2, oshape2
     cdef readonly tuple ishape, oshape
 
     cdef void c_apply(self, double[:, :, :] x, double[:, :, :] y)
@@ -19,8 +18,7 @@ cdef class AbstractStructuredOperator2D:
 
 cdef class AbstractStructuredOperator3D:
     cdef readonly int dim
-    cdef readonly int ishape0, ishape1, ishape2, ishape3
-    cdef readonly int oshape0, oshape1, oshape2, oshape3
+    cdef readonly int shape0, shape1, shape2, ishape3, oshape3
     cdef readonly tuple ishape, oshape
 
     cdef void c_apply(self, double[:, :, :, :] x, double[:, :, :, :] y)

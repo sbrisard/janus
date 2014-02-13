@@ -66,29 +66,25 @@ cdef class DiscreteGreenOperator2D(AbstractStructuredOperator2D):
                                   self.oshape2)
             self.global_shape0 = transform.shape[0]
             self.offset0 = transform.offset0
-            self.ishape0 = transform.rshape0
-            self.ishape1 = transform.rshape1
-            self.oshape0 = self.ishape0
-            self.oshape1 = self.ishape1
+            self.shape0 = transform.rshape0
+            self.shape1 = transform.rshape1
         else:
             self.global_shape0 = shape[0]
             self.offset0 = 0
-            self.ishape0 = shape[0]
-            self.ishape1 = shape[1]
-            self.oshape0 = self.ishape0
-            self.oshape1 = self.ishape1
-            if self.ishape0 < 0:
+            self.shape0 = shape[0]
+            self.shape1 = shape[1]
+            if self.shape0 < 0:
                 raise ValueError('shape[0] must be > 0 (was {0})'
-                                 .format(self.ishape0))
-            if self.ishape1 < 0:
+                                 .format(self.shape0))
+            if self.shape1 < 0:
                 raise ValueError('shape[1] must be > 0 (was {0})'
-                                 .format(self.ishape1))
+                                 .format(self.shape1))
 
         self.transform = transform
-        self.ishape = (self.ishape0, self.ishape1, self.ishape2)
-        self.oshape = (self.oshape0, self.oshape1, self.oshape2)
+        self.ishape = (self.shape0, self.shape1, self.ishape2)
+        self.oshape = (self.shape0, self.shape1, self.oshape2)
         self.s0 = 2. * M_PI / (self.h * self.global_shape0)
-        self.s1 = 2. * M_PI / (self.h * self.ishape1)
+        self.s1 = 2. * M_PI / (self.h * self.shape1)
 
     cdef void c_set_frequency(self, int[:] b):
         raise NotImplementedError
@@ -99,16 +95,16 @@ cdef class DiscreteGreenOperator2D(AbstractStructuredOperator2D):
                              .format(b.shape[0]))
 
         cdef int b0 = b[0]
-        if (b0 < self.offset0) or (b0 >= self.offset0 + self.ishape0):
+        if (b0 < self.offset0) or (b0 >= self.offset0 + self.shape0):
             raise ValueError('index must be >= {0} and < {1} (was {2})'
                              .format(self.offset0,
-                                     self.offset0 + self.ishape0,
+                                     self.offset0 + self.shape0,
                                      b0))
 
         cdef int b1 = b[1]
-        if (b1 < 0) or (b1 >= self.ishape1):
+        if (b1 < 0) or (b1 >= self.shape1):
             raise ValueError('index must be >= 0 and < {0} (was {1})'
-                             .format(self.ishape1, b1))
+                             .format(self.shape1, b1))
 
         self.c_set_frequency(b)
 
@@ -198,37 +194,31 @@ cdef class DiscreteGreenOperator3D(AbstractStructuredOperator3D):
                                   transform.cshape2, self.oshape3)
             self.global_shape0 = transform.shape[0]
             self.offset0 = transform.offset0
-            self.ishape0 = transform.rshape0
-            self.ishape1 = transform.rshape1
-            self.ishape2 = transform.rshape2
-            self.oshape0 = self.ishape0
-            self.oshape1 = self.ishape1
-            self.oshape2 = self.ishape2
+            self.shape0 = transform.rshape0
+            self.shape1 = transform.rshape1
+            self.shape2 = transform.rshape2
         else:
             self.global_shape0 = shape[0]
             self.offset0 = 0
-            self.ishape0 = shape[0]
-            self.ishape1 = shape[1]
-            self.ishape2 = shape[2]
-            self.oshape0 = self.ishape0
-            self.oshape1 = self.ishape1
-            self.oshape2 = self.ishape2
-            if self.ishape0 < 0:
+            self.shape0 = shape[0]
+            self.shape1 = shape[1]
+            self.shape2 = shape[2]
+            if self.shape0 < 0:
                 raise ValueError('shape[0] must be > 0 (was {0})'
-                                 .format(self.ishape0))
-            if self.ishape1 < 0:
+                                 .format(self.shape0))
+            if self.shape1 < 0:
                 raise ValueError('shape[1] must be > 0 (was {0})'
-                                 .format(self.ishape1))
-            if self.ishape2 < 0:
+                                 .format(self.shape1))
+            if self.shape2 < 0:
                 raise ValueError('shape[2] must be > 0 (was {0})'
-                                 .format(self.ishape2))
+                                 .format(self.shape2))
 
         self.transform = transform
-        self.ishape = (self.ishape0, self.ishape1, self.ishape2, self.ishape3)
-        self.oshape = (self.oshape0, self.oshape1, self.oshape2, self.oshape3)
+        self.ishape = (self.shape0, self.shape1, self.shape2, self.ishape3)
+        self.oshape = (self.shape0, self.shape1, self.shape2, self.oshape3)
         self.s0 = 2. * M_PI / (self.h * self.global_shape0)
-        self.s1 = 2. * M_PI / (self.h * self.ishape1)
-        self.s2 = 2. * M_PI / (self.h * self.ishape2)
+        self.s1 = 2. * M_PI / (self.h * self.shape1)
+        self.s2 = 2. * M_PI / (self.h * self.shape2)
 
     cdef void c_set_frequency(self, int[:] b):
         raise NotImplementedError
@@ -239,21 +229,21 @@ cdef class DiscreteGreenOperator3D(AbstractStructuredOperator3D):
                              .format(b.shape[0]))
 
         cdef int b0 = b[0]
-        if (b0 < self.offset0) or (b0 >= self.offset0 + self.ishape0):
+        if (b0 < self.offset0) or (b0 >= self.offset0 + self.shape0):
             raise ValueError('index must be >= {0} and < {1} (was {2})'
                              .format(self.offset0,
-                                     self.offset0 + self.ishape0,
+                                     self.offset0 + self.shape0,
                                      b0))
 
         cdef int b1 = b[1]
-        if (b1 < 0) or (b1 >= self.ishape1):
+        if (b1 < 0) or (b1 >= self.shape1):
             raise ValueError('index must be >= 0 and < {0} (was {1})'
-                             .format(self.ishape1, b1))
+                             .format(self.shape1, b1))
 
         cdef int b2 = b[2]
-        if (b2 < 0) or (b2 >= self.ishape2):
+        if (b2 < 0) or (b2 >= self.shape2):
             raise ValueError('index must be >= 0 and < {0} (was {1})'
-                             .format(self.ishape2, b2))
+                             .format(self.shape2, b2))
 
         self.c_set_frequency(b)
 
@@ -323,8 +313,8 @@ cdef class TruncatedGreenOperator2D(DiscreteGreenOperator2D):
         else:
             self.k[0] = self.s0 * b0
         cdef b1 = b[1]
-        if 2 * b1 > self.ishape1:
-            self.k[1] = self.s1 * (b1 - self.ishape1)
+        if 2 * b1 > self.shape1:
+            self.k[1] = self.s1 * (b1 - self.shape1)
         else:
             self.k[1] = self.s1 * b1
         self.green.set_frequency(self.k)
@@ -364,8 +354,8 @@ cdef class TruncatedGreenOperator2D(DiscreteGreenOperator2D):
             i1 = 0
             for b1 in range(n1):
                 # At this point, i1 = 2 * b1
-                if i1 > self.ishape1:
-                    self.k[1] = self.s1 * (b1 - self.ishape1)
+                if i1 > self.shape1:
+                    self.k[1] = self.s1 * (b1 - self.shape1)
                 else:
                     self.k[1] = self.s1 * b1
 
@@ -400,13 +390,13 @@ cdef class TruncatedGreenOperator3D(DiscreteGreenOperator3D):
         else:
             self.k[0] = self.s0 * b0
         cdef b1 = b[1]
-        if 2 * b1 > self.ishape1:
-            self.k[1] = self.s1 * (b1 - self.ishape1)
+        if 2 * b1 > self.shape1:
+            self.k[1] = self.s1 * (b1 - self.shape1)
         else:
             self.k[1] = self.s1 * b1
         cdef b2 = b[2]
-        if 2 * b2 > self.ishape2:
-            self.k[2] = self.s2 * (b2 - self.ishape2)
+        if 2 * b2 > self.shape2:
+            self.k[2] = self.s2 * (b2 - self.shape2)
         else:
             self.k[2] = self.s2 * b2
         self.green.set_frequency(self.k)
@@ -445,16 +435,16 @@ cdef class TruncatedGreenOperator3D(DiscreteGreenOperator3D):
                 self.k[0] = self.s0 * b0
 
             for b1 in range(n1):
-                if 2 * b1 > self.ishape1:
-                    self.k[1] = self.s1 * (b1 - self.ishape1)
+                if 2 * b1 > self.shape1:
+                    self.k[1] = self.s1 * (b1 - self.shape1)
                 else:
                     self.k[1] = self.s1 * b1
 
                 i2 = 0
                 for b2 in range(n2):
                     # At this point, i2 = 2 * b2
-                    if i2 > self.ishape2:
-                        self.k[2] = self.s2 * (b2 - self.ishape2)
+                    if i2 > self.shape2:
+                        self.k[2] = self.s2 * (b2 - self.shape2)
                     else:
                         self.k[2] = self.s2 * b2
 
@@ -524,7 +514,7 @@ cdef class FilteredGreenOperator2D(DiscreteGreenOperator2D):
 
         # Computation of the second component of k1, k2, k3, k4 and the second
         # factor of the corresponding weights.
-        k = self.s1 * (b1 - self.ishape1)
+        k = self.s1 * (b1 - self.shape1)
         w = cos(0.25 * self.h * k)
         w *= w
         self.k1[1] = k
@@ -690,7 +680,7 @@ cdef class FilteredGreenOperator3D(DiscreteGreenOperator3D):
         w7 = w
         w8 = w
 
-        k = self.s1 * (b1 - self.ishape1)
+        k = self.s1 * (b1 - self.shape1)
         w = cos(0.25 * self.h * k)
         w *= w
         self.k1[1] = k
@@ -714,7 +704,7 @@ cdef class FilteredGreenOperator3D(DiscreteGreenOperator3D):
         w7 *= w
         w8 *= w
 
-        k = self.s2 * (b2 - self.ishape2)
+        k = self.s2 * (b2 - self.shape2)
         w = cos(0.25 * self.h * k)
         w *= w
         self.k1[2] = k

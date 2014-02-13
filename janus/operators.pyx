@@ -51,7 +51,7 @@ array of matrices, which can be viewed as a higher-dimension array.
 Therefore, a 2D, block-diagonal linear operator can be defined through
 a four-dimensional array ``a[:, :, :, :]`` such that::
 
-    y[i0, i1, i2] = sum(a[i0, i1, i2, j2] * x[i0, i1, j2], j2)
+y[i0, i1, i2] = sum(a[i0, i1, i2, j2] * x[i0, i1, j2], j2)
 
 (extension to higher spatial dimensions being trivial)
 
@@ -305,32 +305,28 @@ cdef class AbstractStructuredOperator2D:
     dimension ``isize`` to real vectors of dimension ``osize``. Input
     and output vectors are structured in 2D grids, each grid-cell being
     a vector itself. Therefore, the input (resp. output) is a
-    (``float64``) memoryview of shape ``(ishape0, ishape1, ishape2)``
-    [resp. ``(oshape0, oshape1, oshape2)``], with::
+    (``float64``) memoryview of shape ``(shape0, shape1, ishape2)``
+    [resp. ``(shape0, shape1, oshape2)``], with::
 
-        isize = ishape0 * ishape1 * ishape2
-        osize = oshape0 * oshape1 * oshape2
+        isize = shape0 * shape1 * ishape2
+        osize = shape0 * shape1 * oshape2
 
     Attributes
     ----------
     dim : int
         The dimension of the structured grid (``dim == 2``).
-    ishape0 : int
-        The first dimension of the input.
-    ishape1 : int
-        The second dimension of the input.
+    shape0 : int
+        The first dimension of the input and output.
+    shape1 : int
+        The second dimension of the input and output.
     ishape2 : int
         The third dimension of the input.
-    oshape0 : int
-        The first dimension of the output.
-    oshape1 : int
-        The second dimension of the output.
     oshape2 : int
         The third dimension of the output.
     ishape : tuple
-        The shape of the input [the tuple ``(ishape0, ishape1, ishape2)``].
+        The shape of the input [the tuple ``(shape0, shape1, ishape2)``].
     oshape : tuple
-        The shape of the output [the tuple ``(oshape0, oshape1, oshape2)``].
+        The shape of the output [the tuple ``(shape0, shape1, oshape2)``].
 
     """
 
@@ -364,8 +360,8 @@ cdef class AbstractStructuredOperator2D:
             view of the parameter `y` (if not ``None``).
 
         """
-        check_shape_3d(x, self.ishape0, self.ishape1, self.ishape2)
-        y = create_or_check_shape_3d(y, self.oshape0, self.oshape1,
+        check_shape_3d(x, self.shape0, self.shape1, self.ishape2)
+        y = create_or_check_shape_3d(y, self.shape0, self.shape1,
                                      self.oshape2)
         self.c_apply(x, y)
         return y
@@ -381,38 +377,32 @@ cdef class AbstractStructuredOperator3D:
     and output vectors are structured in 3D grids, each grid-cell being
     a vector itself. Therefore, the input (resp. output) is a
     (``float64``) memoryview of shape
-    ``(ishape0, ishape1, ishape2, ishape3)``
-    [resp. ``(oshape0, oshape1, oshape2, oshape3)``], with::
+    ``(shape0, shape1, shape2, ishape3)``
+    [resp. ``(shape0, shape1, shape2, shape3)``], with::
 
-        isize = ishape0 * ishape1 * ishape2 * ishape3
-        osize = oshape0 * oshape1 * oshape2 * oshape3
+        isize = shape0 * shape1 * shape2 * ishape3
+        osize = shape0 * shape1 * shape2 * oshape3
 
     Attributes
     ----------
     dim : int
         The dimension of the structured grid (``dim == 2``).
-    ishape0 : int
-        The first dimension of the input.
-    ishape1 : int
-        The second dimension of the input.
-    ishape2 : int
-        The third dimension of the input.
+    shape0 : int
+        The first dimension of the input and output.
+    shape1 : int
+        The second dimension of the input and output.
+    shape2 : int
+        The third dimension of the input and output.
     ishape3 : int
         The fourth dimension of the input.
-    oshape0 : int
-        The first dimension of the output.
-    oshape1 : int
-        The second dimension of the output.
-    oshape2 : int
-        The third dimension of the output.
     oshape3 : int
         The fourth dimension of the output.
     ishape : tuple
         The shape of the input [the tuple
-        ``(ishape0, ishape1, ishape2, ishape3)``].
+        ``(shape0, shape1, shape2, ishape3)``].
     oshape : tuple
         The shape of the output [the tuple
-        ``(oshape0, oshape1, oshape2, oshape3)``].
+        ``(shape0, shape1, shape2, oshape3)``].
 
     """
 
@@ -447,11 +437,11 @@ cdef class AbstractStructuredOperator3D:
 
         """
         check_shape_4d(x,
-                       self.ishape0, self.ishape1,
-                       self.ishape2, self.ishape3)
+                       self.shape0, self.shape1,
+                       self.shape2, self.ishape3)
         y = create_or_check_shape_4d(y,
-                                     self.oshape0, self.oshape1,
-                                     self.oshape2, self.oshape3)
+                                     self.shape0, self.shape1,
+                                     self.shape2, self.oshape3)
         self.c_apply(x, y)
         return y
 
@@ -475,19 +465,17 @@ cdef class BlockDiagonalOperator2D(AbstractStructuredOperator2D):
     """
 
     def __cinit__(self, AbstractOperator[:, :] op_loc):
-        self.ishape0 = op_loc.shape[0]
-        self.ishape1 = op_loc.shape[1]
+        self.shape0 = op_loc.shape[0]
+        self.shape1 = op_loc.shape[1]
         self.ishape2 = op_loc[0, 0].isize
-        self.oshape0 = op_loc.shape[0]
-        self.oshape1 = op_loc.shape[1]
         self.oshape2 = op_loc[0, 0].osize
-        self.ishape = (self.ishape0, self.ishape1, self.ishape2)
-        self.oshape = (self.oshape0, self.oshape1, self.oshape2)
+        self.ishape = (self.shape0, self.shape1, self.ishape2)
+        self.oshape = (self.shape0, self.shape1, self.oshape2)
         self.op_loc = op_loc.copy()
 
         cdef int i0, i1, ishape2, oshape2
-        for i0 in range(self.ishape0):
-            for i1 in range(self.ishape1):
+        for i0 in range(self.shape0):
+            for i1 in range(self.shape1):
                 ishape2 = op_loc[i0, i1].isize
                 oshape2 = op_loc[i0, i1].osize
                 if ishape2 != self.ishape2:
@@ -507,8 +495,8 @@ cdef class BlockDiagonalOperator2D(AbstractStructuredOperator2D):
         cdef int i0, i1
         cdef AbstractOperator op
 
-        for i0 in range(self.ishape0):
-            for i1 in range(self.ishape1):
+        for i0 in range(self.shape0):
+            for i1 in range(self.shape1):
                 op = self.op_loc[i0, i1]
                 op.c_apply(x[i0, i1, :], y[i0, i1, :])
 
@@ -529,14 +517,12 @@ cdef class BlockDiagonalLinearOperator2D(AbstractStructuredOperator2D):
     """
 
     def __cinit__(self, double[:, :, :, :] a):
-        self.ishape0 = a.shape[0]
-        self.ishape1 = a.shape[1]
+        self.shape0 = a.shape[0]
+        self.shape1 = a.shape[1]
         self.ishape2 = a.shape[3]
-        self.oshape0 = a.shape[0]
-        self.oshape1 = a.shape[1]
         self.oshape2 = a.shape[2]
-        self.ishape = (self.ishape0, self.ishape1, self.ishape2)
-        self.oshape = (self.oshape0, self.oshape1, self.oshape2)
+        self.ishape = (self.shape0, self.shape1, self.shape2)
+        self.oshape = (self.shape0, self.shape1, self.shape2)
         self.a = a
 
     @boundscheck(False)
@@ -547,8 +533,8 @@ cdef class BlockDiagonalLinearOperator2D(AbstractStructuredOperator2D):
         cdef double[:] x_loc
         cdef double[:] y_loc
 
-        for i0 in range(self.ishape0):
-            for i1 in range(self.ishape1):
+        for i0 in range(self.shape0):
+            for i1 in range(self.shape1):
                 a_loc = self.a_loc[i0, i1, :, :]
                 x_loc = x[i0, i1, :]
                 y_loc = y[i0, i1, :]
