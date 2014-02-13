@@ -8,6 +8,26 @@ operators in the most general sense, as a mapping from a (real) vector
 space to another. If the mapping is *linear*, then the resulting
 operator is a *tensor*.
 
+This module also introduces *structured* operators, for wich the input
+and output of the operators are structured in n-dimensional grids. The
+content of each cell might be tensorial, so that the input and output of
+2D structured operators are *3-dimensional* arrays. Likewise, the input
+and output arrays of 3D structured operators are *4-dimensional arrays*.
+The *local* input and output then refer to data contained in one
+specific cell. For example, let ``x[:, :, :]`` (resp. ``y[:, :, :]``) be
+the input (resp. output) of a 2D structured operator; the local input
+(resp. output) of cell ``(i0, i1)`` is the array ``x[i0, i1, :]`` (resp
+``y[i0, i1, :]``). Obviously, this definition extends to higher spatial
+dimensions.
+
+A *block-diagonal* structured operator is defined as an operator for which the local output depends on the local input only. In general, it can be represented as an array of local operators. For example, a 2D block-diagonal operator ``a`` can be defined through the array ``a_loc[:, :]``, such that operator ``a`` maps the input ``x[:, :, :]`` to the output ``y[:, :, :]`` as follows::
+
+    y[i0, i1, :] = a_loc[i0, i1].apply(x[i0, i1, :])
+
+This can be further simplified in the case of linear, block-diagonal operators. Indeed, ``a_loc`` is then an array of matrices, that is a higher-dimension array. Therefore, a 2D, block-diagonal linear operator can be defined through a four-dimensional array ``a_loc[:, :, :, :]`` such that::
+
+    y[i0, i1, i2] = sum(a_loc[i0, i1, i2, j2] * x[i0, i1, j2], j2)
+
 Functions:
 
 - :func:`isotropic_4` -- create a fourth-rank, isotropic tensor with minor
@@ -302,6 +322,71 @@ cdef class AbstractStructuredOperator3D:
                                      self.oshape2, self.oshape3)
         self.c_apply(x, y)
         return y
+
+
+cdef class BlockDiagonalLinearOperator2D(AbstractStructuredOperator2D):
+
+    """Block-diagonal operator with 2D layout of the (vectorial) data.
+
+    This class is a concrete implementation of
+     :class:`AbstractStructuredOperator2D`. It defines *block diagonal*
+     operators,
+
+
+    Such operators are defined by
+    a 2D array ``a_loc[:, :]`` of local operators (:class:`Operator`).
+    Then, the input ``x[:, :, :]`` is mapped to the output
+    ``y[:, :, :]``, such that::
+
+        y[i0, i1, :] = a_loc[i0, i1].apply(x)
+
+    TODO : all local operators must have same input and output dimensions
+    TODO : what is the ishape and oshape of such an operator?
+
+    Parameters
+    ----------
+    a_loc : 2D memoryview of :class:`Operator`
+        The array of local operators.
+
+    """
+
+    def __cinit__(self, Operator[:, :] a_loc):
+        self.ishape0 = a_loc.shape[0]
+        self.ishape1 = a_loc.shape[1]
+        self.ishape2 = a_loc[0, 0].isize
+        self.oshape0 = a_loc.shape[0]
+        self.oshape1 = a_loc.shape[1]
+        self.oshape2 = a_loc[0, 0].osize
+        self.ishape = (self.ishape0, self.ishape1, self.ishape2)
+        self.oshape = (self.oshape0, self.oshape1, self.oshape2)
+        self.a_loc = a_loc.copy()
+
+        cdef int i0, i1, ishape2, oshape2
+        for i0 in range(self.ishape0):
+            for i1 in range(self.ishape1):
+                ishape2 = a_loc[i0, i1].isize
+                oshape2 = a_loc[i0, i1].osize
+                if ishape2 != self.ishape2:
+                    raise ValueError('invalid dimension block operator input: '
+                                     'expected {0}, '
+                                     'actual {1}'.format(self.ishape2,
+                                                         ishape2))
+                if oshape2 != self.oshape2:
+                    raise ValueError('invalid dimension block operator output: '
+                                     'expected {0}, '
+                                     'actual {1}'.format(self.oshape2,
+                                                         oshape2))
+
+    @boundscheck(False)
+    @wraparound(False)
+    cdef void c_apply(self, double[:, :, :] x, double[:, :, :] y):
+        cdef int i0, i1
+        cdef Operator op
+
+        for i0 in range(self.ishape0):
+            for i1 in range(self.ishape1):
+                op = self.a_loc[i0, i1]
+                op.c_apply(x[i0, i1, :], y[i0, i1, :])
 
 
 cdef class BlockDiagonalOperator2D(AbstractStructuredOperator2D):
