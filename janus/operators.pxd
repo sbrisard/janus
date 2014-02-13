@@ -30,6 +30,14 @@ cdef class BlockDiagonalOperator2D(AbstractStructuredOperator2D):
     cdef Operator[:, :] a_loc
 
 
+cdef class BlockDiagonalLinearOperator2D(AbstractStructuredOperator2D):
+    cdef double[:, :, :, :] a
+
+
+cdef class BlockDiagonalLinearOperator3D(AbstractStructuredOperator3D):
+    cdef double[:, :, :, :, :] a
+
+
 cdef class FourthRankIsotropicTensor(Operator):
     cdef readonly int dim
     cdef readonly double sph, dev
