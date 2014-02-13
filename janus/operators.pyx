@@ -10,7 +10,7 @@ operator is a *tensor*.
 
 .. _structured-operators:
 
-Beyond general operators (:class:`Operator`), this module also
+Beyond general operators (:class:`AbstractOperator`), this module also
 introduces *structured* operators
 (:class:`AbstractStructuredOperator2D`,
 :class:`AbstractStructuredOperator3D`), for wich the input and output of
@@ -31,8 +31,8 @@ dimensions is straightforward.
 :class:`BlockDiagonalOperator3D`) are defined as structured operators
 for which the local output depends on the local input only. Any block
 diagonal operator can be represented as an array of local operators (of
-type :class:`Operator`) ``op_loc``. Then, the input ``x`` is mapped
-to the output ``y`` as follows::
+type :class:`AbstractOperator`) ``op_loc``. Then, the input ``x`` is
+mapped to the output ``y`` as follows::
 
     y[i0, i1, :] = op_loc[i0, i1].apply(x[i0, i1, :])
 
@@ -62,7 +62,7 @@ Functions:
 
 Classes:
 
-- :class:`Operator` -- general operator
+- :class:`AbstractOperator` -- general operator
 - :class:`AbstractLinearOperator` -- general linear operator
 - :class:`FourthRankIsotropicTensor` -- fourth-rank, isotropic tensor with
   minor symmetries
@@ -120,7 +120,7 @@ def isotropic_4(sph, dev, dim):
         raise ValueError('dim must be 2 or 3 (was {0})'.format(dim))
 
 
-cdef class Operator:
+cdef class AbstractOperator:
 
     """General operator.
 
@@ -166,9 +166,9 @@ cdef class Operator:
         return y
 
 
-cdef class AbstractLinearOperator(Operator):
+cdef class AbstractLinearOperator(AbstractOperator):
 
-    """Specialization of :class:`Operator` to linear operators.
+    """Specialization of :class:`AbstractOperator` to linear operators.
 
     This abstract class defines the method :func:`to_memoryview` which
     returns the matrix of this linear operator as a memoryview.
@@ -201,7 +201,7 @@ cdef class AbstractLinearOperator(Operator):
         return out
 
 
-cdef class FourthRankIsotropicTensor(Operator):
+cdef class FourthRankIsotropicTensor(AbstractOperator):
 
     """
     Fourth rank, isotropic tensor with minor symmetries.
@@ -469,12 +469,12 @@ cdef class BlockDiagonalOperator2D(AbstractStructuredOperator2D):
 
     Parameters
     ----------
-    op_loc : 2D memoryview of :class:`Operator`
+    op_loc : 2D memoryview of :class:`AbstractOperator`
         The array of local operators.
 
     """
 
-    def __cinit__(self, Operator[:, :] op_loc):
+    def __cinit__(self, AbstractOperator[:, :] op_loc):
         self.ishape0 = op_loc.shape[0]
         self.ishape1 = op_loc.shape[1]
         self.ishape2 = op_loc[0, 0].isize
@@ -505,7 +505,7 @@ cdef class BlockDiagonalOperator2D(AbstractStructuredOperator2D):
     @wraparound(False)
     cdef void c_apply(self, double[:, :, :] x, double[:, :, :] y):
         cdef int i0, i1
-        cdef Operator op
+        cdef AbstractOperator op
 
         for i0 in range(self.ishape0):
             for i1 in range(self.ishape1):

@@ -1,10 +1,10 @@
-cdef class Operator:
+cdef class AbstractOperator:
     cdef readonly int isize, osize
 
     cdef void c_apply(self, double[:] x, double[:] y)
 
 
-cdef class AbstractLinearOperator(Operator):
+cdef class AbstractLinearOperator(AbstractOperator):
     cdef void c_to_memoryview(self, double[:, :] out)
 
 
@@ -27,7 +27,7 @@ cdef class AbstractStructuredOperator3D:
 
 
 cdef class BlockDiagonalOperator2D(AbstractStructuredOperator2D):
-    cdef Operator[:, :] a_loc
+    cdef AbstractOperator[:, :] op_loc
 
 
 cdef class BlockDiagonalLinearOperator2D(AbstractStructuredOperator2D):
@@ -38,7 +38,7 @@ cdef class BlockDiagonalLinearOperator3D(AbstractStructuredOperator3D):
     cdef double[:, :, :, :, :] a
 
 
-cdef class FourthRankIsotropicTensor(Operator):
+cdef class FourthRankIsotropicTensor(AbstractOperator):
     cdef readonly int dim
     cdef readonly double sph, dev
     cdef double tr
