@@ -29,15 +29,18 @@ dimensions is straightforward.
 
 *Block-diagonal* operators (:class:`BlockDiagonalOperator2D`,
 :class:`BlockDiagonalOperator3D`) are defined as structured operators
-for which the local output depends on the local input only. Such
-operators can be represented as arrays of local operators. For example,
-a 2D block-diagonal operator can be defined through an array
-``op_loc[:, :]``, of :class:`Operator` such that the input
-``x[:, :, :]`` is mapped to the output ``y[:, :, :]`` as follows::
+for which the local output depends on the local input only. Any block
+diagonal operator can be represented as an array of local operators (of
+type :class:`Operator`) ``op_loc``. Then, the input ``x`` is mapped
+to the output ``y`` as follows::
 
     y[i0, i1, :] = op_loc[i0, i1].apply(x[i0, i1, :])
 
-(extension to higher spatial dimensions being trivial)
+in 2D, and::
+
+    y[i0, i1, i2, :] = op_loc[i0, i1, i2].apply(x[i0, i1, i2, :])
+
+in 3D.
 
 .. _block-diagonal-linear-operators:
 
