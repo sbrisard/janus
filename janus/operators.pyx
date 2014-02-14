@@ -48,12 +48,16 @@ This can be further simplified in the case of linear, block-diagonal
 operators (:class:`BlockDiagonalLinearOperator2D`,
 :class:`BlockDiagonalLinearOperator3D`). Indeed, ``op_loc`` is then an
 array of matrices, which can be viewed as a higher-dimension array.
-Therefore, a 2D, block-diagonal linear operator can be defined through
-a four-dimensional array ``a[:, :, :, :]`` such that::
+Therefore, a block-diagonal linear operator can be defined through a
+``float64`` array ``a`` such that::
 
-y[i0, i1, i2] = sum(a[i0, i1, i2, j2] * x[i0, i1, j2], j2)
+    y[i0, i1, i2] = sum(a[i0, i1, i2, j2] * x[i0, i1, j2], j2)
 
-(extension to higher spatial dimensions being trivial)
+in 2D, and::
+
+    y[i0, i1, i2, i3] = sum(a[i0, i1, i2, i3, j3] * x[i0, i1, i2, j3], j3)
+
+in 3D.
 
 Functions:
 
