@@ -566,10 +566,6 @@ cdef class BlockDiagonalOperator2D(AbstractStructuredOperator2D):
     Block-diagonal operators have been defined
     :ref:`above <block-diagonal-operators>`.
 
-    TODO -- all local operators must have same input and output dimensions
-
-    TODO -- what is the ishape and oshape of such an operator?
-
     Parameters
     ----------
     op_loc : 2D memoryview of :class:`AbstractOperator`
@@ -580,6 +576,7 @@ cdef class BlockDiagonalOperator2D(AbstractStructuredOperator2D):
     def __cinit__(self, AbstractOperator[:, :] op_loc):
         self.init_shapes(op_loc.shape[0], op_loc.shape[1],
                          op_loc[0, 0].isize, op_loc[0, 0].osize)
+        # TODO Take only a shallow copy, and indicate so in the documentation
         self.op_loc = op_loc.copy()
 
         cdef int i0, i1, ishape2, oshape2
@@ -616,10 +613,6 @@ cdef class BlockDiagonalOperator3D(AbstractStructuredOperator3D):
     Block-diagonal operators have been defined
     :ref:`above <block-diagonal-operators>`.
 
-    TODO -- all local operators must have same input and output dimensions
-
-    TODO -- what is the ishape and oshape of such an operator?
-
     Parameters
     ----------
     op_loc : 3D memoryview of :class:`AbstractOperator`
@@ -630,6 +623,7 @@ cdef class BlockDiagonalOperator3D(AbstractStructuredOperator3D):
     def __cinit__(self, AbstractOperator[:, :, :] op_loc):
         self.init_shapes(op_loc.shape[0], op_loc.shape[1], op_loc.shape[2],
                          op_loc[0, 0, 0].isize, op_loc[0, 0, 0].osize)
+        # TODO Take only a shallow copy, and indicate so in the documentation
         self.op_loc = op_loc.copy()
 
         cdef int i0, i1, i2, ishape3, oshape3
