@@ -124,12 +124,15 @@ cdef class AbstractOperator:
 
     """General operator.
 
+    Concrete instances of this class map arrays of size `isize` to
+    arrays of size `osize`.
+
     Attributes
     ----------
     isize : int
-        The dimension of the input of the operator.
+        The size of the input.
     osize : int
-        The dimension of the output of the operator.
+        The size of the output.
 
     """
 
@@ -137,13 +140,22 @@ cdef class AbstractOperator:
         pass
 
     def init_sizes(self, int isize, int osize):
-        """Inits the values of the `isize` and `osize` attributes.
+        """init_sizes(isize, osize)
+
+        Inits the values of the `isize` and `osize` attributes.
 
         This method is provided as a convenience to users who want to
         create pure Python implementations of this class. It should be
         called only *once* at the initialization of the instance, as it
         can potentially modify the `isize` and `osize` attributes (which
         are otherwise read-only).
+
+        Parameters
+        ----------
+        isize : int
+            The size of the input.
+        osize : int
+            The size of the output.
 
         """
         if isize <= 0:
@@ -167,14 +179,14 @@ cdef class AbstractOperator:
             The input vector.
         y : 1D memoryview of float64, optional
             The output vector. Its content is altered by this method. If
-            ``None``, a new array is created and returned; otherwise,
+            `None`, a new array is created and returned; otherwise,
             this method returns a view of this object.
 
         Returns
         -------
         y : 1D memoryview of float64
             The result of applying this operator to `x`. This is a
-            view of the parameter `y` (if not ``None``).
+            view of the parameter `y` (if not `None`).
 
         """
         check_shape_1d(x, self.isize)
