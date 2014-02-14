@@ -215,14 +215,14 @@ cdef class AbstractLinearOperator(AbstractOperator):
         ----------
         out : 2D memoryview of float64
             The output array, in which the matrix is to be stored. If
-            ``None``, a new array is created and returned; otherwise,
+            `None`, a new array is created and returned; otherwise,
             this method returns a view of this object.
 
         Returns
         -------
         out : 2D memoryview of float64
             The matrix of this operator. This is a view of the parameter
-            `out` (if not ``None``).
+            `out` (if not `None`).
 
         """
         out = create_or_check_shape_2d(out, self.osize, self.isize)
@@ -255,21 +255,21 @@ cdef class FourthRankIsotropicTensor(AbstractOperator):
 
     Notes
     -----
-    Any fourth rank, isotropic tensor `T` is a linear combination of the
-    spherical projection tensor `J` and the deviatoric projection tensor
-    `K`::
+    Any fourth rank, isotropic tensor ``T`` is a linear combination of
+    the spherical projection tensor ``J`` and the deviatoric projection
+    tensor ``K``::
 
         T = sph * J + dev * K.
 
-    `sph` and `dev` are the two coefficients which are passed to the
-    constructor of this class. The components of `J` are::
+    ``sph`` and ``dev`` are the two coefficients which are passed to the
+    initializer of this class. The components of ``J`` are::
 
         J_ijkl = δ_ij * δ_kl / d,
 
-    where ``δ_ij`` denotes the Kronecker symbol, and `d` is the
+    where ``δ_ij`` denotes the Kronecker symbol, and ``d`` is the
     dimension of the space on which the tensor operates. The components
-    of `K` are found from the identity ``K = I - J``, where `I` is the
-    fourth-rank identity tensor::
+    of ``K`` are found from the identity ``K = I - J``, where ``I`` is
+    the fourth-rank identity tensor::
 
         I_ijkl = (δ_ik * δ_jl + δ_il * δ_jk) / 2.
 
