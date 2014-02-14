@@ -720,7 +720,7 @@ cdef class BlockDiagonalLinearOperator3D(AbstractStructuredOperator3D):
     @wraparound(False)
     cdef void c_apply(self, double[:, :, :, :] x, double[:, :, :, :] y):
         cdef int i0, i1, i2, i3, j3
-        cdef double[:, :, :] a_loc
+        cdef double[:, :] a_loc
         cdef double[:] x_loc
         cdef double[:] y_loc
 
