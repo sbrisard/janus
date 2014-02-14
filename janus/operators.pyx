@@ -684,7 +684,7 @@ cdef class BlockDiagonalLinearOperator2D(AbstractStructuredOperator2D):
     @boundscheck(False)
     @wraparound(False)
     cdef void c_apply(self, double[:, :, :] x, double[:, :, :] y):
-        cdef int i0, i1
+        cdef int i0, i1, i2, j2
         cdef double[:, :] a_loc
         cdef double[:] x_loc
         cdef double[:] y_loc
