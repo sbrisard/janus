@@ -136,6 +136,23 @@ cdef class AbstractOperator:
     def __cinit__(self):
         pass
 
+    def init_sizes(self, int isize, int osize):
+        """Inits the values of the `isize` and `osize` attributes.
+
+        This method is provided as a convenience to users who want to
+        create pure Python implementations of this class. It should be
+        called only *once* at the initialization of the instance, as it
+        can potentially modify the `isize` and `osize` attributes (which
+        are otherwise read-only).
+
+        """
+        if isize <= 0:
+            raise ValueError('isize should be > 0 (was {})'.format(isize))
+        if osize <= 0:
+            raise ValueError('osize should be > 0 (was {})'.format(osize))
+        self.isize = isize
+        self.osize = osize
+
     cdef void c_apply(self, double[:] x, double[:] y):
         raise NotImplementedError
 
@@ -248,9 +265,9 @@ cdef class FourthRankIsotropicTensor(AbstractOperator):
 
     @cdivision(True)
     def __cinit__(self, double sph, double dev, int dim):
+        cdef int sym = (dim * (dim + 1)) / 2
+        self.init_sizes(sym, sym)
         self.dim = dim
-        self.isize = (self.dim * (self.dim + 1)) / 2
-        self.osize = self.isize
         self.sph = sph
         self.dev = dev
         self.tr = (sph - dev) / <double> self.dim
