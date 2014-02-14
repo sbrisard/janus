@@ -699,3 +699,44 @@ cdef class BlockDiagonalLinearOperator2D(AbstractStructuredOperator2D):
                     for j2 in range(self.ishape2):
                         yy += a_loc[i2, j2] * x_loc[j2]
                     y_loc[i2] = yy
+
+
+cdef class BlockDiagonalLinearOperator3D(AbstractStructuredOperator3D):
+
+    """Block-diagonal linear operator with 3D layout of the data.
+
+    Such operators have been defined
+    :ref:`above <block-diagonal-linear-operators>`.
+
+    Parameters
+    ----------
+    a : 5D memoryview of ``float64``
+        The array of local matrices. The returned instance keeps a
+        *shallow* copy of `a`.
+
+    """
+
+    def __cinit__(self, double[:, :, :, :, :] a):
+        self.init_shapes(a.shape[0], a.shape[1], a.shape[2],
+                         a.shape[4], a.shape[3])
+        self.a = a
+
+    @boundscheck(False)
+    @wraparound(False)
+    cdef void c_apply(self, double[:, :, :, :] x, double[:, :, :, :] y):
+        cdef int i0, i1, i2, i3, j3
+        cdef double[:, :, :] a_loc
+        cdef double[:] x_loc
+        cdef double[:] y_loc
+
+        for i0 in range(self.shape0):
+            for i1 in range(self.shape1):
+                for i2 in range(self.shape2):
+                    a_loc = self.a_loc[i0, i1, i2, :, :]
+                    x_loc = x[i0, i1, i2, :]
+                    y_loc = y[i0, i1, i2, :]
+                    for i3 in range(self.oshape3):
+                        yy = 0.
+                        for j3 in range(self.ishape3):
+                            yy += a_loc[i3, j3] * x_loc[j3]
+                        y_loc[i3] = yy
