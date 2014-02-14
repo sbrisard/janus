@@ -8,6 +8,19 @@ cdef class AbstractLinearOperator(AbstractOperator):
     cdef void c_to_memoryview(self, double[:, :] out)
 
 
+cdef class FourthRankIsotropicTensor(AbstractOperator):
+    cdef readonly int dim
+    cdef readonly double sph, dev
+    cdef double tr
+
+
+cdef class FourthRankIsotropicTensor2D(FourthRankIsotropicTensor):
+    pass
+
+
+cdef class FourthRankIsotropicTensor3D(FourthRankIsotropicTensor):
+    pass
+
 cdef class AbstractStructuredOperator2D:
     cdef readonly int dim
     cdef readonly int shape0, shape1, ishape2, oshape2
@@ -40,15 +53,3 @@ cdef class BlockDiagonalLinearOperator3D(AbstractStructuredOperator3D):
     cdef double[:, :, :, :, :] a
 
 
-cdef class FourthRankIsotropicTensor(AbstractOperator):
-    cdef readonly int dim
-    cdef readonly double sph, dev
-    cdef double tr
-
-
-cdef class FourthRankIsotropicTensor2D(FourthRankIsotropicTensor):
-    pass
-
-
-cdef class FourthRankIsotropicTensor3D(FourthRankIsotropicTensor):
-    pass

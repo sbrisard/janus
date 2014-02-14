@@ -606,6 +606,7 @@ cdef class BlockDiagonalOperator2D(AbstractStructuredOperator2D):
                 op = self.op_loc[i0, i1]
                 op.c_apply(x[i0, i1, :], y[i0, i1, :])
 
+
 cdef class BlockDiagonalOperator3D(AbstractStructuredOperator3D):
 
     """Block-diagonal operator with 3D layout of the (vectorial) data.
