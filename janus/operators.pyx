@@ -609,6 +609,58 @@ cdef class BlockDiagonalOperator2D(AbstractStructuredOperator2D):
                 op = self.op_loc[i0, i1]
                 op.c_apply(x[i0, i1, :], y[i0, i1, :])
 
+cdef class BlockDiagonalOperator3D(AbstractStructuredOperator3D):
+
+    """Block-diagonal operator with 3D layout of the (vectorial) data.
+
+    Block-diagonal operators have been defined
+    :ref:`above <block-diagonal-operators>`.
+
+    TODO -- all local operators must have same input and output dimensions
+
+    TODO -- what is the ishape and oshape of such an operator?
+
+    Parameters
+    ----------
+    op_loc : 3D memoryview of :class:`AbstractOperator`
+        The array of local operators.
+
+    """
+
+    def __cinit__(self, AbstractOperator[:, :, :] op_loc):
+        self.init_shapes(op_loc.shape[0], op_loc.shape[1], op_loc.shape[2],
+                         op_loc[0, 0, 0].isize, op_loc[0, 0, 0].osize)
+        self.op_loc = op_loc.copy()
+
+        cdef int i0, i1, i2, ishape3, oshape3
+        for i0 in range(self.shape0):
+            for i1 in range(self.shape1):
+                for i2 in range(self.shape2):
+                    ishape3 = op_loc[i0, i1, i2].isize
+                    oshape3 = op_loc[i0, i1, i2].osize
+                    if ishape3 != self.ishape3:
+                        raise ValueError('invalid dimension block operator '
+                                         'input: expected {0}, '
+                                         'actual {1}'.format(self.ishape3,
+                                                             ishape3))
+                    if oshape3 != self.oshape3:
+                        raise ValueError('invalid dimension block operator '
+                                         'output: expected {0}, '
+                                         'actual {1}'.format(self.oshape3,
+                                                             oshape3))
+
+    @boundscheck(False)
+    @wraparound(False)
+    cdef void c_apply(self, double[:, :, :, :] x, double[:, :, :, :] y):
+        cdef int i0, i1, i2
+        cdef AbstractOperator op
+
+        for i0 in range(self.shape0):
+            for i1 in range(self.shape1):
+                for i2 in range(self.shape2):
+                    op = self.op_loc[i0, i1, i2]
+                    op.c_apply(x[i0, i1, i2, :], y[i0, i1, i2, :])
+
 
 cdef class BlockDiagonalLinearOperator2D(AbstractStructuredOperator2D):
 
