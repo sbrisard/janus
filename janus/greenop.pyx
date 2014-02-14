@@ -20,9 +20,9 @@ cdef class AbstractGreenOperator(AbstractLinearOperator):
 
     @cdivision(True)
     def __cinit__(self, Material mat):
+        cdef int sym = (mat.dim * (mat.dim + 1)) / 2
+        self.init_sizes(sym, sym)
         self.dim = mat.dim
-        self.isize = (mat.dim * (mat.dim + 1)) / 2
-        self.osize = self.isize
         self.mat = mat
         cdef double g = mat.g
         cdef double nu = mat.nu
