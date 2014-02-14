@@ -52,37 +52,29 @@ cdef class DiscreteGreenOperator2D(AbstractStructuredOperator2D):
             raise ValueError('h must be > 0 (was {0})'.format(h))
 
         self.green = green
-        self.ishape2 = green.isize
-        self.oshape2 = green.osize
         self.h = h
 
+        cdef int shape0, shape1
         if transform is not None:
             if transform.shape != shape:
                 raise ValueError('shape of transform must be {0} [was {1}]'
                                  .format(shape, transform.shape))
             self.dft_tau_shape = (transform.cshape0, transform.cshape1,
-                                  self.ishape2)
+                                  green.isize)
             self.dft_eta_shape = (transform.cshape0, transform.cshape1,
-                                  self.oshape2)
+                                  green.osize)
             self.global_shape0 = transform.shape[0]
             self.offset0 = transform.offset0
-            self.shape0 = transform.rshape0
-            self.shape1 = transform.rshape1
+            shape0 = transform.rshape0
+            shape1 = transform.rshape1
         else:
             self.global_shape0 = shape[0]
             self.offset0 = 0
-            self.shape0 = shape[0]
-            self.shape1 = shape[1]
-            if self.shape0 < 0:
-                raise ValueError('shape[0] must be > 0 (was {0})'
-                                 .format(self.shape0))
-            if self.shape1 < 0:
-                raise ValueError('shape[1] must be > 0 (was {0})'
-                                 .format(self.shape1))
+            shape0 = shape[0]
+            shape1 = shape[1]
 
         self.transform = transform
-        self.ishape = (self.shape0, self.shape1, self.ishape2)
-        self.oshape = (self.shape0, self.shape1, self.oshape2)
+        self.init_shapes(shape0, shape1, green.isize, green.osize)
         self.s0 = 2. * M_PI / (self.h * self.global_shape0)
         self.s1 = 2. * M_PI / (self.h * self.shape1)
 
@@ -179,43 +171,31 @@ cdef class DiscreteGreenOperator3D(AbstractStructuredOperator3D):
             raise ValueError('h must be > 0 (was {0})'.format(h))
 
         self.green = green
-        self.ishape3 = green.isize
-        self.oshape3 = green.osize
         self.h = h
 
-
+        cdef int shape0, shape1, shape2
         if transform is not None:
             if transform.shape != shape:
                 raise ValueError('shape of transform must be {0} [was {1}]'
                                  .format(shape, transform.shape))
             self.dft_tau_shape = (transform.cshape0, transform.cshape1,
-                                  transform.cshape2, self.ishape3)
+                                  transform.cshape2, green.isize)
             self.dft_eta_shape = (transform.cshape0, transform.cshape1,
-                                  transform.cshape2, self.oshape3)
+                                  transform.cshape2, green.osize)
             self.global_shape0 = transform.shape[0]
             self.offset0 = transform.offset0
-            self.shape0 = transform.rshape0
-            self.shape1 = transform.rshape1
-            self.shape2 = transform.rshape2
+            shape0 = transform.rshape0
+            shape1 = transform.rshape1
+            shape2 = transform.rshape2
         else:
             self.global_shape0 = shape[0]
             self.offset0 = 0
-            self.shape0 = shape[0]
-            self.shape1 = shape[1]
-            self.shape2 = shape[2]
-            if self.shape0 < 0:
-                raise ValueError('shape[0] must be > 0 (was {0})'
-                                 .format(self.shape0))
-            if self.shape1 < 0:
-                raise ValueError('shape[1] must be > 0 (was {0})'
-                                 .format(self.shape1))
-            if self.shape2 < 0:
-                raise ValueError('shape[2] must be > 0 (was {0})'
-                                 .format(self.shape2))
+            shape0 = shape[0]
+            shape1 = shape[1]
+            shape2 = shape[2]
 
         self.transform = transform
-        self.ishape = (self.shape0, self.shape1, self.shape2, self.ishape3)
-        self.oshape = (self.shape0, self.shape1, self.shape2, self.oshape3)
+        self.init_shapes(shape0, shape1, shape2, green.isize, green.osize)
         self.s0 = 2. * M_PI / (self.h * self.global_shape0)
         self.s1 = 2. * M_PI / (self.h * self.shape1)
         self.s2 = 2. * M_PI / (self.h * self.shape2)

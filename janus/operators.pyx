@@ -142,7 +142,7 @@ cdef class AbstractOperator:
     def init_sizes(self, int isize, int osize):
         """init_sizes(isize, osize)
 
-        Inits the values of the `isize` and `osize` attributes.
+        Initialize the values of the `isize` and `osize` attributes.
 
         This method is provided as a convenience to users who want to
         create pure Python implementations of this class. It should be
@@ -362,6 +362,45 @@ cdef class AbstractStructuredOperator2D:
     def __cinit__(self):
         self.dim = 2
 
+    def init_shapes(self, int shape0, int shape1, int ishape2, int oshape2):
+        """init_shapes(shape0, shape1, ishape2, oshape2)
+
+        Initialize the values of the `ishape`, `oshape`, `shape0`,
+        `shape1`, `ishape2` and `oshape2` attributes.
+
+        This method is provided as a convenience to users who want to
+        create pure Python implementations of this class. It should be
+        called only *once* at the initialization of the instance, as it
+        can potentially modify these attributes (which are otherwise
+        read-only).
+
+        Parameters
+        ----------
+        shape0 : int
+            The first dimension of the input and output.
+        shape1 : int
+            The second dimension of the input and output.
+        ishape2 : int
+            The third dimension of the input.
+        oshape2 : int
+            The third dimension of the output.
+
+        """
+        if shape0 <= 0:
+            raise ValueError('shape0 should be > 0 (was {})'.format(shape0))
+        if shape1 <= 0:
+            raise ValueError('shape1 should be > 0 (was {})'.format(shape1))
+        if ishape2 <= 0:
+            raise ValueError('ishape2 should be > 0 (was {})'.format(ishape2))
+        if oshape2 <= 0:
+            raise ValueError('oshape2 should be > 0 (was {})'.format(oshape2))
+        self.shape0 = shape0
+        self.shape1 = shape1
+        self.ishape2 = ishape2
+        self.oshape2 = oshape2
+        self.ishape = (shape0, shape1, ishape2)
+        self.oshape = (shape0, shape1, oshape2)
+
     cdef void c_apply(self, double[:, :, :] x, double[:, :, :] y):
         raise NotImplementedError
 
@@ -438,6 +477,51 @@ cdef class AbstractStructuredOperator3D:
     def __cinit__(self):
         self.dim = 3
 
+    def init_shapes(self, int shape0, int shape1, int shape2,
+                    int ishape3, int oshape3):
+        """init_shapes(shape0, shape1, shape2, ishape3, oshape3)
+
+        Initialize the values of the `ishape`, `oshape`, `shape0`,
+        `shape1`, `shape2`, `ishape3` and `oshape3` attributes.
+
+        This method is provided as a convenience to users who want to
+        create pure Python implementations of this class. It should be
+        called only *once* at the initialization of the instance, as it
+        can potentially modify these attributes (which are otherwise
+        read-only).
+
+        Parameters
+        ----------
+        shape0 : int
+            The first dimension of the input and output.
+        shape1 : int
+            The second dimension of the input and output.
+        shape2 : int
+            The third dimension of the input and output.
+        ishape3 : int
+            The fourth dimension of the input.
+        oshape3 : int
+            The fourth dimension of the output.
+
+        """
+        if shape0 <= 0:
+            raise ValueError('shape0 should be > 0 (was {})'.format(shape0))
+        if shape1 <= 0:
+            raise ValueError('shape1 should be > 0 (was {})'.format(shape1))
+        if shape2 <= 0:
+            raise ValueError('shape2 should be > 0 (was {})'.format(shape2))
+        if ishape3 <= 0:
+            raise ValueError('ishape3 should be > 0 (was {})'.format(ishape3))
+        if oshape3 <= 0:
+            raise ValueError('oshape3 should be > 0 (was {})'.format(oshape3))
+        self.shape0 = shape0
+        self.shape1 = shape1
+        self.shape2  =shape2
+        self.ishape3 = ishape3
+        self.oshape3 = oshape3
+        self.ishape = (shape0, shape1, shape2, ishape3)
+        self.oshape = (shape0, shape1, shape2, oshape3)
+
     cdef void c_apply(self, double[:, :, :, :] x, double[:, :, :, :] y):
         raise NotImplementedError
 
@@ -494,12 +578,8 @@ cdef class BlockDiagonalOperator2D(AbstractStructuredOperator2D):
     """
 
     def __cinit__(self, AbstractOperator[:, :] op_loc):
-        self.shape0 = op_loc.shape[0]
-        self.shape1 = op_loc.shape[1]
-        self.ishape2 = op_loc[0, 0].isize
-        self.oshape2 = op_loc[0, 0].osize
-        self.ishape = (self.shape0, self.shape1, self.ishape2)
-        self.oshape = (self.shape0, self.shape1, self.oshape2)
+        self.init_shapes(op_loc.shape[0], op_loc.shape[1],
+                         op_loc[0, 0].isize, op_loc[0, 0].osize)
         self.op_loc = op_loc.copy()
 
         cdef int i0, i1, ishape2, oshape2
@@ -546,12 +626,7 @@ cdef class BlockDiagonalLinearOperator2D(AbstractStructuredOperator2D):
     """
 
     def __cinit__(self, double[:, :, :, :] a):
-        self.shape0 = a.shape[0]
-        self.shape1 = a.shape[1]
-        self.ishape2 = a.shape[3]
-        self.oshape2 = a.shape[2]
-        self.ishape = (self.shape0, self.shape1, self.shape2)
-        self.oshape = (self.shape0, self.shape1, self.shape2)
+        self.init_shapes(a.shape[0], a.shape[1], a.shape[3], a.shape[2])
         self.a = a
 
     @boundscheck(False)
