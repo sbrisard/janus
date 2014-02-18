@@ -690,7 +690,7 @@ cdef class BlockDiagonalLinearOperator2D(AbstractStructuredOperator2D):
 
         for i0 in range(self.shape0):
             for i1 in range(self.shape1):
-                a_loc = self.a_loc[i0, i1, :, :]
+                a_loc = self.a[i0, i1, :, :]
                 x_loc = x[i0, i1, :]
                 y_loc = y[i0, i1, :]
                 for i2 in range(self.oshape2):
@@ -731,7 +731,7 @@ cdef class BlockDiagonalLinearOperator3D(AbstractStructuredOperator3D):
         for i0 in range(self.shape0):
             for i1 in range(self.shape1):
                 for i2 in range(self.shape2):
-                    a_loc = self.a_loc[i0, i1, i2, :, :]
+                    a_loc = self.a[i0, i1, i2, :, :]
                     x_loc = x[i0, i1, i2, :]
                     y_loc = y[i0, i1, i2, :]
                     for i3 in range(self.oshape3):
