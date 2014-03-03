@@ -1,4 +1,3 @@
-
 template = ('self.g{0}{1} = (' +
             ' + '.join('w{0} * self.g{0}[{{0}}, {{1}}]'.format(i + 1)
                     for i in range(8)) +
