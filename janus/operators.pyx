@@ -10,9 +10,11 @@ operator is a *tensor*.
 
 .. _structured-operators:
 
+Structured operators
+--------------------
+
 Beyond general operators (:class:`AbstractOperator`), this module also
-introduces *structured* operators
-(:class:`AbstractStructuredOperator2D`,
+introduces structured operators (:class:`AbstractStructuredOperator2D`,
 :class:`AbstractStructuredOperator3D`), for wich the input and output of
 the operators are structured in n-dimensional grids. The content of each
 cell might be tensorial, so that the input and output of 2D structured
@@ -27,7 +29,10 @@ dimensions is straightforward.
 
 .. _block-diagonal-operators:
 
-*Block-diagonal* operators (:class:`BlockDiagonalOperator2D`,
+Block-diagonal operators
+------------------------
+
+Block-diagonal operators (:class:`BlockDiagonalOperator2D`,
 :class:`BlockDiagonalOperator3D`) are defined as structured operators
 for which the local output depends on the local input only. Any block
 diagonal operator can be represented as an array of local operators (of
@@ -44,12 +49,15 @@ in 3D.
 
 .. _block-diagonal-linear-operators:
 
+Block-diagonal linear operators
+-------------------------------
+
 This can be further simplified in the case of linear, block-diagonal
 operators (:class:`BlockDiagonalLinearOperator2D`,
 :class:`BlockDiagonalLinearOperator3D`). Indeed, ``op_loc`` is then an
 array of matrices, which can be viewed as a higher-dimension array.
 Therefore, a block-diagonal linear operator can be defined through a
-``float64`` array ``a`` such that::
+``float64`` array ``a`` such that ::
 
     y[i0, i1, i2] = sum(a[i0, i1, i2, j2] * x[i0, i1, j2], j2)
 
@@ -59,12 +67,35 @@ in 2D, and::
 
 in 3D.
 
-Functions:
+.. _in-place-operations:
+
+Performing in-place operations
+------------------------------
+
+All types of operators define a method `apply(x, y)`, where `x` is a
+memoryview of the input and `y` is a memoryview of the output. If `y`
+is `None`, then `apply` returns a newly created memoryview. If `y` is
+not `None`, then `apply` returns a reference to `y`.
+
+Depending on the implementation, some operators allow for in-place
+operations, which can further reduce memory allocations. In
+other words, `apply(x, x)` is valid for such operators and returns
+the expected value. Whether or not an operator allows for in-place
+operations is implementation dependent, and should be specified in the
+documentation. **Unless otherwise stated, it should be assumed that
+in-place operations are not supported.**
+
+If relevant, the above also applies to the Cython method
+`c_apply(x, y)`.
+
+Functions defined in this module
+--------------------------------
 
 - :func:`isotropic_4` -- create a fourth-rank, isotropic tensor with minor
         symmetries.
 
-Classes:
+Classes defined in this module
+------------------------------
 
 - :class:`AbstractOperator` -- general operator
 - :class:`AbstractLinearOperator` -- general linear operator
@@ -295,7 +326,13 @@ cdef class FourthRankIsotropicTensor(AbstractOperator):
 
 cdef class FourthRankIsotropicTensor2D(FourthRankIsotropicTensor):
 
-    """Specialization of :class:`FourthRankIsotropicTensor` to 2D."""
+    """
+    Specialization of :class:`FourthRankIsotropicTensor` to 2D.
+
+    The present implementation allows for
+    :ref:`in-place operations <in-place-operations>`.
+
+    """
 
     @boundscheck(False)
     @wraparound(False)
@@ -311,7 +348,14 @@ cdef class FourthRankIsotropicTensor2D(FourthRankIsotropicTensor):
 
 cdef class FourthRankIsotropicTensor3D(FourthRankIsotropicTensor):
 
-    """Specialization of :class:`FourthRankIsotropicTensor` to 3D."""
+    """
+    Specialization of :class:`FourthRankIsotropicTensor` to 3D.
+
+
+    The present implementation allows for
+    :ref:`in-place operations <in-place-operations>`.
+
+    """
 
     @boundscheck(False)
     @wraparound(False)
@@ -570,6 +614,10 @@ cdef class BlockDiagonalOperator2D(AbstractStructuredOperator2D):
     Block-diagonal operators have been defined
     :ref:`above <block-diagonal-operators>`.
 
+    If the local operators `op_loc` allow for :ref:`in-place operations
+    <in-place-operations>`, then the block-diagonal operator also
+    allows for in-place operations.
+
     Parameters
     ----------
     op_loc : 2D memoryview of :class:`AbstractOperator`
@@ -617,6 +665,11 @@ cdef class BlockDiagonalOperator3D(AbstractStructuredOperator3D):
 
     Block-diagonal operators have been defined
     :ref:`above <block-diagonal-operators>`.
+
+
+    If the local operators `op_loc` allow for :ref:`in-place operations
+    <in-place-operations>`, then the block-diagonal operator also
+    allows for in-place operations.
 
     Parameters
     ----------
