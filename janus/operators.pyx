@@ -37,11 +37,11 @@ Block-diagonal operators (:class:`BlockDiagonalOperator2D`,
 for which the local output depends on the local input only. Any block
 diagonal operator can be represented as an array of local operators (of
 type :class:`AbstractOperator`) ``op_loc``. Then, the input ``x`` is
-mapped to the output ``y`` as follows::
+mapped to the output ``y`` as follows ::
 
     y[i0, i1, :] = op_loc[i0, i1].apply(x[i0, i1, :])
 
-in 2D, and::
+in 2D, and ::
 
     y[i0, i1, i2, :] = op_loc[i0, i1, i2].apply(x[i0, i1, i2, :])
 
@@ -61,7 +61,7 @@ Therefore, a block-diagonal linear operator can be defined through a
 
     y[i0, i1, i2] = sum(a[i0, i1, i2, j2] * x[i0, i1, j2], j2)
 
-in 2D, and::
+in 2D, and ::
 
     y[i0, i1, i2, i3] = sum(a[i0, i1, i2, i3, j3] * x[i0, i1, i2, j3], j3)
 
@@ -92,7 +92,7 @@ Functions defined in this module
 --------------------------------
 
 - :func:`isotropic_4` -- create a fourth-rank, isotropic tensor with minor
-        symmetries.
+  symmetries.
 
 Classes defined in this module
 ------------------------------
@@ -292,19 +292,19 @@ cdef class FourthRankIsotropicTensor(AbstractOperator):
     -----
     Any fourth rank, isotropic tensor ``T`` is a linear combination of
     the spherical projection tensor ``J`` and the deviatoric projection
-    tensor ``K``::
+    tensor ``K`` ::
 
         T = sph * J + dev * K.
 
     ``sph`` and ``dev`` are the two coefficients which are passed to the
-    initializer of this class. The components of ``J`` are::
+    initializer of this class. The components of ``J`` are ::
 
         J_ijkl = δ_ij * δ_kl / d,
 
     where ``δ_ij`` denotes the Kronecker symbol, and ``d`` is the
     dimension of the space on which the tensor operates. The components
     of ``K`` are found from the identity ``K = I - J``, where ``I`` is
-    the fourth-rank identity tensor::
+    the fourth-rank identity tensor ::
 
         I_ijkl = (δ_ik * δ_jl + δ_il * δ_jk) / 2.
 
@@ -383,7 +383,7 @@ cdef class AbstractStructuredOperator2D:
     and output vectors are structured in 2D grids, each grid-cell being
     a vector itself. Therefore, the input (resp. output) is a
     (``float64``) memoryview of shape ``(shape0, shape1, ishape2)``
-    [resp. ``(shape0, shape1, oshape2)``], with::
+    [resp. ``(shape0, shape1, oshape2)``], with ::
 
         isize = shape0 * shape1 * ishape2
         osize = shape0 * shape1 * oshape2
@@ -494,7 +494,7 @@ cdef class AbstractStructuredOperator3D:
     a vector itself. Therefore, the input (resp. output) is a
     (``float64``) memoryview of shape
     ``(shape0, shape1, shape2, ishape3)``
-    [resp. ``(shape0, shape1, shape2, shape3)``], with::
+    [resp. ``(shape0, shape1, shape2, shape3)``], with ::
 
         isize = shape0 * shape1 * shape2 * ishape3
         osize = shape0 * shape1 * shape2 * oshape3
