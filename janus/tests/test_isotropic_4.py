@@ -9,6 +9,9 @@ from numpy.testing import assert_array_almost_equal_nulp
 
 from janus.operators import isotropic_4
 
+# The value of one unit in the last place, for the float64 format.
+ULP = np.finfo(np.float64).eps
+
 #
 # Test of the apply() method
 # ==========================
@@ -84,6 +87,8 @@ def test_apply_invalid_params():
 # Test of the to_memoryview() method
 # ==================================
 #
+# Valid parameters
+# ----------------
 
 @nottest
 def do_test_to_memoryview(sph, dev, dim):
@@ -96,7 +101,7 @@ def do_test_to_memoryview(sph, dev, dim):
     K = I - J
     expected = sph * J + dev * K
     actual = isotropic_4(sph, dev, dim).to_memoryview()
-    assert_allclose(expected, actual, 1E-15, 1E-15)
+    assert_allclose(expected, actual, ULP, ULP)
 
 def test_to_memoryview():
     for dim in [2, 3]:
