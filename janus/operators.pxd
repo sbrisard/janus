@@ -8,7 +8,7 @@ cdef class AbstractLinearOperator(AbstractOperator):
     cdef void c_to_memoryview(self, double[:, :] out)
 
 
-cdef class FourthRankIsotropicTensor(AbstractOperator):
+cdef class FourthRankIsotropicTensor(AbstractLinearOperator):
     cdef readonly int dim
     cdef readonly double sph, dev
     cdef double tr

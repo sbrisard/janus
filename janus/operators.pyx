@@ -265,7 +265,7 @@ cdef class AbstractLinearOperator(AbstractOperator):
         return out
 
 
-cdef class FourthRankIsotropicTensor(AbstractOperator):
+cdef class FourthRankIsotropicTensor(AbstractLinearOperator):
 
     """
     Fourth rank, isotropic tensor with minor symmetries.
@@ -345,6 +345,21 @@ cdef class FourthRankIsotropicTensor2D(FourthRankIsotropicTensor):
         y[1] = aux + self_dev * x1
         y[2] = self_dev * x[2]
 
+    @boundscheck(False)
+    @wraparound(False)
+    cdef void c_to_memoryview(self, double[:, :] out):
+        cdef double aux = 0.5 * (self.sph + self.dev)
+        out[0, 0] = aux
+        out[1, 1] = aux
+        aux = 0.5 * (self.sph - self.dev)
+        out[0, 1] = aux
+        out[1, 0] = aux
+        out[2, 2] = self.dev
+        out[2, 0] = 0.0
+        out[2, 1] = 0.0
+        out[0, 2] = 0.0
+        out[1, 2] = 0.0
+
 
 cdef class FourthRankIsotropicTensor3D(FourthRankIsotropicTensor):
 
@@ -371,6 +386,42 @@ cdef class FourthRankIsotropicTensor3D(FourthRankIsotropicTensor):
         y[3] = self_dev * x[3]
         y[4] = self_dev * x[4]
         y[5] = self_dev * x[5]
+
+    @boundscheck(False)
+    @wraparound(False)
+    cdef void c_to_memoryview(self, double[:, :] out):
+        cdef double aux = (self.sph + 2.0 * self.dev) / 3.0
+        out[0, 0] = aux
+        out[1, 1] = aux
+        out[2, 2] = aux
+        aux = (self.sph - self.dev) / 3.0
+        out[0, 1] = aux
+        out[0, 2] = aux
+        out[1, 0] = aux
+        out[1, 2] = aux
+        out[2, 0] = aux
+        out[2, 1] = aux
+        out[3, 3] = self.dev
+        out[4, 4] = self.dev
+        out[5, 5] = self.dev
+        out[0, 3] = 0.0
+        out[0, 4] = 0.0
+        out[0, 5] = 0.0
+        out[1, 3] = 0.0
+        out[1, 4] = 0.0
+        out[1, 5] = 0.0
+        out[2, 3] = 0.0
+        out[2, 4] = 0.0
+        out[2, 5] = 0.0
+        out[3, 0] = 0.0
+        out[3, 1] = 0.0
+        out[3, 2] = 0.0
+        out[4, 0] = 0.0
+        out[4, 1] = 0.0
+        out[4, 2] = 0.0
+        out[5, 0] = 0.0
+        out[5, 1] = 0.0
+        out[5, 2] = 0.0
 
 
 cdef class AbstractStructuredOperator2D:

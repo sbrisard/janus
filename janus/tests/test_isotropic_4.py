@@ -1,7 +1,10 @@
+import itertools
+
 import numpy as np
 
 from nose.tools import nottest
 from nose.tools import raises
+from numpy.testing import assert_allclose
 from numpy.testing import assert_array_almost_equal_nulp
 
 from janus.operators import isotropic_4
@@ -76,3 +79,26 @@ def test_apply_invalid_params():
         params = [(invalid, valid), (valid, invalid)]
         for x, y in params:
             yield test, x, y
+
+#
+# Test of the to_memoryview() method
+# ==================================
+#
+
+@nottest
+def do_test_to_memoryview(sph, dev, dim):
+    sym = (dim * (dim + 1)) // 2
+    I = np.eye(sym)
+    aux = np.array(list(itertools.chain(itertools.repeat(1., dim),
+                                        itertools.repeat(0., sym - dim))))
+    aux = aux.reshape(sym, 1)
+    J = 1. / dim * aux * aux.T
+    K = I - J
+    expected = sph * J + dev * K
+    actual = isotropic_4(sph, dev, dim).to_memoryview()
+    assert_allclose(expected, actual, 1E-15, 1E-15)
+
+def test_to_memoryview():
+    for dim in [2, 3]:
+        for sph, dev in [(1.0, 0.0), (0.0, 1.0), (2.5, -3.5)]:
+            yield do_test_to_memoryview, sph, dev, dim
