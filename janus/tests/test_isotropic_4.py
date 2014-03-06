@@ -92,7 +92,7 @@ def test_apply_invalid_params():
 #
 
 @nottest
-def do_test_to_memoryview(sph, dev, dim):
+def do_test_to_memoryview(sph, dev, dim, flag):
     sym = (dim * (dim + 1)) // 2
     I = np.eye(sym)
     aux = np.array(list(itertools.chain(itertools.repeat(1., dim),
@@ -101,13 +101,20 @@ def do_test_to_memoryview(sph, dev, dim):
     J = 1. / dim * aux * aux.T
     K = I - J
     expected = sph * J + dev * K
-    actual = isotropic_4(sph, dev, dim).to_memoryview()
+    if flag == 0:
+        base = None
+    elif flag == 1:
+        base = np.empty((sym, sym), dtype=np.float64)
+    actual = isotropic_4(sph, dev, dim).to_memoryview(base)
+    if base is not None:
+        assert actual.base is base
     assert_allclose(expected, actual, ULP, ULP)
 
 def test_to_memoryview():
     for dim in [2, 3]:
-        for sph, dev in [(1.0, 0.0), (0.0, 1.0), (2.5, -3.5)]:
-            yield do_test_to_memoryview, sph, dev, dim
+        for flag in [0, 1]:
+            for sph, dev in [(1.0, 0.0), (0.0, 1.0), (2.5, -3.5)]:
+                yield do_test_to_memoryview, sph, dev, dim, flag
 
 #
 # Invalid parameters
