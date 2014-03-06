@@ -89,6 +89,7 @@ def test_apply_invalid_params():
 #
 # Valid parameters
 # ----------------
+#
 
 @nottest
 def do_test_to_memoryview(sph, dev, dim):
@@ -107,3 +108,22 @@ def test_to_memoryview():
     for dim in [2, 3]:
         for sph, dev in [(1.0, 0.0), (0.0, 1.0), (2.5, -3.5)]:
             yield do_test_to_memoryview, sph, dev, dim
+
+#
+# Invalid parameters
+# ------------------
+#
+
+def test_to_memoryview_invalid_params():
+    @raises(ValueError)
+    def test(dim, shape):
+        out = np.empty(shape, dtype=np.float64)
+        isotropic_4(0., 0., dim).to_memoryview(out)
+
+    for dim in [2, 3]:
+        sym = (dim * (dim + 1)) // 2
+        shapes = [(sym - 1, sym), (sym + 1, sym),
+                  (sym, sym - 1), (sym, sym + 1)]
+        for shape in shapes:
+            yield test, dim, shape
+
