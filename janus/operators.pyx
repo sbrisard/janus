@@ -346,9 +346,10 @@ cdef class FourthRankIsotropicTensor2D(FourthRankIsotropicTensor):
         y[2] = self_dev * x[2]
 
     @boundscheck(False)
+    @cdivision(True)
     @wraparound(False)
     cdef void c_to_memoryview(self, double[:, :] out):
-        cdef double aux = 0.5 * (self.sph + self.dev)
+        cdef double aux = (self.sph + self.dev) / 2.0
         out[0, 0] = aux
         out[1, 1] = aux
         aux = 0.5 * (self.sph - self.dev)
@@ -388,6 +389,7 @@ cdef class FourthRankIsotropicTensor3D(FourthRankIsotropicTensor):
         y[5] = self_dev * x[5]
 
     @boundscheck(False)
+    @cdivision(True)
     @wraparound(False)
     cdef void c_to_memoryview(self, double[:, :] out):
         cdef double aux = (self.sph + 2.0 * self.dev) / 3.0
