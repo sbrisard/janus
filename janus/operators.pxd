@@ -48,8 +48,11 @@ cdef class BlockDiagonalOperator3D(AbstractStructuredOperator3D):
 cdef class BlockDiagonalLinearOperator2D(AbstractStructuredOperator2D):
     cdef double[:, :, :, :] a
 
+    cdef void c_apply_transpose(self, double[:, :, :] x, double[:, :, :] y)
+
 
 cdef class BlockDiagonalLinearOperator3D(AbstractStructuredOperator3D):
     cdef double[:, :, :, :, :] a
 
-
+    cdef void c_apply_transpose(self, double[:, :, :, :] x,
+                                double[:, :, :, :] y)

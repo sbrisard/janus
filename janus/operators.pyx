@@ -805,6 +805,57 @@ cdef class BlockDiagonalLinearOperator2D(AbstractStructuredOperator2D):
                         yy += a_loc[i2, j2] * x_loc[j2]
                     y_loc[i2] = yy
 
+    @boundscheck(False)
+    @wraparound(False)
+    cdef void c_apply_transpose(self, double[:, :, :] x, double[:, :, :] y):
+        cdef int i0, i1, i2, j2
+        cdef double[:, :] a_loc
+        cdef double[:] x_loc
+        cdef double[:] y_loc
+
+        for i0 in range(self.shape0):
+            for i1 in range(self.shape1):
+                a_loc = self.a[i0, i1, :, :]
+                x_loc = x[i0, i1, :]
+                y_loc = y[i0, i1, :]
+                for i2 in range(self.ishape2):
+                    yy = 0.
+                    for j2 in range(self.oshape2):
+                        yy += a_loc[j2, i2] * x_loc[j2]
+                    y_loc[i2] = yy
+
+    def apply_transpose(self, double[:, :, :] x, double[:, :, :] y=None):
+        """apply_transpose(x, y=None)
+
+        Return the result of applying the transpose of this operator to `x`.
+
+        The output is defined as follows ::
+
+            y[i0, i1, i2] = sum(a[i0, i1, j2, i2] * x[i0, i1, j2], j2)
+
+        Parameters
+        ----------
+        x : 3D memoryview of float64
+            The input vector.
+        y : 3D memoryview of float64, optional
+            The output vector. Its content is altered by this method. If
+            ``None``, a new array is created and returned; otherwise,
+            this method returns a view of this object.
+
+        Returns
+        -------
+        y : 3D memoryview of float64
+            The result of applying this operator to `x`. This is a
+            view of the parameter `y` (if not ``None``).
+
+        """
+        # TODO Test this method
+        check_shape_3d(x, self.shape0, self.shape1, self.oshape2)
+        y = create_or_check_shape_3d(y, self.shape0, self.shape1,
+                                     self.ishape2)
+        self.c_apply_transpose(x, y)
+        return y
+
 
 cdef class BlockDiagonalLinearOperator3D(AbstractStructuredOperator3D):
 
@@ -845,3 +896,60 @@ cdef class BlockDiagonalLinearOperator3D(AbstractStructuredOperator3D):
                         for j3 in range(self.ishape3):
                             yy += a_loc[i3, j3] * x_loc[j3]
                         y_loc[i3] = yy
+
+    @boundscheck(False)
+    @wraparound(False)
+    cdef void c_apply_transpose(self, double[:, :, :, :] x,
+                                double[:, :, :, :] y):
+        cdef int i0, i1, i2, i3, j3
+        cdef double[:, :] a_loc
+        cdef double[:] x_loc
+        cdef double[:] y_loc
+
+        for i0 in range(self.shape0):
+            for i1 in range(self.shape1):
+                for i2 in range(self.shape2):
+                    a_loc = self.a[i0, i1, i2, :, :]
+                    x_loc = x[i0, i1, i2, :]
+                    y_loc = y[i0, i1, i2, :]
+                    for i3 in range(self.ishape3):
+                        yy = 0.
+                        for j3 in range(self.oshape3):
+                            yy += a_loc[j3, i3] * x_loc[j3]
+                        y_loc[i3] = yy
+
+    def apply_transpose(self, double[:, :, :, :] x, double[:, :, :, :] y=None):
+        """apply_transpose(x, y=None)
+
+        Return the result of applying the transpose of this operator to `x`.
+
+        The output is defined as follows ::
+
+            y[i0, i1, i2, i3] = sum(a[i0, i1, i2, j3, i3] * x[i0, i1, i2, j3], j3)
+
+        Parameters
+        ----------
+        x : 4D memoryview of float64
+            The input vector.
+        y : 4D memoryview of float64, optional
+            The output vector. Its content is altered by this method. If
+            ``None``, a new array is created and returned; otherwise,
+            this method returns a view of this object.
+
+        Returns
+        -------
+        y : 4D memoryview of float64
+            The result of applying this operator to `x`. This is a
+            view of the parameter `y` (if not ``None``).
+
+        """
+        # TODO Test this method
+        check_shape_4d(x,
+                       self.shape0, self.shape1,
+                       self.shape2, self.oshape3)
+        y = create_or_check_shape_4d(y,
+                                     self.shape0, self.shape1,
+                                     self.shape2, self.ishape3)
+        self.c_apply_transpose(x, y)
+        return y
+
