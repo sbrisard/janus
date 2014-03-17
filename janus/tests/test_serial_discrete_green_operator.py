@@ -67,14 +67,17 @@ def multi_indices(n):
             for b in itertools.product(*iterables)]
 
 class DiscreteGreenOperatorTestMetaclass(type):
-    def __new__(cls, name, bases, dct, test_apply_params):
+    def __new__(cls, name, bases, dct, test_apply_params,
+                test_apply_in_place):
         return type.__new__(cls, name, bases, dct)
 
-    def __init__(cls, name, bases, dct, test_apply_params):
+    def __init__(cls, name, bases, dct, test_apply_params,
+                 test_apply_in_place):
         pass
 
     @classmethod
-    def __prepare__(metacls, name, bases, test_apply_params):
+    def __prepare__(metacls, name, bases, test_apply_params,
+                    test_apply_in_place):
         dct = super().__prepare__(name, bases)
 
         #
@@ -126,8 +129,13 @@ class DiscreteGreenOperatorTestMetaclass(type):
         #
         # Test of apply()
         #
+        if test_apply_in_place:
+            flags = [0, 1]
+        else:
+            flags = [0]
+        params = [i + (j,) for i in test_apply_params for j in flags]
         add_parameterized_test(metacls.test_apply,
-                               test_apply_params,
+                               params,
                                dct)
 
         delta_shape3 = set(itertools.permutations([1, 0, 0]))
@@ -216,7 +224,7 @@ class DiscreteGreenOperatorTestMetaclass(type):
     #
     # Test of apply()
     #
-    def test_apply(self, path_to_ref, rtol):
+    def test_apply(self, path_to_ref, rtol, flag):
         npz_file = np.load(path_to_ref)
         x = npz_file['x']
         expected = npz_file['y']
@@ -228,7 +236,11 @@ class DiscreteGreenOperatorTestMetaclass(type):
         transform = janus.fft.serial.create_real(n)
         green = self.discrete_green_operator(n, 1., transform=transform)
 
-        actual = np.zeros(transform.rshape + (green.oshape[-1],), np.float64)
+        if flag == 0:
+            actual = np.zeros(transform.rshape + (green.oshape[-1],),
+                              np.float64)
+        else:
+            actual = x
         green.apply(x, actual)
 
         assert_allclose(actual, expected, rtol, 10 * ULP)
@@ -267,7 +279,8 @@ def truncated_test_apply_params():
 
 class TruncatedGreenOperatorTest(unittest.TestCase,
                                  metaclass=DiscreteGreenOperatorTestMetaclass,
-                                 test_apply_params=truncated_test_apply_params()):
+                                 test_apply_params=truncated_test_apply_params(),
+                                 test_apply_in_place=True):
 
     def discrete_green_operator(self, n, h = 1., greenc=None, transform=None):
         if greenc is None:
@@ -314,7 +327,8 @@ def filtered_test_apply_params():
 
 class FilteredGreenOperatorTest(unittest.TestCase,
                                 metaclass=DiscreteGreenOperatorTestMetaclass,
-                                test_apply_params=filtered_test_apply_params()):
+                                test_apply_params=filtered_test_apply_params(),
+                                test_apply_in_place=True):
 
     def discrete_green_operator(self, n, h = 1., greenc=None, transform=None):
         if greenc is None:
