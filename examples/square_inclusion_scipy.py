@@ -25,9 +25,9 @@ class SquareInclusion:
                       3 * self.n0 * self.n1)
         self.dtype = np.float64
         transform = fft.create_real((self.n0, self.n1))
-        self.green = discretegreenop.create(greenop.create(mat_0),
-                                            transform.rshape,
-                                            1., transform)
+        self.green = discretegreenop.filtered(greenop.create(mat_0),
+                                              transform.rshape,
+                                              1., transform)
         aux_i = operators.isotropic_4((mat_i.k - mat_0.k) / 2.,
                                       (mat_i.g - mat_0.g) / 2.,
                                       dim=2)

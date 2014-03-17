@@ -41,7 +41,8 @@ def do_test_apply(path_to_ref, rel_err):
     n_locs = comm.gather((transform.rshape[0], transform.offset0), root)
 
     mat = Material(0.75, 0.3, len(n))
-    green = janus.discretegreenop.create(greenop.create(mat), n, 1., transform)
+    green = janus.discretegreenop.truncated(greenop.create(mat), n, 1.,
+                                            transform)
 
     # Scatter tau
     tau_locs = None

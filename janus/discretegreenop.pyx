@@ -21,11 +21,19 @@ from janus.utils.checkarray cimport check_shape_1d
 from janus.utils.checkarray cimport check_shape_3d
 from janus.utils.checkarray cimport check_shape_4d
 
-def create(green, n, h, transform=None):
+def truncated(green, n, h, transform=None):
     if green.dim == 2:
         return TruncatedGreenOperator2D(green, n, h, transform)
     elif green.dim == 3:
         return TruncatedGreenOperator3D(green, n, h, transform)
+    else:
+        raise ValueError('dim must be 2 or 3 (was {0})'.format(green.dim))
+
+def filtered(green, n, h, transform=None):
+    if green.dim == 2:
+        return FilteredGreenOperator2D(green, n, h, transform)
+    elif green.dim == 3:
+        return FilteredGreenOperator3D(green, n, h, transform)
     else:
         raise ValueError('dim must be 2 or 3 (was {0})'.format(green.dim))
 
