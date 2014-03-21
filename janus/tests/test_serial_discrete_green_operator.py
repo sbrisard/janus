@@ -32,7 +32,7 @@ ULP = np.finfo(np.float64).eps
 GRID_SIZES = ([(8, 8), (8, 16), (16, 8), (4, 4, 4)]
               + list(itertools.permutations((4, 8, 16))))
 
-def add_parameterized_test(test, parameters, dct):
+def add_parameterized(test, parameters, dct):
     digits = int(np.ceil(np.log10(len(parameters))))
     name_template = test.__name__ + '_{{:0{}d}}'.format(digits)
     args = inspect.getfullargspec(test).args
@@ -98,20 +98,19 @@ class DiscreteGreenOperatorTestMetaclass(type):
                   ((9, 9, -1), 1., g3),
                   ((9, 9, 9), -1., g3)]
 
-        add_parameterized_test(metacls.test_init_invalid_params,
-                               params, dct)
+        add_parameterized(metacls.test_init_invalid_params, params, dct)
 
         #
         # Test to_memoryview()
         #
         params = [(n, inplace) for n in GRID_SIZES
                                for inplace in [True, False]]
-        add_parameterized_test(metacls.test_to_memoryview,
+        add_parameterized(metacls.test_to_memoryview,
                                params, dct)
 
         params = [(dim, i, 1 - i) for dim in [2, 3] for i in [0, 1]]
-        add_parameterized_test(metacls.test_to_memoryview_invalid_parameters,
-                               params, dct)
+        add_parameterized(metacls.test_to_memoryview_invalid_parameters,
+                          params, dct)
 
         #
         # Test of apply_by_freq()
@@ -120,11 +119,11 @@ class DiscreteGreenOperatorTestMetaclass(type):
              np.array([0.1, -0.2, 0.3, -0.4, 0.5, -0.6])]
         params = [(n, x[len(n) - 2], flag) for n in GRID_SIZES
                                            for flag in range(3)]
-        add_parameterized_test(metacls.test_apply_by_freq, params, dct)
+        add_parameterized(metacls.test_apply_by_freq, params, dct)
 
         params = [(dim, i, 1 - i) for dim in [2, 3] for i in [0, 1]]
-        add_parameterized_test(metacls.test_apply_by_freq_invalid_params,
-                               params, dct)
+        add_parameterized(metacls.test_apply_by_freq_invalid_params,
+                          params, dct)
 
         #
         # Test of apply()
@@ -134,9 +133,7 @@ class DiscreteGreenOperatorTestMetaclass(type):
         else:
             flags = [0]
         params = [i + (j,) for i in test_apply_params for j in flags]
-        add_parameterized_test(metacls.test_apply,
-                               params,
-                               dct)
+        add_parameterized(metacls.test_apply, params, dct)
 
         delta_shape3 = set(itertools.permutations([1, 0, 0]))
         delta_shape4 = set(itertools.permutations([1, 0, 0, 0]))
@@ -144,8 +141,7 @@ class DiscreteGreenOperatorTestMetaclass(type):
                   [(2, i, (0, 0, 0)) for i in delta_shape3] +
                   [(3, (0, 0, 0, 0), i) for i in delta_shape4] +
                   [(3, i, (0, 0, 0, 0)) for i in delta_shape4])
-        add_parameterized_test(metacls.test_apply_invalid_params,
-                               params, dct)
+        add_parameterized(metacls.test_apply_invalid_params, params, dct)
 
         return dct
 
