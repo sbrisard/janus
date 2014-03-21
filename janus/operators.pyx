@@ -674,15 +674,15 @@ cdef class BlockDiagonalOperator2D(AbstractStructuredOperator2D):
     Parameters
     ----------
     op_loc : 2D memoryview of :class:`AbstractOperator`
-        The array of local operators.
+        The array of local operators. The returned instance keeps a
+        *shallow* copy of `op_loc`.
 
     """
 
     def __cinit__(self, AbstractOperator[:, :] op_loc):
         self.init_shapes(op_loc.shape[0], op_loc.shape[1],
                          op_loc[0, 0].isize, op_loc[0, 0].osize)
-        # TODO Take only a shallow copy, and indicate so in the documentation
-        self.op_loc = op_loc.copy()
+        self.op_loc = op_loc
 
         cdef int i0, i1, ishape2, oshape2
         for i0 in range(self.shape0):
@@ -727,15 +727,15 @@ cdef class BlockDiagonalOperator3D(AbstractStructuredOperator3D):
     Parameters
     ----------
     op_loc : 3D memoryview of :class:`AbstractOperator`
-        The array of local operators.
+        The array of local operators. The returned instance keeps a
+        *shallow* copy of `op_loc`.
 
     """
 
     def __cinit__(self, AbstractOperator[:, :, :] op_loc):
         self.init_shapes(op_loc.shape[0], op_loc.shape[1], op_loc.shape[2],
                          op_loc[0, 0, 0].isize, op_loc[0, 0, 0].osize)
-        # TODO Take only a shallow copy, and indicate so in the documentation
-        self.op_loc = op_loc.copy()
+        self.op_loc = op_loc
 
         cdef int i0, i1, i2, ishape3, oshape3
         for i0 in range(self.shape0):
