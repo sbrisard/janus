@@ -925,7 +925,8 @@ cdef class BlockDiagonalLinearOperator3D(AbstractStructuredOperator3D):
 
         The output is defined as follows ::
 
-            y[i0, i1, i2, i3] = sum(a[i0, i1, i2, j3, i3] * x[i0, i1, i2, j3], j3)
+            y[i0, i1, i2, i3] = sum(a[i0, i1, i2, j3, i3] *
+                                    x[i0, i1, i2, j3], j3)
 
         Parameters
         ----------
