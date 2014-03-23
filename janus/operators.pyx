@@ -201,7 +201,7 @@ cdef class AbstractOperator:
         self.osize = osize
 
     cdef void c_apply(self, double[:] x, double[:] y):
-        raise NotImplementedError
+        pass
 
     def apply(self, double[:] x, double[:] y=None):
         """apply(x, y=None)
