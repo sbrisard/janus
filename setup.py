@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os
 import sys
 
@@ -85,7 +87,11 @@ if with_mpi:
                                 library_dirs=library_dirs,
                                 include_dirs = include_dirs))
 
-setup(name = 'Homogenization through FFT',
+setup(name = 'Janus',
+      version = '0.1',
+      description = 'Galerkin approximation of the Lippmann--Schwinger equation',
+      author = 'Sébastien Brisard',
+      author_email = 'sebastien.brisard@ifsttar.fr',
       packages=[''],
       package_dir = {'': ''},
       cmdclass = {'build_ext': build_ext},
