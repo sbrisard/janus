@@ -4,12 +4,6 @@ import os.path # TODO remove
 import sys     # TODO remove
 import unittest
 
-
-# TODO This ugly hack should be removed
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                             '..',
-                             '..'))
-
 from janus.operators import AbstractOperator
 
 class AbstractOperatorTest(unittest.TestCase):

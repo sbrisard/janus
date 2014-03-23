@@ -2,15 +2,9 @@ import inspect
 import itertools
 import operator
 import os.path
-import sys
 import unittest
 
 import numpy as np
-
-# TODO This ugly hack should be removed
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                             '..',
-                             '..'))
 
 import janus.fft.serial
 import janus.greenop as greenop
