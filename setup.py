@@ -87,12 +87,19 @@ if with_mpi:
                                 library_dirs=library_dirs,
                                 include_dirs = include_dirs))
 
+packages = ['janus',
+            'janus.fft',
+            'janus.fft.serial',
+            'janus.utils']
+
+if with_mpi:
+    packages.append('janus.fft.parallel')
+
 setup(name = 'Janus',
       version = '0.1',
       description = 'Galerkin approximation of the Lippmann--Schwinger equation',
       author = 'Sébastien Brisard',
       author_email = 'sebastien.brisard@ifsttar.fr',
-      packages=[''],
-      package_dir = {'': ''},
+      packages=packages,
       cmdclass = {'build_ext': build_ext},
       ext_modules = extensions)
