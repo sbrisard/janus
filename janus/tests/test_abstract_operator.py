@@ -4,10 +4,26 @@ import os.path # TODO remove
 import sys     # TODO remove
 import unittest
 
+import numpy as np
+
 from janus.operators import AbstractOperator
+from janus.operators import AbstractLinearOperator
 
 class AbstractOperatorTest(unittest.TestCase):
+
+    """Test of the `AbstractOperator` class.
+
+    This test case mainly tests that `ValueError`is raised when
+    `init_sizes()` and `apply()` are called with invalid arguments.
+    This test case can be extended to test concrete implementations of
+    this class. In this case, the `setUp()` method must define a
+    properly initialized `operator` attribute, as well as the expected
+    `isize` and `osize`.
+
+    """
+
     def setUp(self):
+        print('Calling setUp')
         self.operator = AbstractOperator()
         self.isize = 4
         self.osize = 5
@@ -44,5 +60,39 @@ class AbstractOperatorTest(unittest.TestCase):
         yy = self.operator.apply(x, y)
         self.assertIs(y, yy.base)
 
+class AbstractLinearOperatorTest(AbstractOperatorTest):
+    def setUp(self):
+        self.isize = 4
+        self.osize = 5
+        self.operator = AbstractLinearOperator()
+        self.operator.init_sizes(self.isize, self.osize)
+
+    def test_to_memory_view_invalid_output_1(self):
+        """Check that `to_memory_view` raises `ValueError` when called
+        with invalid argument.
+
+        In this test, the output array has invalid number of rows.
+
+        """
+        out = np.empty((self.isize + 1, self.osize), dtype=np.float64)
+        self.assertRaises(ValueError, self.operator.to_memoryview, out)
+
+    def test_to_memory_view_invalid_output_2(self):
+        """Check that `to_memory_view` raises `ValueError` when called
+        with invalid argument.
+
+        In this test, the output array has invalid number of columns.
+
+        """
+        out = np.empty((self.isize, self.osize + 1), dtype=np.float64)
+        self.assertRaises(ValueError, self.operator.to_memoryview, out)
+
+
+def suite():
+    suite = unittest.TestSuite()
+    suite.addTest(AbstractOperatorTest())
+    suite.addTest(AbstractLinearOperatorTest())
+    return suite
+
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=3)
