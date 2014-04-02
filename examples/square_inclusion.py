@@ -55,7 +55,7 @@ class SquareInclusion:
     def mult(self, mat, x, y):
         x_arr = x.array.reshape((self.n0, self.n1, 3))
         y_arr = y.array.reshape((self.n0, self.n1, 3))
-        self.green.convolve(x_arr, y_arr)
+        self.green.apply(x_arr, y_arr)
         y_arr += np.asarray(self.tau2eps.apply(x_arr))
 
 if __name__ == '__main__':
