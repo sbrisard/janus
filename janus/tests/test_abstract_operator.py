@@ -1,7 +1,5 @@
 import array
 import itertools
-import os.path # TODO remove
-import sys     # TODO remove
 import unittest
 
 import numpy as np
