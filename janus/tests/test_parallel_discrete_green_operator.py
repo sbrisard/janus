@@ -24,9 +24,9 @@ def do_test_apply(path_to_ref, rel_err):
     expected = None
     if rank == root:
         npz_file = np.load(path_to_ref)
-        tau = npz_file['x']
+        x = npz_file['x']
         expected = npz_file['y']
-        n = tau.shape[:-1]
+        n = x.shape[:-1]
 
     # Broadcast global size of grid
     n = comm.bcast(n, root)
@@ -39,21 +39,21 @@ def do_test_apply(path_to_ref, rel_err):
     green = janus.discretegreenop.truncated(greenop.create(mat), n, 1.,
                                             transform)
 
-    # Scatter tau
-    tau_locs = None
+    # Scatter x
+    x_locs = None
     if rank == root:
-        tau_locs = [tau[offset0:offset0 + n0] for n0, offset0 in n_locs]
-    tau_loc = comm.scatter(tau_locs, root)
-    eta_loc = np.empty(transform.rshape + (green.oshape[-1],),
+        x_locs = [x[offset0:offset0 + n0] for n0, offset0 in n_locs]
+    x_loc = comm.scatter(x_locs, root)
+    y_loc = np.empty(transform.rshape + (green.oshape[-1],),
                        dtype=np.float64)
-    green.apply(tau_loc, eta_loc)
+    green.apply(x_loc, y_loc)
 
-    # Gather eta
-    eta_locs = comm.gather(eta_loc, root)
+    # Gather y
+    y_locs = comm.gather(y_loc, root)
     if rank == root:
         actual = np.empty_like(expected)
-        for eta_loc, (n0, offset0) in zip(eta_locs, n_locs):
-            actual[offset0:offset0 + n0] = eta_loc
+        for y_loc, (n0, offset0) in zip(y_locs, n_locs):
+            actual[offset0:offset0 + n0] = y_loc
 
         error = actual - expected
         error = actual - expected
