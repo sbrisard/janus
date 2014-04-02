@@ -8,6 +8,7 @@ import numpy as np
 
 from janus.operators import AbstractOperator
 from janus.operators import AbstractLinearOperator
+from janus.operators import isotropic_4
 
 class AbstractOperatorTest(unittest.TestCase):
 
@@ -23,7 +24,6 @@ class AbstractOperatorTest(unittest.TestCase):
     """
 
     def setUp(self):
-        print('Calling setUp')
         self.operator = AbstractOperator()
         self.isize = 4
         self.osize = 5
@@ -88,6 +88,23 @@ class AbstractLinearOperatorTest(AbstractOperatorTest):
         self.assertRaises(ValueError, self.operator.to_memoryview, out)
 
 
+class FourthRankIsotropicTensorTest(AbstractLinearOperatorTest):
+    def setUp(self):
+        if hasattr(self, 'dim'):
+            self.isize = (self.dim * (self.dim + 1)) // 2
+            self.osize = self.isize
+            self.operator = isotropic_4(1., 1., self.dim)
+        else:
+            raise unittest.SkipTest("abstract test case")
+
+
+class FourthRankIsotropicTensor2DTest(FourthRankIsotropicTensorTest):
+    dim = 2
+
+
+class FourthRankIsotropicTensor3DTest(FourthRankIsotropicTensorTest):
+    dim = 2
+
 def suite():
     suite = unittest.TestSuite()
     suite.addTest(AbstractOperatorTest())
@@ -95,4 +112,4 @@ def suite():
     return suite
 
 if __name__ == '__main__':
-    unittest.main(verbosity=3)
+    unittest.main(verbosity=1)
