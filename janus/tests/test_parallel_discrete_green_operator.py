@@ -9,12 +9,15 @@ import janus.greenop as greenop
 from mpi4py import MPI
 from nose.tools import nottest
 from nose.tools import raises
+from numpy.testing import assert_allclose
 from numpy.testing import assert_array_almost_equal_nulp
 
 from janus.matprop import IsotropicLinearElasticMaterial as Material
 
+ULP = np.finfo(np.float64).eps
+
 @nottest
-def do_test_apply(path_to_ref, rel_err):
+def do_test_apply(path_to_ref, rtol):
     comm = MPI.COMM_WORLD
     root = 0
     rank = comm.rank
@@ -55,36 +58,26 @@ def do_test_apply(path_to_ref, rel_err):
         for y_loc, (n0, offset0) in zip(y_locs, n_locs):
             actual[offset0:offset0 + n0] = y_loc
 
-        error = actual - expected
-        error = actual - expected
-        ulp = np.finfo(np.float64).eps
-        nulp = rel_err / ulp
-        assert_array_almost_equal_nulp(expected, np.asarray(actual), nulp)
+        assert_allclose(actual, expected, rtol, 10 * ULP)
 
 def test_apply():
 
-    directory = os.path.join('..', 'parallel',
-                             os.path.dirname(os.path.realpath(__file__)))
-
-    params = [('truncated_green_operator_200x300_unit_tau_xx_10x10+95+145.npz',
-               1.2E-10),
-              ('truncated_green_operator_200x300_unit_tau_yy_10x10+95+145.npz',
-               6.7E-11),
-              ('truncated_green_operator_200x300_unit_tau_xy_10x10+95+145.npz',
-               7.7E-11),
-              ('truncated_green_operator_40x50x60_unit_tau_xx_10x10x10+15+20+25.npz',
-               1.7E-10),
-              ('truncated_green_operator_40x50x60_unit_tau_yy_10x10x10+15+20+25.npz',
-               7.6E-10),
-              ('truncated_green_operator_40x50x60_unit_tau_zz_10x10x10+15+20+25.npz',
-               1.6E-9),
-              ('truncated_green_operator_40x50x60_unit_tau_yz_10x10x10+15+20+25.npz',
-               1.6E-10),
-              ('truncated_green_operator_40x50x60_unit_tau_zx_10x10x10+15+20+25.npz',
-               6.4E-10),
-              ('truncated_green_operator_40x50x60_unit_tau_xy_10x10x10+15+20+25.npz',
-               1.6E-9),
+    directory = os.path.dirname(os.path.realpath(__file__))
+    template_2D = ('truncated_green_operator_200x300_'
+                   'unit_tau_{0}_10x10+95+145.npz')
+    template_3D = ('truncated_green_operator_40x50x60_'
+                   'unit_tau_{0}_10x10x10+15+20+25.npz')
+    params = [(template_2D.format('xx'), ULP),
+              (template_2D.format('yy'), ULP),
+              (template_2D.format('xy'), ULP),
+              (template_3D.format('xx'), ULP),
+              (template_3D.format('yy'), ULP),
+              (template_3D.format('zz'), ULP),
+              (template_3D.format('yz'), ULP),
+              (template_3D.format('zx'), ULP),
+              (template_3D.format('xy'), ULP),
                ]
-    for filename, rel_err in params:
+
+    for filename, rtol in params:
         path = os.path.join(directory, 'data', filename)
-        yield do_test_apply, path, rel_err
+        yield do_test_apply, path, rtol
