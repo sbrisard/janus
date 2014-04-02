@@ -4,9 +4,13 @@ import unittest
 
 import numpy as np
 
+from numpy.testing import assert_allclose
+
 from janus.operators import AbstractOperator
 from janus.operators import AbstractLinearOperator
 from janus.operators import isotropic_4
+
+ULP = np.finfo(np.float64).eps
 
 class AbstractOperatorTest(unittest.TestCase):
 
@@ -89,11 +93,75 @@ class AbstractLinearOperatorTest(AbstractOperatorTest):
 class FourthRankIsotropicTensorTest(AbstractLinearOperatorTest):
     def setUp(self):
         if hasattr(self, 'dim'):
-            self.isize = (self.dim * (self.dim + 1)) // 2
-            self.osize = self.isize
+            self.sym = (self.dim * (self.dim + 1)) // 2
+            self.isize = self.sym
+            self.osize = self.sym
             self.operator = isotropic_4(1., 1., self.dim)
         else:
             raise unittest.SkipTest("abstract test case")
+
+    def to_array(self, sph, dev):
+        a = np.zeros((self.sym, self.sym), dtype=np.float64)
+        a[0:self.dim, 0:self.dim] = (sph - dev) / self.dim
+        i = range(self.dim)
+        a[i, i] = (sph + (self.dim - 1) * dev) / self.dim
+        i = range(self.dim, self.sym)
+        a[i, i] = dev
+        return a
+
+    def ptest_apply(self, sph, dev, flag):
+        """flag allows the specification of various calling sequences:
+          - flag = 0: apply(x)
+          - flag = 1: apply(x, x)
+          - flag = 2: apply(x, y)
+        """
+        t = isotropic_4(sph, dev, self.dim)
+
+        eye = np.eye(self.sym)
+        expected = self.to_array(sph, dev)
+        actual = np.empty_like(eye)
+
+        for i in range(self.sym):
+            x = eye[:, i]
+            if flag == 0:
+                base = None
+            elif flag == 1:
+                base = x
+            elif flag == 2:
+                base = np.empty_like(x)
+            ret = t.apply(eye[:, i], base)
+            if flag != 0:
+                assert ret.base is base
+            actual[:, i] = ret
+
+        assert_allclose(expected, actual, ULP, ULP)
+
+    def test_apply_1(self):
+        self.ptest_apply(1., 0., 0)
+
+    def test_apply_2(self):
+        self.ptest_apply(0., 1., 0)
+
+    def test_apply_3(self):
+        self.ptest_apply(2.5, -3.5, 0)
+
+    def test_apply_in_place_1(self):
+        self.ptest_apply(1., 0., 1)
+
+    def test_apply_in_place_2(self):
+        self.ptest_apply(0., 1., 1)
+
+    def test_apply_in_place_3(self):
+        self.ptest_apply(2.5, -3.5, 1)
+
+    def test_apply_specified_output_3(self):
+        self.ptest_apply(2.5, -3.5, 2)
+
+    def test_apply_specified_output_1(self):
+        self.ptest_apply(1., 0., 2)
+
+    def test_apply_specified_output_2(self):
+        self.ptest_apply(0., 1., 2)
 
 
 class FourthRankIsotropicTensor2DTest(FourthRankIsotropicTensorTest):
