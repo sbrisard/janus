@@ -101,7 +101,7 @@ class FourthRankIsotropicTensor2DTest(FourthRankIsotropicTensorTest):
 
 
 class FourthRankIsotropicTensor3DTest(FourthRankIsotropicTensorTest):
-    dim = 2
+    dim = 3
 
 def suite():
     suite = unittest.TestSuite()
