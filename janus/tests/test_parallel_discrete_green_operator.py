@@ -23,15 +23,10 @@ def do_test_apply(path_to_ref, rel_err):
     n = None
     expected = None
     if rank == root:
-        dummy = np.load(path_to_ref)
-        n = dummy.shape[:-1]
-
-        if len(n) == 2:
-            tau = dummy[:, :, 0:3]
-            expected = dummy[:, :, 3:]
-        else:
-            tau = dummy[:, :, :, 0:6]
-            expected = dummy[:, :, :, 6:]
+        npz_file = np.load(path_to_ref)
+        tau = npz_file['x']
+        expected = npz_file['y']
+        n = tau.shape[:-1]
 
     # Broadcast global size of grid
     n = comm.bcast(n, root)
@@ -71,23 +66,23 @@ def test_apply():
     directory = os.path.join('..', 'parallel',
                              os.path.dirname(os.path.realpath(__file__)))
 
-    params = [('truncated_green_operator_200x300_unit_tau_xx_10x10+95+145.npy',
+    params = [('truncated_green_operator_200x300_unit_tau_xx_10x10+95+145.npz',
                1.2E-10),
-              ('truncated_green_operator_200x300_unit_tau_yy_10x10+95+145.npy',
+              ('truncated_green_operator_200x300_unit_tau_yy_10x10+95+145.npz',
                6.7E-11),
-              ('truncated_green_operator_200x300_unit_tau_xy_10x10+95+145.npy',
+              ('truncated_green_operator_200x300_unit_tau_xy_10x10+95+145.npz',
                7.7E-11),
-              ('truncated_green_operator_40x50x60_unit_tau_xx_10x10x10+15+20+25.npy',
+              ('truncated_green_operator_40x50x60_unit_tau_xx_10x10x10+15+20+25.npz',
                1.7E-10),
-              ('truncated_green_operator_40x50x60_unit_tau_yy_10x10x10+15+20+25.npy',
+              ('truncated_green_operator_40x50x60_unit_tau_yy_10x10x10+15+20+25.npz',
                7.6E-10),
-              ('truncated_green_operator_40x50x60_unit_tau_zz_10x10x10+15+20+25.npy',
+              ('truncated_green_operator_40x50x60_unit_tau_zz_10x10x10+15+20+25.npz',
                1.6E-9),
-              ('truncated_green_operator_40x50x60_unit_tau_yz_10x10x10+15+20+25.npy',
+              ('truncated_green_operator_40x50x60_unit_tau_yz_10x10x10+15+20+25.npz',
                1.6E-10),
-              ('truncated_green_operator_40x50x60_unit_tau_zx_10x10x10+15+20+25.npy',
+              ('truncated_green_operator_40x50x60_unit_tau_zx_10x10x10+15+20+25.npz',
                6.4E-10),
-              ('truncated_green_operator_40x50x60_unit_tau_xy_10x10x10+15+20+25.npy',
+              ('truncated_green_operator_40x50x60_unit_tau_xy_10x10x10+15+20+25.npz',
                1.6E-9),
                ]
     for filename, rel_err in params:
