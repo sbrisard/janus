@@ -35,10 +35,12 @@ if config is not None:
     with_mpi = parser.getboolean(config, 'with-mpi')
     if with_mpi:
         fftw3_mpi = parser.get(config, 'fftw3_mpi')
+        mpicc = parser.get(config, 'mpicc')
 else:
     fftw3 = 'fftw3'
     fftw3_mpi = 'fftw3_mpi'
     with_mpi = True
+    mpicc = '/usr/bin/mpicc'
 
 extensions = []
 extensions.append(Extension('janus.utils.checkarray',
@@ -76,7 +78,6 @@ if with_mpi:
 
     # TODO improve this uggly hack
     gcc = 'gcc'
-    mpicc = '/usr/bin/mpicc'
     os.environ['CC'] = get_config_var('CC').replace(gcc, mpicc)
     os.environ['LDSHARED'] = get_config_var('LDSHARED').replace(gcc, mpicc)
 
