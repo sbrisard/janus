@@ -1,4 +1,5 @@
 import itertools
+import inspect
 
 import numpy as np
 import pytest
@@ -11,14 +12,6 @@ from janus.operators import isotropic_4
 
 ULP = np.finfo(np.float64).eps
 
-def pytest_generate_tests(metafunc):
-    if metafunc.function == TestAbstractOperator.test_apply_invalid_params:
-        isize, osize = TestAbstractOperator.valid_size()
-        isize = 4
-        osize = 5
-        metafunc.parametrize('invalid_size', [(isize + 1, 0),
-                                              (isize + 1, osize),
-                                              (isize, osize + 1)])
 
 class TestAbstractOperator:
 
@@ -33,44 +26,45 @@ class TestAbstractOperator:
 
     """
 
-    @staticmethod
-    @pytest.fixture()
-    def valid_size():
+    def valid_size(self):
         return (4, 5)
 
-    @pytest.fixture()
-    def operator(self, valid_size):
+    def operator(self):
         op = AbstractOperator()
-        op.init_sizes(*valid_size)
+        op.init_sizes(*self.valid_size())
         return op
 
-    def test_init_sizes(self, operator, valid_size):
-        assert valid_size == (operator.isize, operator.osize)
+    def pytest_generate_tests(self, metafunc):
+        op = self.operator()
+        args = None
+        params = None
+        if metafunc.function.__name__ == 'test_init_sizes':
+            isize, osize = self.valid_size()
+            params = [(op, isize, osize)]
+        if metafunc.function.__name__ == 'test_init_sizes_invalid_params':
+            sizes = [(0, 1), (-1, 1), (1, 0), (1, -1)]
+            params = [(op, size[0], size[1]) for size in sizes]
+        if metafunc.function.__name__ == 'test_apply_invalid_params':
+            params = [(op, op.isize + 1, 0),
+                      (op, op.isize + 1, op.osize),
+                      (op, op.isize, op.osize + 1)]
+        if params is not None:
+            if args is None:
+                args = inspect.getargspec(metafunc.function)[0][1:]
+            metafunc.parametrize(args, params)
 
-    @pytest.mark.parametrize('isize, osize',
-                             [(0, 1), (-1, 1), (1, 0), (1, -1)])
+    def test_init_sizes(self, operator, isize, osize):
+        assert (operator.isize, operator.osize) == (isize, osize)
+
     def test_init_sizes_invalid_params(self, operator, isize, osize):
         with pytest.raises(ValueError):
             operator.init_sizes(isize, osize)
 
-    def test_apply_invalid_params(self, operator, invalid_size):
+    def test_apply_invalid_params(self, operator, isize, osize):
         with pytest.raises(ValueError):
-            m, n = invalid_size
-            x = np.zeros((m,), dtype=np.float64)
-            n = invalid_size[1]
-            y = np.zeros((n,), dtype=np.float64) if n != 0 else None
+            x = np.zeros((isize,), dtype=np.float64)
+            y = np.zeros((osize,), dtype=np.float64) if osize != 0 else None
             operator.apply(x, y)
-
-    # def test_apply_invalid_input(self, operator):
-    #     x = np.zeros((operator.isize + 1,), dtype=np.float64)
-    #     with pytest.raises(ValueError):
-    #         operator.apply(x)
-
-    # def test_apply_invalid_output(self, operator):
-    #     x = np.zeros((operator.isize,), dtype=np.float64)
-    #     y = np.zeros((operator.osize + 1,), dtype=np.float64)
-    #     with pytest.raises(ValueError):
-    #         operator.apply(x, y)
 
     def test_apply_specified_output(self, operator):
         x = np.zeros((operator.isize,), dtype=np.float64)
