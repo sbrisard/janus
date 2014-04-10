@@ -48,6 +48,8 @@ class TestAbstractOperator:
             params = [(op, op.isize + 1, 0),
                       (op, op.isize + 1, op.osize),
                       (op, op.isize, op.osize + 1)]
+        if metafunc.function.__name__ == 'test_apply_specified_output':
+            params = [(op,)]
         if params is not None:
             if args is None:
                 args = inspect.getargspec(metafunc.function)[0][1:]
@@ -73,32 +75,23 @@ class TestAbstractOperator:
         assert y.base is base
 
 
-# class AbstractLinearOperatorTest(AbstractOperatorTest):
-#     def setUp(self):
-#         self.isize = 4
-#         self.osize = 5
-#         self.operator = AbstractLinearOperator()
-#         self.operator.init_sizes(self.isize, self.osize)
+class TestAbstractLinearOperator(TestAbstractOperator):
+    def operator(self):
+        op = AbstractLinearOperator()
+        op.init_sizes(*self.valid_size())
+        return op
 
-#     def test_to_memory_view_invalid_output_1(self):
-#         """Check that `to_memory_view` raises `ValueError` when called
-#         with invalid argument.
+    def pytest_generate_tests(self, metafunc):
+        super().pytest_generate_tests(metafunc)
+        if metafunc.function.__name__ == 'test_to_memoryview_invalid_params':
+            op = self.operator()
+            params = [(op, op.isize + 1, op.osize),
+                      (op, op.isize, op.osize + 1)]
+            metafunc.parametrize('operator, isize, osize', params)
 
-#         In this test, the output array has invalid number of rows.
-
-#         """
-#         out = np.empty((self.isize + 1, self.osize), dtype=np.float64)
-#         self.assertRaises(ValueError, self.operator.to_memoryview, out)
-
-#     def test_to_memory_view_invalid_output_2(self):
-#         """Check that `to_memory_view` raises `ValueError` when called
-#         with invalid argument.
-
-#         In this test, the output array has invalid number of columns.
-
-#         """
-#         out = np.empty((self.isize, self.osize + 1), dtype=np.float64)
-#         self.assertRaises(ValueError, self.operator.to_memoryview, out)
+    def test_to_memoryview_invalid_params(self, operator, isize, osize):
+        with pytest.raises(ValueError):
+            operator.to_memoryview(np.empty((osize, isize), dtype=np.float64))
 
 
 # class FourthRankIsotropicTensorTest(AbstractLinearOperatorTest):
