@@ -8,6 +8,8 @@ from numpy.testing import assert_allclose
 
 from janus.operators import AbstractOperator
 from janus.operators import AbstractLinearOperator
+from janus.operators import AbstractStructuredOperator2D
+from janus.operators import AbstractStructuredOperator3D
 from janus.operators import isotropic_4
 
 ULP = np.finfo(np.float64).eps
@@ -158,3 +160,81 @@ class TestFourthRankIsotropicTensor2D(AbstractTestFourthRankIsotropicTensor):
 
 class TestFourthRankIsotropicTensor3D(AbstractTestFourthRankIsotropicTensor):
     dim = 3
+
+
+class AbstracTestAbstractStructuredOperator:
+    def pytest_generate_tests(self, metafunc):
+        args = inspect.getargspec(metafunc.function)[0][1:]
+        if metafunc.function.__name__ == 'test_init_shapes_invalid_params':
+            ones = tuple(itertools.repeat(1, self.dim + 1))
+            params = set(itertools.chain(itertools.permutations((0,) + ones),
+                                         itertools.permutations((-1,) + ones)))
+            params = [(param,) for param in params]
+            metafunc.parametrize(args, params)
+        if metafunc.function.__name__ == 'test_apply_invalid_params':
+            def increment(x, i):
+                return tuple(xj + 1 if j == i else xj
+                             for j, xj in enumerate(x))
+            op = self.operator()
+            ishapes = [increment(op.ishape, i) for i in range(len(op.ishape))]
+            oshapes = [increment(op.oshape, i) for i in range(len(op.oshape))]
+            params = ([(op, ishape, None) for ishape in ishapes] +
+                      [(op, ishape, op.oshape) for ishape in ishapes] +
+                      [(op, op.ishape, oshape) for oshape in oshapes])
+            metafunc.parametrize(args, params)
+
+    def test_shapes(self):
+        assert self.dim == 2 or self.dim == 3
+        aux = self.valid_shape()
+        ishape = aux[:-1]
+        oshape = aux[:-2] + (aux[-1],)
+        op = self.operator()
+        if self.dim == 2:
+            assert (op.shape0, op.shape1, op.ishape2) == ishape
+            assert (op.shape0, op.shape1, op.oshape2) == oshape
+        elif self.dim == 3:
+            assert (op.shape0, op.shape1, op.shape2, op.ishape3) == ishape
+            assert (op.shape0, op.shape1, op.shape2, op.oshape3) == oshape
+        assert op.ishape == ishape
+        assert op.oshape == oshape
+
+    def test_init_shapes_invalid_params(self, shapes):
+        op = self.operator()
+        with pytest.raises(ValueError):
+            op.init_shapes(*shapes)
+
+    def test_apply_invalid_params(self, operator, ishape, oshape):
+        with pytest.raises(ValueError):
+            x = np.zeros(ishape, dtype=np.float64)
+            y = (np.zeros(oshape, dtype=np.float64) if oshape is not None
+                 else None)
+            operator.apply(x, y)
+
+    def test_apply_specified_output(self):
+        op = self.operator()
+        x = np.zeros(op.ishape, dtype=np.float64)
+        base = np.zeros(op.oshape, dtype=np.float64)
+        y = op.apply(x, base)
+        assert y.base is base
+
+class TestAbstractStructuredOperator2D(AbstracTestAbstractStructuredOperator):
+    dim = 2
+
+    def valid_shape(self):
+        return (6, 5, 4, 3)
+
+    def operator(self):
+        op = AbstractStructuredOperator2D()
+        op.init_shapes(*self.valid_shape())
+        return op
+
+class TestAbstractStructuredOperator3D(AbstracTestAbstractStructuredOperator):
+    dim = 3
+
+    def valid_shape(self):
+        return (7, 6, 5, 4, 3)
+
+    def operator(self):
+        op = AbstractStructuredOperator3D()
+        op.init_shapes(*self.valid_shape())
+        return op
