@@ -503,7 +503,7 @@ cdef class AbstractStructuredOperator2D:
         self.oshape = (shape0, shape1, oshape2)
 
     cdef void c_apply(self, double[:, :, :] x, double[:, :, :] y):
-        raise NotImplementedError
+        pass
 
     def apply(self, double[:, :, :] x, double[:, :, :] y=None):
         """apply(x, y=None)
@@ -624,7 +624,7 @@ cdef class AbstractStructuredOperator3D:
         self.oshape = (shape0, shape1, shape2, oshape3)
 
     cdef void c_apply(self, double[:, :, :, :] x, double[:, :, :, :] y):
-        raise NotImplementedError
+        pass
 
     def apply(self, double[:, :, :, :] x, double[:, :, :, :] y=None):
         """apply(x, y=None)
@@ -953,4 +953,3 @@ cdef class BlockDiagonalLinearOperator3D(AbstractStructuredOperator3D):
                                      self.shape2, self.ishape3)
         self.c_apply_transpose(x, y)
         return y
-
