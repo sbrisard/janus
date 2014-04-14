@@ -155,6 +155,26 @@ def isotropic_4(sph, dev, dim):
         raise ValueError('dim must be 2 or 3 (was {0})'.format(dim))
 
 
+def block_diagonal_operator(loc):
+    """block_diagonal_operator(loc)
+
+    Create a block-diagonal operator.
+
+    Parameters
+    ----------
+    loc : 2D memoryview of :class:`AbstractOperator`
+        The array of local operators.
+    """
+    dim = len(loc.shape)
+    if dim == 2:
+        return BlockDiagonalOperator2D(loc)
+    elif dim == 3:
+        return BlockDiagonalOperator3D(loc)
+    else:
+        raise ValueError('number of dimensions of loc must be 2 or 3 '
+                         '(was {0})'.format(dim))
+
+
 cdef class AbstractOperator:
 
     """General operator.
