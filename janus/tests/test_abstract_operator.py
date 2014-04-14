@@ -2,6 +2,7 @@ import itertools
 import inspect
 
 import numpy as np
+import numpy.random as nprnd
 import pytest
 
 from numpy.testing import assert_allclose
@@ -10,6 +11,7 @@ from janus.operators import AbstractOperator
 from janus.operators import AbstractLinearOperator
 from janus.operators import AbstractStructuredOperator2D
 from janus.operators import AbstractStructuredOperator3D
+from janus.operators import block_diagonal_operator
 from janus.operators import isotropic_4
 
 ULP = np.finfo(np.float64).eps
@@ -238,3 +240,53 @@ class TestAbstractStructuredOperator3D(AbstracTestAbstractStructuredOperator):
         op = AbstractStructuredOperator3D()
         op.init_shapes(*self.valid_shape())
         return op
+
+class AbstractTestBlockDiagonalOperator(AbstracTestAbstractStructuredOperator):
+
+    def valid_shape(self):
+        sym = (self.dim * (self.dim + 1)) // 2
+        shape = list(range(sym + 1, sym + 1 + self.dim))
+        shape.reverse()
+        return (tuple(shape) + (sym, sym))
+
+    def local_operators(self):
+        shape = self.valid_shape()[0:self.dim]
+        loc = np.empty(shape, dtype=object)
+        for index in itertools.product(*map(range, shape[0:self.dim])):
+            loc[index] = isotropic_4(2. * nprnd.rand() - 1,
+                                     2. * nprnd.rand() - 1,
+                                     self.dim)
+        return loc
+
+    def operator(self):
+        return block_diagonal_operator(self.local_operators())
+
+    def pytest_generate_tests(self, metafunc):
+        args = inspect.getargspec(metafunc.function)[0][1:]
+        if metafunc.function.__name__ == 'test_apply':
+            shape = self.valid_shape()[0:self.dim]
+            loc = self.local_operators()
+            operator = block_diagonal_operator(loc)
+            params = []
+            for i in range(10):
+                x = nprnd.rand(*operator.ishape)
+                y_expected = np.empty(operator.oshape, dtype=np.float64)
+                for index in itertools.product(*map(range, shape[0:self.dim])):
+                    loc[index].apply(x[index], y_expected[index])
+                    params.append((operator, x, y_expected))
+            metafunc.parametrize(args, params)
+        else:
+            super().pytest_generate_tests(metafunc)
+
+    def test_apply(self, operator, x, y_expected):
+        y_actual = np.empty(operator.oshape, dtype=np.float64)
+        operator.apply(x, y_actual)
+        assert_allclose(y_expected, y_actual, ULP, ULP)
+
+
+class TestBlockDiagonalOperator2D(AbstractTestBlockDiagonalOperator):
+    dim = 2
+
+
+class TestBlockDiagonalOperator3D(AbstractTestBlockDiagonalOperator):
+    dim = 3
