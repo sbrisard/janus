@@ -700,6 +700,8 @@ cdef class BlockDiagonalOperator2D(AbstractStructuredOperator2D):
     """
 
     def __cinit__(self, AbstractOperator[:, :] op_loc):
+        if op_loc is None:
+            raise ValueError('op_loc should not be None')
         self.init_shapes(op_loc.shape[0], op_loc.shape[1],
                          op_loc[0, 0].isize, op_loc[0, 0].osize)
         self.op_loc = op_loc
@@ -753,6 +755,8 @@ cdef class BlockDiagonalOperator3D(AbstractStructuredOperator3D):
     """
 
     def __cinit__(self, AbstractOperator[:, :, :] op_loc):
+        if op_loc is None:
+            raise ValueError('op_loc should not be None')
         self.init_shapes(op_loc.shape[0], op_loc.shape[1], op_loc.shape[2],
                          op_loc[0, 0, 0].isize, op_loc[0, 0, 0].osize)
         self.op_loc = op_loc
