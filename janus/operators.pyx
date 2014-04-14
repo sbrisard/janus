@@ -902,7 +902,6 @@ cdef class BlockDiagonalLinearOperator2D(AbstractStructuredOperator2D):
             view of the parameter `y` (if not ``None``).
 
         """
-        # TODO Test this method
         check_shape_3d(x, self.shape0, self.shape1, self.oshape2)
         y = create_or_check_shape_3d(y, self.shape0, self.shape1,
                                      self.ishape2)
@@ -999,7 +998,6 @@ cdef class BlockDiagonalLinearOperator3D(AbstractStructuredOperator3D):
             view of the parameter `y` (if not ``None``).
 
         """
-        # TODO Test this method
         check_shape_4d(x,
                        self.shape0, self.shape1,
                        self.shape2, self.oshape3)

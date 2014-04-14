@@ -12,6 +12,7 @@ from janus.operators import AbstractLinearOperator
 from janus.operators import AbstractStructuredOperator2D
 from janus.operators import AbstractStructuredOperator3D
 from janus.operators import block_diagonal_operator
+from janus.operators import block_diagonal_linear_operator
 from janus.operators import isotropic_4
 
 ULP = np.finfo(np.float64).eps
@@ -184,7 +185,7 @@ class TestFourthRankIsotropicTensor3D(AbstractTestFourthRankIsotropicTensor):
     dim = 3
 
 
-class AbstracTestAbstractStructuredOperator:
+class AbstractTestAbstractStructuredOperator:
     def pytest_generate_tests(self, metafunc):
         args = inspect.getargspec(metafunc.function)[0][1:]
         if metafunc.function.__name__ == 'test_init_shapes_invalid_params':
@@ -239,7 +240,7 @@ class AbstracTestAbstractStructuredOperator:
         y = op.apply(x, base)
         assert y.base is base
 
-class TestAbstractStructuredOperator2D(AbstracTestAbstractStructuredOperator):
+class TestAbstractStructuredOperator2D(AbstractTestAbstractStructuredOperator):
     dim = 2
 
     def valid_shape(self):
@@ -250,7 +251,7 @@ class TestAbstractStructuredOperator2D(AbstracTestAbstractStructuredOperator):
         op.init_shapes(*self.valid_shape())
         return op
 
-class TestAbstractStructuredOperator3D(AbstracTestAbstractStructuredOperator):
+class TestAbstractStructuredOperator3D(AbstractTestAbstractStructuredOperator):
     dim = 3
 
     def valid_shape(self):
@@ -261,7 +262,7 @@ class TestAbstractStructuredOperator3D(AbstracTestAbstractStructuredOperator):
         op.init_shapes(*self.valid_shape())
         return op
 
-class AbstractTestBlockDiagonalOperator(AbstracTestAbstractStructuredOperator):
+class AbstractTestBlockDiagonalOperator(AbstractTestAbstractStructuredOperator):
 
     def valid_shape(self):
         sym = (self.dim * (self.dim + 1)) // 2
@@ -310,4 +311,63 @@ class TestBlockDiagonalOperator2D(AbstractTestBlockDiagonalOperator):
 
 
 class TestBlockDiagonalOperator3D(AbstractTestBlockDiagonalOperator):
+    dim = 3
+
+
+class AbstractTestBlockDiagonalLinearOperator(AbstractTestAbstractStructuredOperator):
+
+    def valid_shape(self):
+        sym = (self.dim * (self.dim + 1)) // 2
+        return tuple(range(self.dim + 4, 2, -1))
+
+    def local_matrices(self):
+        shape = self.valid_shape()
+        shape = shape[:-2] + (shape[-1], shape[-2])
+        return 2. * nprnd.rand(*shape) - 1.
+
+    def operator(self):
+        return block_diagonal_linear_operator(self.local_matrices())
+
+    def pytest_generate_tests(self, metafunc):
+        args = inspect.getargspec(metafunc.function)[0][1:]
+        if metafunc.function.__name__ == 'test_apply':
+            global_shape = self.valid_shape()[0:self.dim]
+            a = self.local_matrices()
+            operator = block_diagonal_linear_operator(a)
+            params = []
+            for i in range(10):
+                x = nprnd.rand(*operator.ishape)
+                y_expected = np.empty(operator.oshape, dtype=np.float64)
+                for index in itertools.product(*map(range,
+                                                    global_shape)):
+                    y_expected[index] = np.dot(a[index], x[index])
+                params.append((operator, x, y_expected))
+            metafunc.parametrize(args, params)
+        elif metafunc.function.__name__ == 'test_apply_transpose':
+            operator = self.operator()
+            params = []
+            for i in range(10):
+                x = nprnd.rand(*operator.ishape)
+                y = nprnd.rand(*operator.oshape)
+                params.append((operator, x, y))
+            metafunc.parametrize(args, params)
+        else:
+            super().pytest_generate_tests(metafunc)
+
+    def test_apply(self, operator, x, y_expected):
+        y_actual = np.empty(operator.oshape, dtype=np.float64)
+        operator.apply(x, y_actual)
+        assert_allclose(y_expected, y_actual, 0 * ULP, 0 * ULP)
+
+    def test_apply_transpose(self, operator, x, y):
+        yax = np.sum(y * operator.apply(x))
+        atyx = np.sum(operator.apply_transpose(y) * x)
+        assert np.abs(yax - atyx) <= 100 * ULP * np.maximum(np.abs(yax), 1.0)
+
+
+class TestBlockDiagonalLinearOperator2D(AbstractTestBlockDiagonalLinearOperator):
+    dim = 2
+
+
+class TestBlockDiagonalLinearOperator3D(AbstractTestBlockDiagonalLinearOperator):
     dim = 3
