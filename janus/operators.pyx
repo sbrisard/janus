@@ -134,7 +134,7 @@ from janus.utils.checkarray cimport create_or_check_shape_4d
 def isotropic_4(sph, dev, dim):
     """isotropic_4(sph, dev, dim)
 
-    Create a fourth rank, isotrpic tensor.
+    Create a fourth rank, isotropic tensor.
 
     Parameters
     ----------
