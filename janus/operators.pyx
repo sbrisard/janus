@@ -93,6 +93,9 @@ Functions defined in this module
 
 - :func:`isotropic_4` -- create a fourth-rank, isotropic tensor with minor
   symmetries.
+- :func:`block_diagonal_operator` -- create a block-diagonal operator.
+- :func:`block_diagonal_linear_operator` -- create a block-diagonal, linear
+  operator.
 
 Classes defined in this module
 ------------------------------
@@ -163,7 +166,9 @@ def block_diagonal_operator(loc):
     Parameters
     ----------
     loc : 2D memoryview of :class:`AbstractOperator`
-        The array of local operators.
+        The array of local operators. The returned instance keeps a
+        *shallow* copy of `loc`.
+
     """
     dim = len(loc.shape)
     if dim == 2:
@@ -172,6 +177,28 @@ def block_diagonal_operator(loc):
         return BlockDiagonalOperator3D(loc)
     else:
         raise ValueError('number of dimensions of loc must be 2 or 3 '
+                         '(was {0})'.format(dim))
+
+
+def block_diagonal_linear_operator(a):
+    """block_diagonal_linear_operator(a)
+
+    Create a block-diagonal, linear operator.
+
+    Parameters
+    ----------
+    a : 4D or 5D memoryview of `float64`.
+        The array of local matrices. The returned instance keeps a
+        *shallow* copy of `a`.
+
+    """
+    dim = len(a.shape) - 2
+    if dim == 2:
+        return BlockDiagonalLinearOperator2D(a)
+    elif dim == 3:
+        return BlockDiagonalLinearOperator3D(a)
+    else:
+        raise ValueError('number of dimensions of a must be 4 or 5 '
                          '(was {0})'.format(dim))
 
 
