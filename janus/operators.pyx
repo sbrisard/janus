@@ -465,12 +465,18 @@ cdef class FourthRankIsotropicTensor3D(FourthRankIsotropicTensor):
         out[3, 0] = 0.0
         out[3, 1] = 0.0
         out[3, 2] = 0.0
+        out[3, 4] = 0.0
+        out[3, 5] = 0.0
         out[4, 0] = 0.0
         out[4, 1] = 0.0
         out[4, 2] = 0.0
+        out[4, 3] = 0.0
+        out[4, 5] = 0.0
         out[5, 0] = 0.0
         out[5, 1] = 0.0
         out[5, 2] = 0.0
+        out[5, 3] = 0.0
+        out[5, 4] = 0.0
 
 
 cdef class AbstractStructuredOperator2D:
