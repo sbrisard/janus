@@ -834,6 +834,8 @@ cdef class BlockDiagonalLinearOperator2D(AbstractStructuredOperator2D):
     """
 
     def __cinit__(self, double[:, :, :, :] a):
+        if a is None:
+            raise ValueError('a should not be None')
         self.init_shapes(a.shape[0], a.shape[1], a.shape[3], a.shape[2])
         self.a = a
 
@@ -924,6 +926,8 @@ cdef class BlockDiagonalLinearOperator3D(AbstractStructuredOperator3D):
     """
 
     def __cinit__(self, double[:, :, :, :, :] a):
+        if a is None:
+            raise ValueError('a should not be None')
         self.init_shapes(a.shape[0], a.shape[1], a.shape[2],
                          a.shape[4], a.shape[3])
         self.a = a
