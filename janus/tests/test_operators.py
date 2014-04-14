@@ -156,7 +156,7 @@ class AbstractTestFourthRankIsotropicTensor(TestAbstractLinearOperator):
             elif flag == 1:
                 base = x
             elif flag == 2:
-                base = np.empty_like(x)
+                base = nprnd.rand(*x.shape)
             ret = t.apply(eye[:, i], base)
             if flag != 0:
                 assert ret.base is base
@@ -170,7 +170,7 @@ class AbstractTestFourthRankIsotropicTensor(TestAbstractLinearOperator):
         if flag == 0:
             base = None
         elif flag == 1:
-            base = np.empty((t.osize, t.isize), dtype=np.float64)
+            base = nprnd.rand(t.osize, t.isize)
         actual = t.to_memoryview(base)
         if flag != 0:
             assert actual.base is base
