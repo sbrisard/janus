@@ -38,11 +38,11 @@ cdef class AbstractStructuredOperator3D:
 
 
 cdef class BlockDiagonalOperator2D(AbstractStructuredOperator2D):
-    cdef AbstractOperator[:, :] op_loc
+    cdef AbstractOperator[:, :] loc
 
 
 cdef class BlockDiagonalOperator3D(AbstractStructuredOperator3D):
-    cdef AbstractOperator[:, :, :] op_loc
+    cdef AbstractOperator[:, :, :] loc
 
 
 cdef class BlockDiagonalLinearOperator2D(AbstractStructuredOperator2D):

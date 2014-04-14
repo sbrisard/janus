@@ -36,14 +36,14 @@ Block-diagonal operators (:class:`BlockDiagonalOperator2D`,
 :class:`BlockDiagonalOperator3D`) are defined as structured operators
 for which the local output depends on the local input only. Any block
 diagonal operator can be represented as an array of local operators (of
-type :class:`AbstractOperator`) ``op_loc``. Then, the input ``x`` is
-mapped to the output ``y`` as follows ::
+type :class:`AbstractOperator`) ``loc``. Then, the input ``x`` is mapped
+to the output ``y`` as follows ::
 
-    y[i0, i1, :] = op_loc[i0, i1].apply(x[i0, i1, :])
+    y[i0, i1, :] = loc[i0, i1].apply(x[i0, i1, :])
 
 in 2D, and ::
 
-    y[i0, i1, i2, :] = op_loc[i0, i1, i2].apply(x[i0, i1, i2, :])
+    y[i0, i1, i2, :] = loc[i0, i1, i2].apply(x[i0, i1, i2, :])
 
 in 3D.
 
@@ -54,7 +54,7 @@ Block-diagonal linear operators
 
 This can be further simplified in the case of linear, block-diagonal
 operators (:class:`BlockDiagonalLinearOperator2D`,
-:class:`BlockDiagonalLinearOperator3D`). Indeed, ``op_loc`` is then an
+:class:`BlockDiagonalLinearOperator3D`). Indeed, ``loc`` is then an
 array of matrices, which can be viewed as a higher-dimension array.
 Therefore, a block-diagonal linear operator can be defined through a
 ``float64`` array ``a`` such that ::
@@ -72,21 +72,21 @@ in 3D.
 Performing in-place operations
 ------------------------------
 
-All types of operators define a method `apply(x, y)`, where `x` is a
-memoryview of the input and `y` is a memoryview of the output. If `y`
-is `None`, then `apply` returns a newly created memoryview. If `y` is
-not `None`, then `apply` returns a reference to `y`.
+All types of operators define a method ``apply(x, y)``, where ``x`` is a
+memoryview of the input and ``y`` is a memoryview of the output. If
+``y`` is ``None``, then ``apply`` returns a newly created memoryview. If
+``y`` is not ``None``, then ``apply`` returns a reference to ``y``.
 
 Depending on the implementation, some operators allow for in-place
 operations, which can further reduce memory allocations. In
-other words, `apply(x, x)` is valid for such operators and returns
+other words, ``apply(x, x)`` is valid for such operators and returns
 the expected value. Whether or not an operator allows for in-place
 operations is implementation dependent, and should be specified in the
 documentation. **Unless otherwise stated, it should be assumed that
 in-place operations are not supported.**
 
 If relevant, the above also applies to the Cython method
-`c_apply(x, y)`.
+``c_apply(x, y)``.
 
 Functions defined in this module
 --------------------------------
@@ -714,30 +714,30 @@ cdef class BlockDiagonalOperator2D(AbstractStructuredOperator2D):
     Block-diagonal operators have been defined
     :ref:`above <block-diagonal-operators>`.
 
-    If the local operators `op_loc` allow for :ref:`in-place operations
+    If the local operators `loc` allow for :ref:`in-place operations
     <in-place-operations>`, then the block-diagonal operator also
     allows for in-place operations.
 
     Parameters
     ----------
-    op_loc : 2D memoryview of :class:`AbstractOperator`
+    loc : 2D memoryview of :class:`AbstractOperator`
         The array of local operators. The returned instance keeps a
-        *shallow* copy of `op_loc`.
+        *shallow* copy of `loc`.
 
     """
 
-    def __cinit__(self, AbstractOperator[:, :] op_loc):
-        if op_loc is None:
-            raise ValueError('op_loc should not be None')
-        self.init_shapes(op_loc.shape[0], op_loc.shape[1],
-                         op_loc[0, 0].isize, op_loc[0, 0].osize)
-        self.op_loc = op_loc
+    def __cinit__(self, AbstractOperator[:, :] loc):
+        if loc is None:
+            raise ValueError('loc should not be None')
+        self.init_shapes(loc.shape[0], loc.shape[1],
+                         loc[0, 0].isize, loc[0, 0].osize)
+        self.loc = loc
 
         cdef int i0, i1, ishape2, oshape2
         for i0 in range(self.shape0):
             for i1 in range(self.shape1):
-                ishape2 = op_loc[i0, i1].isize
-                oshape2 = op_loc[i0, i1].osize
+                ishape2 = loc[i0, i1].isize
+                oshape2 = loc[i0, i1].osize
                 if ishape2 != self.ishape2:
                     raise ValueError('invalid dimension block operator input: '
                                      'expected {0}, '
@@ -757,7 +757,7 @@ cdef class BlockDiagonalOperator2D(AbstractStructuredOperator2D):
 
         for i0 in range(self.shape0):
             for i1 in range(self.shape1):
-                op = self.op_loc[i0, i1]
+                op = self.loc[i0, i1]
                 op.c_apply(x[i0, i1, :], y[i0, i1, :])
 
 
@@ -769,31 +769,31 @@ cdef class BlockDiagonalOperator3D(AbstractStructuredOperator3D):
     :ref:`above <block-diagonal-operators>`.
 
 
-    If the local operators `op_loc` allow for :ref:`in-place operations
+    If the local operators `loc` allow for :ref:`in-place operations
     <in-place-operations>`, then the block-diagonal operator also
     allows for in-place operations.
 
     Parameters
     ----------
-    op_loc : 3D memoryview of :class:`AbstractOperator`
+    loc : 3D memoryview of :class:`AbstractOperator`
         The array of local operators. The returned instance keeps a
-        *shallow* copy of `op_loc`.
+        *shallow* copy of `loc`.
 
     """
 
-    def __cinit__(self, AbstractOperator[:, :, :] op_loc):
-        if op_loc is None:
-            raise ValueError('op_loc should not be None')
-        self.init_shapes(op_loc.shape[0], op_loc.shape[1], op_loc.shape[2],
-                         op_loc[0, 0, 0].isize, op_loc[0, 0, 0].osize)
-        self.op_loc = op_loc
+    def __cinit__(self, AbstractOperator[:, :, :] loc):
+        if loc is None:
+            raise ValueError('loc should not be None')
+        self.init_shapes(loc.shape[0], loc.shape[1], loc.shape[2],
+                         loc[0, 0, 0].isize, loc[0, 0, 0].osize)
+        self.loc = loc
 
         cdef int i0, i1, i2, ishape3, oshape3
         for i0 in range(self.shape0):
             for i1 in range(self.shape1):
                 for i2 in range(self.shape2):
-                    ishape3 = op_loc[i0, i1, i2].isize
-                    oshape3 = op_loc[i0, i1, i2].osize
+                    ishape3 = loc[i0, i1, i2].isize
+                    oshape3 = loc[i0, i1, i2].osize
                     if ishape3 != self.ishape3:
                         raise ValueError('invalid dimension block operator '
                                          'input: expected {0}, '
@@ -814,7 +814,7 @@ cdef class BlockDiagonalOperator3D(AbstractStructuredOperator3D):
         for i0 in range(self.shape0):
             for i1 in range(self.shape1):
                 for i2 in range(self.shape2):
-                    op = self.op_loc[i0, i1, i2]
+                    op = self.loc[i0, i1, i2]
                     op.c_apply(x[i0, i1, i2, :], y[i0, i1, i2, :])
 
 
