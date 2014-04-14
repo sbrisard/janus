@@ -117,6 +117,12 @@ class AbstractTestFourthRankIsotropicTensor(TestAbstractLinearOperator):
             params = [(sph, dev, flag) for ((sph, dev), flag)
                       in itertools.product(params, flags)]
             metafunc.parametrize('sph, dev, flag', params)
+        elif metafunc.function.__name__ == 'test_to_memoryview':
+            flags = [0, 1]
+            params = [(1., 0.), (0., 1.), (2.5, -3.5)]
+            params = [(sph, dev, flag) for ((sph, dev), flag)
+                      in itertools.product(params, flags)]
+            metafunc.parametrize('sph, dev, flag', params)
         else:
             super().pytest_generate_tests(metafunc)
 
@@ -155,7 +161,19 @@ class AbstractTestFourthRankIsotropicTensor(TestAbstractLinearOperator):
                 assert ret.base is base
             actual[:, i] = ret
 
-        assert_allclose(expected, actual, ULP, ULP)
+        assert_allclose(expected, actual, 1 * ULP, 0 * ULP)
+
+    def test_to_memoryview(self, sph, dev, flag):
+        t = isotropic_4(sph, dev, self.dim)
+        expected = self.to_array(sph, dev)
+        if flag == 0:
+            base = None
+        elif flag == 1:
+            base = np.empty((t.osize, t.isize), dtype=np.float64)
+        actual = t.to_memoryview(base)
+        if flag != 0:
+            assert actual.base is base
+        assert_allclose(expected, actual, 0 * ULP, 0 * ULP)
 
 
 class TestFourthRankIsotropicTensor2D(AbstractTestFourthRankIsotropicTensor):
@@ -276,7 +294,7 @@ class AbstractTestBlockDiagonalOperator(AbstracTestAbstractStructuredOperator):
                 for index in itertools.product(*map(range,
                                                     global_shape)):
                     loc[index].apply(x[index], y_expected[index])
-                    params.append((operator, x, y_expected))
+                params.append((operator, x, y_expected))
             metafunc.parametrize(args, params)
         else:
             super().pytest_generate_tests(metafunc)
@@ -284,7 +302,7 @@ class AbstractTestBlockDiagonalOperator(AbstracTestAbstractStructuredOperator):
     def test_apply(self, operator, x, y_expected):
         y_actual = np.empty(operator.oshape, dtype=np.float64)
         operator.apply(x, y_actual)
-        assert_allclose(y_expected, y_actual, ULP, ULP)
+        assert_allclose(y_expected, y_actual, 0 * ULP, 0 * ULP)
 
 
 class TestBlockDiagonalOperator2D(AbstractTestBlockDiagonalOperator):
