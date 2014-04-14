@@ -252,9 +252,9 @@ class AbstractTestBlockDiagonalOperator(AbstracTestAbstractStructuredOperator):
         return (tuple(shape) + (sym, sym))
 
     def local_operators(self):
-        shape = self.valid_shape()[0:self.dim]
-        loc = np.empty(shape, dtype=object)
-        for index in itertools.product(*map(range, shape[0:self.dim])):
+        global_shape = self.valid_shape()[0:self.dim]
+        loc = np.empty(global_shape, dtype=object)
+        for index in itertools.product(*map(range, global_shape)):
             loc[index] = isotropic_4(2. * nprnd.rand() - 1,
                                      2. * nprnd.rand() - 1,
                                      self.dim)
@@ -266,14 +266,15 @@ class AbstractTestBlockDiagonalOperator(AbstracTestAbstractStructuredOperator):
     def pytest_generate_tests(self, metafunc):
         args = inspect.getargspec(metafunc.function)[0][1:]
         if metafunc.function.__name__ == 'test_apply':
-            shape = self.valid_shape()[0:self.dim]
+            global_shape = self.valid_shape()[0:self.dim]
             loc = self.local_operators()
             operator = block_diagonal_operator(loc)
             params = []
             for i in range(10):
                 x = nprnd.rand(*operator.ishape)
                 y_expected = np.empty(operator.oshape, dtype=np.float64)
-                for index in itertools.product(*map(range, shape[0:self.dim])):
+                for index in itertools.product(*map(range,
+                                                    global_shape)):
                     loc[index].apply(x[index], y_expected[index])
                     params.append((operator, x, y_expected))
             metafunc.parametrize(args, params)
