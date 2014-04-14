@@ -86,12 +86,13 @@ class TestAbstractLinearOperator(TestAbstractOperator):
         return op
 
     def pytest_generate_tests(self, metafunc):
-        super().pytest_generate_tests(metafunc)
         if metafunc.function.__name__ == 'test_to_memoryview_invalid_params':
             op = self.operator()
             params = [(op, op.isize + 1, op.osize),
                       (op, op.isize, op.osize + 1)]
             metafunc.parametrize('operator, isize, osize', params)
+        else:
+            super().pytest_generate_tests(metafunc)
 
     def test_to_memoryview_invalid_params(self, operator, isize, osize):
         with pytest.raises(ValueError):
@@ -110,13 +111,14 @@ class AbstractTestFourthRankIsotropicTensor(TestAbstractLinearOperator):
         return (sym, sym)
 
     def pytest_generate_tests(self, metafunc):
-        super().pytest_generate_tests(metafunc)
         if metafunc.function.__name__ == 'test_apply':
             flags = [0, 1, 2]
             params = [(1., 0.), (0., 1.), (2.5, -3.5)]
             params = [(sph, dev, flag) for ((sph, dev), flag)
                       in itertools.product(params, flags)]
             metafunc.parametrize('sph, dev, flag', params)
+        else:
+            super().pytest_generate_tests(metafunc)
 
     def to_array(self, sph, dev):
         sym = self.sym()
