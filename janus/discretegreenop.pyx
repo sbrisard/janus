@@ -5,8 +5,6 @@ from cython cimport wraparound
 from cython.view cimport array
 from libc.math cimport M_PI
 from libc.math cimport cos
-from libc.stdlib cimport malloc
-from libc.stdlib cimport free
 
 from janus.fft.serial._serial_fft cimport _RealFFT2D
 from janus.fft.serial._serial_fft cimport _RealFFT3D
