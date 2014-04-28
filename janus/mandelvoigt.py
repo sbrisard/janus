@@ -15,6 +15,14 @@ def _check_multi_index(multi_index, dim):
     _check_index(multi_index[1], dim)
 
 class MandelVoigt:
+    def __new__(cls, dim):
+        #TODO This class should be made final, because subclasses would be
+        # messing the singleton pattern.
+        attr = 'instance_{0}d'.format(dim)
+        if not(hasattr(cls, attr)):
+            setattr(cls, attr, super().__new__(cls))
+        return getattr(cls, attr)
+
     def __init__(self, dim):
         x = 0
         y = 1
@@ -55,15 +63,3 @@ class MandelVoigt:
                     a_ijkl *= SQRT_2
                 a[ij, kl] = a_ijkl
         return a
-
-        
-mandel_voigt_2d = MandelVoigt(2)
-mandel_voigt_3d = MandelVoigt(3)
-
-def get_instance(dim):
-    if dim == 2:
-        return mandel_voigt_2d
-    elif dim == 3:
-        return mandel_voigt_3d
-    else:
-        raise ValueError('dim must be 2 or 3 (was {0})'.format(dim))
