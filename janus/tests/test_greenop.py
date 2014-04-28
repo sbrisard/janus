@@ -1,7 +1,8 @@
 import numpy as np
 
 import janus.greenop as greenop
-import janus.mandelvoigt as mv
+
+from janus.mandelvoigt import MandelVoigt
 
 from nose.tools import nottest
 from nose.tools import raises
@@ -35,7 +36,7 @@ def green_matrix(k, mat):
         return np.zeros((sym, sym), dtype=np.float64)
     else:
         n = k / np.sqrt(k2)
-        return mv.get_instance(mat.dim).create_array(green_coefficient, n, mat)
+        return MandelVoigt(mat.dim).create_array(green_coefficient, n, mat)
 
 def wave_vectors(dim):
     norms = [2.5, 3.5]
