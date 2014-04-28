@@ -11,7 +11,7 @@ from janus.mandelvoigt import MandelVoigt
 class TestMandelVoigt:
 
     def pytest_generate_tests(self, metafunc):
-        if metafunc.function.__name__ == 'test_create_array':
+        if metafunc.function.__name__ == 'test_as_array':
             params = []
             for dim in [2, 3]:
                 r = range(dim)
@@ -64,7 +64,7 @@ class TestMandelVoigt:
     def test_ravel_multi_index(self, dim, multi_index, expected):
         assert MandelVoigt(dim).ravel_multi_index(*multi_index) == expected
 
-    def test_create_array(self, m, n, p, q, dim):
+    def test_as_array(self, m, n, p, q, dim):
         mv = MandelVoigt(dim)
         mn = mv.ravel_multi_index(m, n)
         pq = mv.ravel_multi_index(p, q)
@@ -88,5 +88,5 @@ class TestMandelVoigt:
                 return 1.0
             else:
                 return 0.0
-        actual = MandelVoigt(dim).create_array(coeff)
+        actual = MandelVoigt(dim).as_array(coeff)
         assert_array_equal(expected, actual)

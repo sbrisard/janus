@@ -48,9 +48,7 @@ class MandelVoigt:
         _check_index(j, self.dim)
         return self._to_index[i][j]
 
-    def create_array(self, coeff, *args):
-        # TODO should probably return matrix
-        # TODO change name to create_matrix
+    def as_array(self, coeff, *args):
         a = np.empty((self.sym, self.sym), dtype=np.float64)
         for ij in range(self.sym):
             i, j = self.unravel_index(ij)

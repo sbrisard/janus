@@ -36,7 +36,7 @@ def green_matrix(k, mat):
         return np.zeros((sym, sym), dtype=np.float64)
     else:
         n = k / np.sqrt(k2)
-        return MandelVoigt(mat.dim).create_array(green_coefficient, n, mat)
+        return MandelVoigt(mat.dim).as_array(green_coefficient, n, mat)
 
 def wave_vectors(dim):
     norms = [2.5, 3.5]
