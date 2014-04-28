@@ -1,49 +1,40 @@
-from nose.tools import assert_almost_equals
-from nose.tools import assert_equals
-from nose.tools import raises
+import pytest
 
 from janus.matprop import IsotropicLinearElasticMaterial as Material
 
-def dotest_cinit(g, k, nu, dim):
-    mat = Material(g, nu, dim)
-    assert_equals(g, mat.g)
-    assert_equals(k, mat.k)
-    assert_equals(nu, mat.nu)
-    
-def test_cinit_2d():
-    """Constructor (2D material)"""
-    dotest_cinit(1.5, 3.75, 0.3, 2)
+class TestIsotropicLinearElasticMaterial:
 
-def test_cinit_3d():
-    """Constructor (3D material)"""
-    dotest_cinit(1.5, 3.25, 0.3, 3)
+    @pytest.mark.parametrize('g, k, nu, dim', [(1.5, 3.75, 0.3, 2),
+                                               (1.5, 3.25, 0.3, 3)])
+    def test_init(self, g, k, nu, dim):
+        mat = Material(g, nu, dim)
+        assert mat.g == g
+        assert mat.k == k
+        assert mat.nu == nu
 
-@raises(ValueError)
-def test_cinit_invalid_dimension():
-    """Constructor (invalid dimension)"""
-    mat = Material(1., 0.3, 4)
+    @pytest.mark.parametrize('g, nu, dim', [(0.0, 0.3, 2),
+                                            (0.0, 0.3, 3),
+                                            (-1.0, 0.3, 2),
+                                            (-1.0, 0.3, 3),
+                                            (1.0, -1.0, 2),
+                                            (1.0, -1.5, 2),
+                                            (1.0, 0.5, 2),
+                                            (1.0, 1.0, 2),
+                                            (1.0, -1.0, 3),
+                                            (1.0, -1.5, 3),
+                                            (1.0, 0.5, 3),
+                                            (1.0, 1.0, 3),
+                                            (1.0, 0.3, 0),
+                                            (1.0, 0.3, 4)])
+    def test_init_invalid_params(self, g, nu, dim):
+        with pytest.raises(ValueError):
+            mat = Material(g, nu, dim)
 
-@raises(AttributeError)
-def test_cinit_readonly_dimension():
-    """dim attribute is read-only"""
-    mat = Material(1., 0.3, 3)
-    mat.dim = 2
-
-@raises(AttributeError)
-def test_cinit_readonly_shear_modulus():
-    """g attribute is read-only"""
-    mat = Material(1., 0.3, 3)
-    mat.g = 0.0
-
-@raises(AttributeError)
-def test_cinit_readonly_bulk_modulus():
-    """k attribute is read-only"""
-    mat = Material(1., 0.3, 3)
-    mat.k = 0.0
-
-@raises(AttributeError)
-def test_cinit_readonly_poisson_ratio():
-    """nu attribute is read-only"""
-    mat = Material(1., 0.3, 3)
-    mat.nu = 0.0
-
+    @pytest.mark.parametrize('name, value', [('g', 2.0),
+                                             ('k', 10.0),
+                                             ('nu', 0.5),
+                                             ('dim', 2)])
+    def test_read_only_attribute(self, name, value):
+        mat = Material(1.0, 0.3, 3)
+        with pytest.raises(AttributeError):
+            setattr(mat, name, value)
