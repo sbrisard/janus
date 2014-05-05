@@ -23,11 +23,11 @@ def delta(i, j):
         return 0
 
 def green_coefficient(i, j, k, l, n, mat):
-    return ((delta(i, k) * n[j] * n[l]
-             + delta(i, l) * n[j] * n[k]
-             + delta(j, k) * n[i] * n[l]
-             + delta(j, l) * n[i] * n[k])
-            - 2 * n[i] * n[j] * n[k] * n[l] / (1. - mat.nu)) / (4 * mat.g)
+    return ((delta(i, k) * n[j] * n[l] +
+             delta(i, l) * n[j] * n[k] +
+             delta(j, k) * n[i] * n[l] +
+             delta(j, l) * n[i] * n[k]) -
+            2 * n[i] * n[j] * n[k] * n[l] / (1. - mat.nu)) / (4 * mat.g)
 
 def green_matrix(k, mat):
     k2 = sum(k**2)
