@@ -1,20 +1,17 @@
+import itertools
+
 import numpy as np
+import pytest
 
 import janus.greenop as greenop
+import janus.tests.test_operators as test_operators
 
-from janus.mandelvoigt import MandelVoigt
-
-from nose.tools import nottest
-from nose.tools import raises
 from numpy import cos
 from numpy import sin
 from numpy.testing import assert_array_almost_equal_nulp
 
+from janus.mandelvoigt import MandelVoigt
 from janus.matprop import IsotropicLinearElasticMaterial as Material
-
-DIMS = [2, 3]
-MU = 0.7
-NU = 0.3
 
 def delta(i, j):
     if i == j:
@@ -38,15 +35,115 @@ def green_matrix(k, mat):
         n = k / np.sqrt(k2)
         return MandelVoigt(mat.dim).as_array(green_coefficient, n, mat)
 
-def wave_vectors(dim):
-    norms = [2.5, 3.5]
-    if dim == 2:
-        num_angles = 20
-        thetas = [(2. * np.pi * i) / num_angles for i in range(num_angles)]
+
+class AbstractTestGreenOperator(test_operators.TestAbstractLinearOperator):
+    mu = 0.7
+    nu = 0.3
+
+    def valid_size(self):
+        """Inherited from TestAbstractLinearOperator"""
+        sym = (self.dim * (self.dim + 1)) // 2
+        return (sym, sym)
+
+    def material(self):
+        return Material(self.mu, self.nu, self.dim)
+
+    def pytest_generate_tests(self, metafunc):
+        if metafunc.function.__name__ == 'test_apply':
+            params = itertools.product(self.wave_vectors(),
+                                       [0, 1, 2])
+            metafunc.parametrize('k, flag', params)
+        elif metafunc.function.__name__ == 'test_to_memoryview':
+            params = itertools.product(self.wave_vectors(),
+                                       [0, 1])
+            metafunc.parametrize('k, flag', params)
+        else:
+            super().pytest_generate_tests(metafunc)
+
+    def test_init_invalid_dimension(self):
+        if self.dim == 2:
+            mat = Material(1.0, 0.3, 3)
+            cls = greenop.GreenOperator2D
+        elif self.dim == 3:
+            mat = Material(1.0, 0.3, 2)
+            cls = greenop.GreenOperator3D
+        else:
+            raise ValueError()
+        with pytest.raises(ValueError):
+            cls(mat)
+
+    def test_apply(self, k, flag):
+        """flag allows the specification of various calling sequences:
+        - flag = 0: apply(b, tau)
+        - flag = 1: apply(b, tau, tau)
+        - flag = 2: apply(b, tau, eta)
+        """
+        mat = self.material()
+        expected = green_matrix(k,  mat)
+        green = greenop.create(mat)
+        tau = np.zeros((green.isize,), np.float64)
+        if flag == 0:
+            base = None
+        elif flag == 1:
+            base = tau
+        elif flag == 2:
+            base = np.empty((green.osize,), np.float64)
+        else:
+            raise ValueError()
+        for j in range(green.isize):
+            tau[:] = 0.
+            tau[j] = 1.
+            green.set_frequency(k)
+            actual = green.apply(tau, base)
+            if flag != 0:
+                assert actual.base is base
+            assert_array_almost_equal_nulp(expected[:, j], actual, 325)
+
+    def test_to_memoryview(self, k, flag):
+        """flag allows the specification of various calling sequences:
+        - flag = 0: to_memoryview()
+        - flag = 1: to_memoryview(a)
+        """
+        mat = self.material()
+        expected = green_matrix(k,  mat)
+        green = greenop.create(mat)
+        green.set_frequency(k)
+        if flag == 0:
+            actual = green.to_memoryview()
+        elif flag == 1:
+            base = np.empty((green.osize, green.isize), np.float64)
+            actual = green.to_memoryview(base)
+            assert actual.base is base
+        else:
+            raise ValueError()
+        assert_array_almost_equal_nulp(expected, actual, 325)
+
+    def test_set_frequency_invalid_params(self):
+        k = np.zeros((self.dim + 1,), dtype=np.float64)
+        green = greenop.create(self.material())
+        with pytest.raises(ValueError):
+            green.set_frequency(k)
+
+
+class TestGreenOperator2D(AbstractTestGreenOperator):
+    dim = 2
+
+    def wave_vectors(self):
+        norms = [2.5, 3.5]
+        thetas = np.linspace(0., 2. * np.pi,
+                             num=20, endpoint=False)
         def vec(r, theta):
             return np.array([r * cos(theta), r * sin(theta)], dtype=np.float64)
         ret = [vec(k, theta) for theta in thetas for k in norms]
-    elif dim == 3:
+        ret.append(np.zeros((self.dim,), dtype=np.float64))
+        return ret
+
+
+class TestGreenOperator3D(AbstractTestGreenOperator):
+    dim = 3
+
+    def wave_vectors(self):
+        norms = [2.5, 3.5]
         num_thetas = 10
         num_phis = 20
         thetas = [(np.pi * i) / num_thetas for i in range(num_thetas)]
@@ -56,131 +153,7 @@ def wave_vectors(dim):
                              r * cos(theta) * sin(phi),
                              r * sin(theta)],
                             dtype=np.float64)
-        ret = [vec(k, theta, phi) for phi in phis for theta in thetas
-               for k in norms]
-    else:
-        raise ValueError()
-    ret.append(np.zeros((dim,), dtype=np.float64))
-    return ret
-
-@nottest
-def do_test_apply(k, mat, flag):
-    """flag allows the specification of various calling sequences:
-      - flag = 0: apply(b, tau)
-      - flag = 1: apply(b, tau, tau)
-      - flag = 2: apply(b, tau, eta)
-    """
-    expected = green_matrix(k,  mat)
-    green = greenop.create(mat)
-    tau = np.zeros((green.isize,), np.float64)
-    if flag == 0:
-        base = None
-    elif flag == 1:
-        base = tau
-    elif flag == 2:
-        base = np.empty((green.osize,), np.float64)
-    else:
-        raise ValueError()
-
-    for j in range(green.isize):
-        tau[:] = 0.
-        tau[j] = 1.
-        green.set_frequency(k)
-        actual = green.apply(tau, base)
-        if flag != 0:
-            assert actual.base is base
-        assert_array_almost_equal_nulp(expected[:, j], actual, 325)
-
-def test_apply():
-    for dim in DIMS:
-        mat = Material(MU, NU, dim)
-        for k in wave_vectors(dim):
-            for flag in range(3):
-                yield do_test_apply, k, mat, flag
-
-@nottest
-def do_test_to_memoryview(k, mat, inplace):
-    expected = green_matrix(k,  mat)
-    green = greenop.create(mat)
-    green.set_frequency(k)
-    if inplace:
-        base = np.empty((green.osize, green.isize), np.float64)
-        actual = green.to_memoryview(base)
-        assert actual.base is base
-    else:
-        actual = green.to_memoryview()
-    assert_array_almost_equal_nulp(expected, actual, 325)
-
-def test_to_memoryview():
-    for dim in DIMS:
-        mat = Material(MU, NU, dim)
-        for k in wave_vectors(dim):
-            for inplace in [True, False]:
-                yield do_test_to_memoryview, k, mat, inplace
-
-@raises(ValueError)
-def test_init_2D_invalid_dimension():
-    greenop.GreenOperator2D(Material(MU, NU, 3))
-
-@raises(ValueError)
-def test_init_3D_invalid_dimension():
-    greenop.GreenOperator3D(Material(MU, NU, 2))
-
-@raises(ValueError)
-def test_invalid_frequency_2D():
-    k = np.zeros((3,), dtype=np.float64)
-    greenop.create(Material(MU, NU, 2)).set_frequency(k)
-
-@raises(ValueError)
-def test_invalid_frequency_3D():
-    k = np.zeros((2,), dtype=np.float64)
-    greenop.create(Material(MU, NU, 3)).set_frequency(k)
-
-@nottest
-@raises(ValueError)
-def do_test_apply_invalid_params(green, tau, eps):
-    green.apply(tau, eps)
-
-def test_apply_invalid_params():
-    g2 = greenop.create(Material(MU, NU, 2))
-    @raises(ValueError)
-    def apply2(tau, eps):
-        return g2.apply(tau, eps)
-
-    g3 = greenop.create(Material(MU, NU, 3))
-    @raises(ValueError)
-    def apply3(tau, eps):
-        return g3.apply(tau, eps)
-
-    tau3 = np.empty((3,), dtype=np.float64)
-    tau6 = np.empty((6,), dtype=np.float64)
-    eps3 = np.empty((3,), dtype=np.float64)
-    eps6 = np.empty((6,), dtype=np.float64)
-    all_apply = [apply2, apply2, apply3, apply3]
-    all_tau = [tau6, tau3, tau3, tau6]
-    all_eps = [eps3, eps6, eps6, eps3]
-
-    for f, tau, eps in zip(all_apply, all_tau, all_eps):
-        yield f, tau, eps
-
-def test_to_memoryview_invalid_params():
-    g2 = greenop.create(Material(MU, NU, 2))
-    @raises(ValueError)
-    def to_memoryview2(arr):
-        return g2.to_memoryview(arr)
-
-    g3 = greenop.create(Material(MU, NU, 3))
-    @raises(ValueError)
-    def to_memoryview3(arr):
-        return g3.to_memoryview(arr)
-
-    arr3x3 = np.empty((3, 3), dtype=np.float64)
-    arr6x6 = np.empty((6, 6), dtype=np.float64)
-    arr3x6 = np.empty((3, 6), dtype=np.float64)
-    arr6x3 = np.empty((6, 3), dtype=np.float64)
-    all_to_memoryview = [to_memoryview2, to_memoryview2,
-                         to_memoryview3, to_memoryview3]
-    all_arr = [arr6x3, arr3x6, arr6x3, arr3x6]
-
-    for to_memoryview, arr in zip(all_to_memoryview, all_arr):
-        yield to_memoryview, arr
+        ret= [vec(k, theta, phi) for phi in phis for theta in thetas
+              for k in norms]
+        ret.append(np.zeros((self.dim,), dtype=np.float64))
+        return ret
