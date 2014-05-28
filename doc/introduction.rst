@@ -2,7 +2,7 @@
 Introduction
 ************
 
-Janus is a Python library which allows the discretization of large variational problems where the bilinear form is the sum of a *local* term and a *convolution* term. After discretization, the variational problem reduces to a linear system, where the matrix is the sum of a block-diagonal matrix and a block-circulant matrix. Since these matrices are too large to be stored, they are implemented in Janus as matrix-free linear-operators (see :doc:`Operators<./operators>`). Block-circulant operators are diagonal in Fourier space, and therefore computed through FFT.
+Janus is a Python library which allows the discretization of large variational problems where the bilinear form is the sum of a *local* bilinear form and a *convolution* bilinear form. After discretization, the variational problem reduces to a linear system, where the matrix is the sum of a block-diagonal matrix and a block-circulant matrix. Since these matrices are too large to be stored, they are implemented in Janus as matrix-free linear-operators (see :doc:`Operators<./operators>`). Block-circulant operators are diagonal in Fourier space, and therefore computed through FFT.
 
 .. TODO Provide more details and references once a general interface for block-circulant operators is defined.
 
