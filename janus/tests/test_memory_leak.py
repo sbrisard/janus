@@ -20,6 +20,7 @@ def num_memoryviews():
 @pytest.mark.parametrize('factory, num_iters', [(truncated_factory, 10)])
 def test_memory_leak(factory, num_iters):
     '''Shows that Issue #5 is solved.'''
+    before = num_memoryviews()
     for i in range(num_iters):
         factory()
-    assert num_memoryviews() == 0
+    assert num_memoryviews() == before
