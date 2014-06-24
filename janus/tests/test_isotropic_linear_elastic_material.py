@@ -1,6 +1,14 @@
 import pytest
 
 from janus.matprop import IsotropicLinearElasticMaterial as Material
+from janus.matprop import poisson_from_bulk_and_shear_moduli
+
+@pytest.mark.parametrize('g, nu, dim', [(2.0, 0.3, 2),
+                                        (2.0, 0.3, 3)])
+def test_poisson_from_bulk_and_shear_moduli(g, nu, dim):
+    mat = Material(g, nu, dim)
+    k = mat.k
+    assert poisson_from_bulk_and_shear_moduli(k, g, dim) == nu
 
 class TestIsotropicLinearElasticMaterial:
 

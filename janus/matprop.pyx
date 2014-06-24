@@ -1,3 +1,11 @@
+cpdef double poisson_from_bulk_and_shear_moduli(double k, double g, int dim=3):
+    if dim == 2:
+        return (k - g) / (2. * k)
+    elif dim == 3:
+        return (3 * k - 2 * g) / (2 * (3 * k + g))
+    else:
+        raise ValueError('dim must be 2 or 3 (was {0})'.format(dim))
+
 cdef class IsotropicLinearElasticMaterial:
 
     def __cinit__(self, double g, double nu, int dim=3):
