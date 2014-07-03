@@ -43,7 +43,7 @@ cdef class DiscreteGreenOperator2D(AbstractStructuredOperator2D):
     # s[i] = 2 * pi / (h * n[i]),
     # where n[i] is the size of the *global* grid in the direction i.
     cdef double s0, s1
-    cdef _RealFFT2D transform
+    cdef readonly _RealFFT2D transform
     cdef double[:, :, :] dft_x, dft_y
 
     def __cinit__(self, AbstractGreenOperator green, shape, double h,
@@ -167,7 +167,7 @@ cdef class DiscreteGreenOperator3D(AbstractStructuredOperator3D):
     # s[i] = 2 * pi / (h * n[i]),
     # where n[i] is the size of the grid in the direction i.
     cdef double s0, s1, s2
-    cdef _RealFFT3D transform
+    cdef readonly _RealFFT3D transform
     cdef double[:, :, :, :] dft_x, dft_y
 
     def __cinit__(self, AbstractGreenOperator green, shape, double h,
