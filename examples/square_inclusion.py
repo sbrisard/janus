@@ -96,26 +96,16 @@ if __name__ == '__main__':
 
     example.tau2eps.apply(x_arr, y_arr)
 
-    # Gather tau
-    gathered = comm.gather((x_arr, example.offset0))
-
+    # Gather tau and eps
     if comm.rank == 0:
         tau = np.empty((n, n, 3), dtype=np.float64)
-        for tau_loc, offset0 in gathered:
-            n0 = tau_loc.shape[0]
-            tau[offset0:(offset0 + n0), :, :] = tau_loc
-        print(tau.mean(axis=(0, 1)))
-
-    # Gather eps
-    gathered = comm.gather((y_arr, example.offset0))
+        eps = np.empty((n, n, 3), dtype=np.float64)
+    else:
+        tau = None
+        eps = None
+    comm.Gatherv(x_arr, tau, 0)
+    comm.Gatherv(y_arr, eps, 0)
 
     if comm.rank == 0:
-        eps = np.empty((n, n, 3), dtype=np.float64)
-        for eps_loc, offset0 in gathered:
-            n0 = eps_loc.shape[0]
-            eps[offset0:(offset0 + n0), :, :] = eps_loc
-        eps32 = eps.astype(np.float32)
-        path = '/media/sf_brisard/Documents/tmp/'
-        skimage.io.imsave(path + 'eps_xx.tif', eps32[:, :, 0])
-        skimage.io.imsave(path + 'eps_yy.tif', eps32[:, :, 1])
-        skimage.io.imsave(path + 'eps_xy.tif', eps32[:, :, 2])
+        print('avg tau = {}'.format(tau.mean(axis=(0, 1))))
+        print('avg eps = {}'.format(eps.mean(axis=(0, 1))))
