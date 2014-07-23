@@ -36,15 +36,9 @@ class SquareInclusion:
                                       dim=2)
 
         ops = np.empty(transform.rshape, dtype=object)
-
+        ops[:, :] = aux_m
         imax = int(np.ceil(n * a - 0.5))
-
-        for i0 in range(self.n0):
-            for i1 in range(self.n1):
-                if (self.offset0 + i0 < imax) and (i1 < imax):
-                    ops[i0, i1] = aux_i
-                else:
-                    ops[i0, i1] = aux_m
+        ops[:imax - self.offset0, :imax] = aux_i
 
         self.tau2eps = operators.BlockDiagonalOperator2D(ops)
 
@@ -101,6 +95,16 @@ if __name__ == '__main__':
     print("I'm process {}: execution time {} s.".format(comm.rank, t))
 
     example.tau2eps.apply(x_arr, y_arr)
+
+    # Gather tau
+    gathered = comm.gather((x_arr, example.offset0))
+
+    if comm.rank == 0:
+        tau = np.empty((n, n, 3), dtype=np.float64)
+        for tau_loc, offset0 in gathered:
+            n0 = tau_loc.shape[0]
+            tau[offset0:(offset0 + n0), :, :] = tau_loc
+        print(tau.mean(axis=(0, 1)))
 
     # Gather eps
     gathered = comm.gather((y_arr, example.offset0))
