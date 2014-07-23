@@ -78,9 +78,7 @@ if __name__ == '__main__':
     a.setUp()
 
     eps_macro = np.array([0., 0., 1.])
-    for i0 in range(example.n0):
-        for i1 in range(example.n1):
-            b_arr[i0, i1, :] = eps_macro
+    b_arr[:, :, :] = eps_macro
 
     ksp = PETSc.KSP().create()
     ksp.setOperators(a)
