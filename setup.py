@@ -15,7 +15,7 @@ from distutils.extension import Extension
 from distutils.sysconfig import get_config_var
 from distutils.util import get_platform
 
-from Cython.Distutils import build_ext
+from Cython.Build import cythonize
 
 include_dirs = [numpy.get_include()]
 library_dirs = []
@@ -43,31 +43,27 @@ else:
     mpicc = '/usr/bin/mpicc'
 
 extensions = []
+
 extensions.append(Extension('janus.utils.checkarray',
-                            sources=['janus/utils/checkarray.pyx',
-                                     'janus/utils/checkarray.pxd']))
+                            sources=['janus/utils/checkarray.pyx']))
 
 extensions.append(Extension('janus.operators',
-                            sources=['janus/operators.pyx',
-                                     'janus/operators.pxd']))
+                            sources=['janus/operators.pyx']))
 
 extensions.append(Extension('janus.matprop',
-                            sources=['janus/matprop.pyx',
-                                     'janus/matprop.pxd']))
+                            sources=['janus/matprop.pyx']))
 
 extensions.append(Extension('janus.greenop',
-                            sources=['janus/greenop.pyx',
-                                     'janus/greenop.pxd']))
+                            sources=['janus/greenop.pyx']))
 
 extensions.append(Extension('janus.discretegreenop',
                             sources=['janus/discretegreenop.pyx'],
                             include_dirs=include_dirs,
                             library_dirs=library_dirs))
 
+# TODO This module also depends on fftw.pxd
 extensions.append(Extension('janus.fft.serial._serial_fft',
-                            sources=['janus/fft/serial/_serial_fft.pyx',
-                                     'janus/fft/serial/_serial_fft.pxd',
-                                     'janus/fft/serial/fftw.pxd'],
+                            sources=['janus/fft/serial/_serial_fft.pyx'],
                             libraries=[fftw3],
                             library_dirs=library_dirs,
                             include_dirs=include_dirs))
@@ -81,10 +77,9 @@ if with_mpi:
     os.environ['CC'] = get_config_var('CC').replace(gcc, mpicc)
     os.environ['LDSHARED'] = get_config_var('LDSHARED').replace(gcc, mpicc)
 
+    # TODO This module also depends on fftw_mpi.pxd
     extensions.append(Extension('janus.fft.parallel._parallel_fft',
-                                sources=['janus/fft/parallel/_parallel_fft.pyx',
-                                         'janus/fft/parallel/_parallel_fft.pxd',
-                                         'janus/fft/parallel/fftw_mpi.pxd'],
+                                sources=['janus/fft/parallel/_parallel_fft.pyx'],
                                 libraries=[fftw3, fftw3_mpi],
                                 library_dirs=library_dirs,
                                 include_dirs = include_dirs))
@@ -103,5 +98,4 @@ setup(name = 'Janus',
       author = 'Sébastien Brisard',
       author_email = 'sebastien.brisard@ifsttar.fr',
       packages=packages,
-      cmdclass = {'build_ext': build_ext},
-      ext_modules = extensions)
+      ext_modules = cythonize(extensions))
