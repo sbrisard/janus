@@ -1,13 +1,9 @@
 import sys
-import time
 
 import numpy as np
 import petsc4py
-import skimage.io
 
 petsc4py.init(sys.argv)
-skimage.io.use_plugin('freeimage', 'imread')
-skimage.io.use_plugin('freeimage', 'imsave')
 sys.path.append('..')
 
 import janus.discretegreenop as discretegreenop
@@ -81,16 +77,16 @@ if __name__ == '__main__':
     b_arr[:, :, :] = eps_macro
 
     ksp = PETSc.KSP().create()
+    ksp.setTolerances(rtol=1E-10)
     ksp.setOperators(a)
     ksp.setType('cg')
     ksp.getPC().setType('none')
     ksp.setFromOptions()
 
-    t1 = time.perf_counter()
+    t1 = PETSc.Log.getTime()
     ksp.solve(b, x)
-    t2 = time.perf_counter()
+    t2 = PETSc.Log.getTime()
     t = t2 - t1
-    print("I'm process {}: execution time {} s.".format(comm.rank, t))
 
     example.tau2eps.apply(x_arr, y_arr)
 
@@ -105,5 +101,8 @@ if __name__ == '__main__':
     comm.Gatherv(y_arr, eps, 0)
 
     if comm.rank == 0:
-        print('avg tau = {}'.format(tau.mean(axis=(0, 1))))
-        print('avg eps = {}'.format(eps.mean(axis=(0, 1))))
+        print('Computation time = {} s'.format(t))
+        print('Total number of iterations = {}'.format(ksp.getIterationNumber()))
+        print('Residual norm = {}'.format(ksp.getResidualNorm()))
+        print('Avg tau = {}'.format(tau.mean(axis=(0, 1))))
+        print('Avg eps = {}'.format(eps.mean(axis=(0, 1))))
