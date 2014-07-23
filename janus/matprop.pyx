@@ -22,6 +22,7 @@ cpdef double poisson_from_bulk_and_shear_moduli(double k, double g, int dim=3):
 
 cdef class IsotropicLinearElasticMaterial:
 
+    @cdivision(True)
     def __cinit__(self, double g, double nu, int dim=3):
         if g <= 0.0:
             raise ValueError('g must be > 0 (was {0})'.format(g))
