@@ -69,20 +69,22 @@ extensions.append(Extension('janus.fft.serial._serial_fft',
                             include_dirs=include_dirs))
 
 if with_mpi:
+    import subprocess
+
     import mpi4py
     include_dirs.append(mpi4py.get_include())
 
-    # TODO improve this uggly hack
-    gcc = 'gcc'
-    os.environ['CC'] = get_config_var('CC').replace(gcc, mpicc)
-    os.environ['LDSHARED'] = get_config_var('LDSHARED').replace(gcc, mpicc)
+    showme_compile = subprocess.check_output([mpicc, '--showme:compile']).decode('ascii')
+    showme_link = subprocess.check_output([mpicc, '--showme:link']).decode('ascii')
 
     # TODO This module also depends on fftw_mpi.pxd
     extensions.append(Extension('janus.fft.parallel._parallel_fft',
                                 sources=['janus/fft/parallel/_parallel_fft.pyx'],
                                 libraries=[fftw3, fftw3_mpi],
                                 library_dirs=library_dirs,
-                                include_dirs = include_dirs))
+                                include_dirs=include_dirs,
+                                extra_compile_args=showme_compile.split(),
+                                extra_link_args=showme_link.split()))
 
 packages = ['janus',
             'janus.fft',
