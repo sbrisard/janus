@@ -50,8 +50,8 @@ extensions.append(Extension('janus.utils.checkarray',
 extensions.append(Extension('janus.operators',
                             sources=['janus/operators.pyx']))
 
-extensions.append(Extension('janus.matprop',
-                            sources=['janus/matprop.pyx']))
+extensions.append(Extension('janus.material.elastic.linear.isotropic',
+                            sources=['janus/material/elastic/linear/isotropic.pyx']))
 
 extensions.append(Extension('janus.greenop',
                             sources=['janus/greenop.pyx']))

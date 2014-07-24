@@ -1,5 +1,8 @@
 from cython cimport cdivision
 
+def create(g, nu, dim):
+    return IsotropicLinearElasticMaterial(g, nu, dim)
+
 @cdivision(True)
 cpdef double poisson_from_bulk_and_shear_moduli(double k, double g, int dim=3):
     """poisson_from_bulk_and_shear_moduli(k, g, dim=3)
