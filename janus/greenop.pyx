@@ -4,7 +4,7 @@ from cython cimport wraparound
 from cython.view cimport array
 from libc.math cimport M_SQRT2
 
-from janus.matprop cimport IsotropicLinearElasticMaterial as Material
+from janus.material.elastic.linear.isotropic cimport IsotropicLinearElasticMaterial as Material
 from janus.operators cimport AbstractLinearOperator
 from janus.utils.checkarray cimport check_shape_1d
 

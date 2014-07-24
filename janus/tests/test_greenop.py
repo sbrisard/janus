@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 
 import janus.greenop as greenop
+import janus.material.elastic.linear.isotropic as material
 import janus.tests.test_operators as test_operators
 
 from numpy import cos
@@ -11,7 +12,6 @@ from numpy import sin
 from numpy.testing import assert_array_almost_equal_nulp
 
 from janus.mandelvoigt import MandelVoigt
-from janus.matprop import IsotropicLinearElasticMaterial as Material
 
 def delta(i, j):
     if i == j:
@@ -46,7 +46,7 @@ class AbstractTestGreenOperator(test_operators.TestAbstractLinearOperator):
         return (sym, sym)
 
     def material(self):
-        return Material(self.mu, self.nu, self.dim)
+        return material.create(self.mu, self.nu, self.dim)
 
     def pytest_generate_tests(self, metafunc):
         if metafunc.function.__name__ == 'test_apply':
@@ -62,10 +62,10 @@ class AbstractTestGreenOperator(test_operators.TestAbstractLinearOperator):
 
     def test_init_invalid_dimension(self):
         if self.dim == 2:
-            mat = Material(1.0, 0.3, 3)
+            mat = material.create(1.0, 0.3, 3)
             cls = greenop.GreenOperator2D
         elif self.dim == 3:
-            mat = Material(1.0, 0.3, 2)
+            mat = material.create(1.0, 0.3, 2)
             cls = greenop.GreenOperator3D
         else:
             raise ValueError()

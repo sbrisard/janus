@@ -1,5 +1,5 @@
 from cython.view cimport array
-from janus.matprop cimport IsotropicLinearElasticMaterial as Material
+from janus.material.elastic.linear.isotropic cimport IsotropicLinearElasticMaterial as Material
 from janus.operators cimport AbstractLinearOperator
 
 cdef class AbstractGreenOperator(AbstractLinearOperator):
