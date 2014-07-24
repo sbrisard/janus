@@ -1,6 +1,7 @@
 *~
 *.c
 *.html
+*.pyc
 *.pyd
 *.so
 *.swp
