@@ -11,10 +11,9 @@ skimage.io.use_plugin('freeimage', 'imsave')
 import janus.discretegreenop as discretegreenop
 import janus.fft.serial as fft
 import janus.greenop as greenop
+import janus.material.elastic.linear.isotropic as material
 
-from janus.matprop import IsotropicLinearElasticMaterial as Material
-
-mat = Material(1.0, 0.3, 2)
+mat = material.create(1.0, 0.3, 2)
 n0 = 256
 n1 = 256
 n = (n0, n1)

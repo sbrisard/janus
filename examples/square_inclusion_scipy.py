@@ -13,9 +13,8 @@ sys.path.append('..')
 import janus.discretegreenop as discretegreenop
 import janus.fft.serial as fft
 import janus.greenop as greenop
+import janus.material.elastic.linear.isotropic as material
 import janus.operators as operators
-
-from janus.matprop import IsotropicLinearElasticMaterial as Material
 
 class SquareInclusion:
     def __init__(self, a, mat_i, mat_m, mat_0, n):
@@ -65,9 +64,9 @@ def callback(r):
 
 if __name__ == '__main__':
 
-    mat_i = Material(0., 0.2, dim=2)
-    mat_m = Material(1.0, 0.3, dim=2)
-    mat_0 = Material(1.0, 0.3, dim=2)
+    mat_i = material.create(0., 0.2, dim=2)
+    mat_m = material.create(1.0, 0.3, dim=2)
+    mat_0 = material.create(1.0, 0.3, dim=2)
 
     a = 0.5
     n = 1024

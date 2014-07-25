@@ -9,12 +9,11 @@ sys.path.append('..')
 import janus.discretegreenop as discretegreenop
 import janus.fft.parallel as fft
 import janus.greenop as greenop
+import janus.material.elastic.linear.isotropic as material
 import janus.operators as operators
 
 from mpi4py import MPI
 from petsc4py import PETSc
-
-from janus.matprop import IsotropicLinearElasticMaterial as Material
 
 class SquareInclusion:
     def __init__(self, a, mat_i, mat_m, mat_0, n, comm=MPI.COMM_WORLD):
@@ -51,9 +50,9 @@ class SquareInclusion:
 if __name__ == '__main__':
     comm = MPI.COMM_WORLD
 
-    mat_i = Material(10.0, 0.2, dim=2)
-    mat_m = Material(1.0, 0.3, dim=2)
-    mat_0 = Material(0.9, 0.3, dim=2)
+    mat_i = material.create(10.0, 0.2, dim=2)
+    mat_m = material.create(1.0, 0.3, dim=2)
+    mat_0 = material.create(0.9, 0.3, dim=2)
 
     a = 0.5
     n = 256
