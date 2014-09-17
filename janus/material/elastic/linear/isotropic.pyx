@@ -1,21 +1,34 @@
+# cython: embedsignature=True
+
+"""This module defines isotropic, linear elastic materials.
+
+"""
+
 from cython cimport cdivision
 
 def create(g, nu, dim):
+    """Create a new isotropic, linear and elastic material.
+
+    `g` is the shear modulus, `nu` is the Poisson ratio. `dim` is the
+    dimension of the physical space. It must be  2 (plane strain
+    elasticity) or 3 (3D elasticity, default value).
+
+    Returns a new instance of :class:`IsotropicLinearElasticMaterial`.
+
+    """
     return IsotropicLinearElasticMaterial(g, nu, dim)
 
 @cdivision(True)
 cpdef double poisson_from_bulk_and_shear_moduli(double k, double g, int dim=3):
-    """poisson_from_bulk_and_shear_moduli(k, g, dim=3)
+    """Compute the Poisson ratio from the bulk and shear moduli.
 
-    Compute the Poisson ratio from the bulk (`k`) and shear (`g`) moduli.
-
-    The dimension of the physical space, `dim`, must be 2 (plane strain
-    elasticity) or 3 (3D elasticity). No checks are performed on the positivity
-    of the bulk and shear moduli, or on the validity of the returned Poisson
-    ratio (which should lie between -1 and 1/2).
+    `k` (resp. `g`) is the bulk (resp. shear) modulus. `dim` is the
+    dimension of the physical space. It must be 2 (plane strain
+    elasticity) or 3 (3D elasticity). No checks are performed on the
+    positivity of the bulk and shear moduli, or on the validity of the
+    returned Poisson ratio (which should lie between -1 and 1/2).
 
     """
-
     if dim == 2:
         return (k - g) / (2. * k)
     elif dim == 3:
