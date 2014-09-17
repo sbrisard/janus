@@ -7,7 +7,7 @@ User's guide
 
    introduction
    operators
-   matprop-api
+   materials
    fft-api
    greenop-api
    discretegreenop-api
