@@ -100,4 +100,5 @@ setup(name = 'Janus',
       author = 'Sébastien Brisard',
       author_email = 'sebastien.brisard@ifsttar.fr',
       packages=packages,
-      ext_modules = cythonize(extensions))
+      ext_modules = cythonize(extensions,
+                              compiler_directives={'embedsignature': True}))
