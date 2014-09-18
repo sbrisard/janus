@@ -1,5 +1,3 @@
-# cython: embedsignature=True
-
 """This module defines isotropic, linear elastic materials.
 
 Materials defined in this module can operate on physical space of
