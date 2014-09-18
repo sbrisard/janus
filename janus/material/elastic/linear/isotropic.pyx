@@ -2,8 +2,11 @@
 
 Materials defined in this module can operate on physical space of
 dimension dim = 2 or 3. dim = 2 refers to plane strain elasticity, while
-dim = 3 refers to classical 3D elasticity. Plane stress elasticity is
-not available.
+dim = 3 refers to classical 3D elasticity.
+
+To create a plane stress material with shear modulus mu and Poisson
+ratio nu, a plane strain material should be created, with the same shear
+modulus mu, and fictitious Poisson ratio nu / (1 + nu).
 
 """
 
