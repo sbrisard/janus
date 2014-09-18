@@ -2,31 +2,48 @@
 
 """This module defines isotropic, linear elastic materials.
 
+Materials defined in this module can operate on physical space of
+dimension dim = 2 or 3. dim = 2 refers to plane strain elasticity, while
+dim = 3 refers to classical 3D elasticity. Plane stress elasticity is
+not available.
+
 """
 
 from cython cimport cdivision
 
+
 def create(g, nu, dim):
     """Create a new isotropic, linear and elastic material.
 
-    `g` is the shear modulus, `nu` is the Poisson ratio. `dim` is the
-    dimension of the physical space. It must be  2 (plane strain
-    elasticity) or 3 (3D elasticity, default value).
+    Args:
+        g: the shear modulus
+        nu: the Poisson ratio
+        dim: the dimension of the physical space (default 3)
 
-    Returns a new instance of :class:`IsotropicLinearElasticMaterial`.
+    Returns:
+        A new instance of IsotropicLinearElasticMaterial.
 
     """
     return IsotropicLinearElasticMaterial(g, nu, dim)
+
 
 @cdivision(True)
 cpdef double poisson_from_bulk_and_shear_moduli(double k, double g, int dim=3):
     """Compute the Poisson ratio from the bulk and shear moduli.
 
-    `k` (resp. `g`) is the bulk (resp. shear) modulus. `dim` is the
-    dimension of the physical space. It must be 2 (plane strain
-    elasticity) or 3 (3D elasticity). No checks are performed on the
-    positivity of the bulk and shear moduli, or on the validity of the
-    returned Poisson ratio (which should lie between -1 and 1/2).
+    No checks are performed on the positivity of the bulk and shear
+    moduli, or on the validity of the returned Poisson ratio (which
+    should lie between -1 and 1/2).
+
+    Args:
+        k: the bulk modulus
+        g: the shear modulus
+        dim: the dimension of the physical space (default 3). Must be 2
+            (plane strain elasticity) or 3 (3D elasticity).
+
+
+    Returns:
+        The Poisson ratio.
 
     """
     if dim == 2:
@@ -36,7 +53,27 @@ cpdef double poisson_from_bulk_and_shear_moduli(double k, double g, int dim=3):
     else:
         raise ValueError('dim must be 2 or 3 (was {0})'.format(dim))
 
+
 cdef class IsotropicLinearElasticMaterial:
+
+    """This class defines isotropic, linear and elastic materials.
+
+    The dimension of the physical space must be 2 (plane strain
+    elasticity) or 3 (3D elasticity). Plane stress elasticity is not
+    available.
+
+    Args:
+        g: the shear modulus
+        nu: the Poisson ratio
+        dim: the dimension of the physical space (default 3)
+
+    Attributes:
+        k: the bulk modulus (read-only)
+        g: the shear modulus (read-only)
+        nu: the Poisson ratio (read-only)
+        dim: the dimension of the physical space (read-only)
+
+    """
 
     @cdivision(True)
     def __cinit__(self, double g, double nu, int dim=3):
