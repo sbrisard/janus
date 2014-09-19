@@ -24,12 +24,6 @@ GRID_SIZES = ([(8, 8), (8, 16), (16, 8), (4, 4, 4)]
 # The value of one unit in the last place, for the float64 format.
 ULP = np.finfo(np.float64).eps
 
-def get_base(a):
-    # TODO This is a hack to avoid writing uggly things like a.base.base.base.
-    if a.base is None:
-        return a
-    else:
-        return get_base(a.base)
 
 def multi_indices(n):
     """Return the list of all multi-indices within the specified bounds.
@@ -139,7 +133,7 @@ class AbstractTestDiscreteGreenOperator:
             elif flag == 1:
                 base = np.empty_like(expected)
                 actual = greend.to_memoryview(base)
-                assert get_base(actual) is base
+                assert actual.base is base
             else:
                 raise ValueError
             assert_allclose(actual, expected, ULP, ULP)
@@ -171,7 +165,8 @@ class AbstractTestDiscreteGreenOperator:
                 raise(ValueError)
             actual = green.apply_by_freq(x, base)
             if flag != 0:
-                assert get_base(actual) is base
+                #assert get_base(actual) is base
+                assert actual.base is base
             assert_allclose(actual, expected, ULP, ULP)
 
     def test_apply_by_freq_invalid_params(self, greend, x_size, y_size):
