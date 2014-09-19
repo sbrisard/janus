@@ -51,7 +51,7 @@ cdef class DiscreteGreenOperator2D(AbstractStructuredOperator2D):
         if len(shape) != 2:
             raise ValueError('length of shape must be 2 (was {0})'
                              .format(len(shape)))
-        if green.mat.dim != 2:
+        if green.dim != 2:
             raise ValueError('continuous green operator must operate in '
                              'a 2D space')
         if h <= 0.:
@@ -175,7 +175,7 @@ cdef class DiscreteGreenOperator3D(AbstractStructuredOperator3D):
         if len(shape) != 3:
             raise ValueError('length of shape must be 3 (was {0})'
                              .format(len(shape)))
-        if green.mat.dim != 3:
+        if green.dim != 3:
             raise ValueError('continuous green operator must operate in '
                              'a 3D space')
         if h <= 0.:
