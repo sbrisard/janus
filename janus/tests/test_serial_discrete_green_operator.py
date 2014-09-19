@@ -5,7 +5,6 @@ import numpy as np
 import pytest
 
 import janus.fft.serial as fft
-import janus.greenop as greenop
 import janus.material.elastic.linear.isotropic as material
 
 from numpy.testing import assert_allclose
@@ -41,8 +40,8 @@ class AbstractTestDiscreteGreenOperator:
 
     def pytest_generate_tests(self, metafunc):
         if metafunc.function.__name__ == 'test_init_invalid_params':
-            g2 = greenop.create(material.create(MU, NU, 2))
-            g3 = greenop.create(material.create(MU, NU, 3))
+            g2 = material.create(MU, NU, 2).green_operator()
+            g3 = material.create(MU, NU, 3).green_operator()
             params = [(g3, (9, 9), 1., None),
                       (g2, (-1, 9), 1., None),
                       (g2, (9, -1), 1., None),
@@ -59,9 +58,9 @@ class AbstractTestDiscreteGreenOperator:
             params = [(n, flag) for n in GRID_SIZES for flag in [0, 1]]
             metafunc.parametrize('n, flag', params)
         elif metafunc.function.__name__ == 'test_to_memoryview_invalid_params':
-            g2 = self.greend(greenop.create(material.create(MU, NU, 2)),
+            g2 = self.greend(material.create(MU, NU, 2).green_operator(),
                              (8, 16), 1.0)
-            g3 = self.greend(greenop.create(material.create(MU, NU, 3)),
+            g3 = self.greend(material.create(MU, NU, 3).green_operator(),
                              (8, 16, 32), 1.0)
             params = [(g2, (g2.oshape[-1], g2.ishape[-1] + 1)),
                       (g2, (g2.oshape[-1] + 1, g2.ishape[-1])),
@@ -75,9 +74,9 @@ class AbstractTestDiscreteGreenOperator:
                       for flag in range(3)]
             metafunc.parametrize('n, x, flag', params)
         elif metafunc.function.__name__ == 'test_apply_by_freq_invalid_params':
-            g2 = self.greend(greenop.create(material.create(MU, NU, 2)),
+            g2 = self.greend(material.create(MU, NU, 2).green_operator(),
                              (8, 16), 1.0)
-            g3 = self.greend(greenop.create(material.create(MU, NU, 3)),
+            g3 = self.greend(material.create(MU, NU, 3).green_operator(),
                              (8, 16, 32), 1.0)
             params = [(g2, g2.ishape[-1], g2.oshape[-1] + 1),
                       (g2, g2.ishape[-1] + 1, g2.oshape[-1]),
@@ -92,7 +91,7 @@ class AbstractTestDiscreteGreenOperator:
             params = [i + (j,) for i in self.params_test_apply() for j in flags]
             metafunc.parametrize('path_to_ref, rtol, flag', params)
         elif metafunc.function.__name__ == 'test_apply_invalid_params':
-            g = self.greend(greenop.create(material.create(MU, NU, 2)),
+            g = self.greend(material.create(MU, NU, 2).green_operator(),
                             (8, 16), 1.0)
             i0, i1, i2 = g.ishape
             o0, o1, o2 = g.oshape
@@ -102,7 +101,7 @@ class AbstractTestDiscreteGreenOperator:
                       (g, (i0, i1, i2), (o0 + 1, o1, o2)),
                       (g, (i0, i1, i2), (o0, o1 + 1, o2)),
                       (g, (i0, i1, i2), (o0, o1, o2 + 1))]
-            g = self.greend(greenop.create(material.create(MU, NU, 3)),
+            g = self.greend(material.create(MU, NU, 3).green_operator(),
                             (8, 16, 32), 1.0)
             i0, i1, i2, i3 = g.ishape
             o0, o1, o2, o3 = g.oshape
@@ -122,7 +121,7 @@ class AbstractTestDiscreteGreenOperator:
 
     def test_to_memoryview(self, n, flag):
         dim = len(n)
-        greenc = greenop.create(material.create(MU, NU, dim))
+        greenc = material.create(MU, NU, dim).green_operator()
         greend = self.greend(greenc, n, 1.0)
         k = np.empty((dim,), dtype=np.float64)
         for b in multi_indices(n):
@@ -150,7 +149,8 @@ class AbstractTestDiscreteGreenOperator:
           - flag = 2: apply_by_freq(x, y)
         """
         dim = len(n)
-        green = self.greend(greenop.create(material.create(MU, NU, dim)), n, 1.)
+        green = self.greend(material.create(MU, NU, dim).green_operator(),
+                            n, 1.)
         for b in multi_indices(n):
             green.set_frequency(b)
             g = np.asarray(green.to_memoryview())
@@ -185,7 +185,7 @@ class AbstractTestDiscreteGreenOperator:
         npz_file.zip.fp.close()
         n = x.shape[:-1]
         transform = fft.create_real(n)
-        green = self.greend(greenop.create(material.create(MU, NU, len(n))),
+        green = self.greend(material.create(MU, NU, len(n)).green_operator(),
                             n, 1., transform=transform)
         if flag == 0:
             actual = green.apply(x)

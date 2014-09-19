@@ -8,7 +8,6 @@ sys.path.append('..')
 
 import janus.discretegreenop as discretegreenop
 import janus.fft.parallel as fft
-import janus.greenop as greenop
 import janus.material.elastic.linear.isotropic as material
 import janus.operators as operators
 
@@ -21,8 +20,8 @@ class SquareInclusion:
         self.n0 = transform.rshape[0]
         self.n1 = transform.rshape[1]
         self.offset0 = transform.offset0
-        self.green = discretegreenop.truncated(greenop.create(mat_0), (n, n),
-                                               1., transform)
+        self.green = discretegreenop.truncated(mat_0.green_operator(),
+                                               (n, n), 1., transform)
         aux_i = operators.isotropic_4(1. / (2. * (mat_i.k - mat_0.k)),
                                       1. / (2. * (mat_i.g - mat_0.g)),
                                       dim=2)

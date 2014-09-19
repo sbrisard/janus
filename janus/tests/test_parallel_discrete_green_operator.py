@@ -1,15 +1,12 @@
 import os.path
 
 import numpy as np
-import pytest
 
 import janus.fft.parallel as fft
-import janus.greenop as greenop
 import janus.material.elastic.linear.isotropic as material
 
 from mpi4py import MPI
 from numpy.testing import assert_allclose
-from numpy.testing import assert_array_almost_equal_nulp
 
 from janus.discretegreenop import truncated
 from janus.discretegreenop import filtered
@@ -49,7 +46,8 @@ class AbstractTestParallelDiscreteGreenOperator:
         transform = fft.create_real(n, comm)
         n_locs = comm.gather((transform.rshape[0], transform.offset0), root)
 
-        green = self.greend(greenop.create(material.create(0.75, 0.3, len(n))),
+        green = self.greend(material.create(0.75, 0.3, len(n))
+                                    .green_operator(),
                             n, 1., transform)
 
         # Scatter x

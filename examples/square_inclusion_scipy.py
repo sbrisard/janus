@@ -12,7 +12,6 @@ sys.path.append('..')
 
 import janus.discretegreenop as discretegreenop
 import janus.fft.serial as fft
-import janus.greenop as greenop
 import janus.material.elastic.linear.isotropic as material
 import janus.operators as operators
 
@@ -24,7 +23,7 @@ class SquareInclusion:
                       3 * self.n0 * self.n1)
         self.dtype = np.float64
         transform = fft.create_real((self.n0, self.n1))
-        self.green = discretegreenop.filtered(greenop.create(mat_0),
+        self.green = discretegreenop.filtered(mat_0.green_operator(),
                                               transform.rshape,
                                               1., transform)
         aux_i = operators.isotropic_4((mat_i.k - mat_0.k) / 2.,
