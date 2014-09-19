@@ -63,10 +63,10 @@ class AbstractTestGreenOperator(test_operators.TestAbstractLinearOperator):
     def test_init_invalid_dimension(self):
         if self.dim == 2:
             mat = material.create(1.0, 0.3, 3)
-            cls = greenop.GreenOperator2D
+            cls = material.GreenOperator2D
         elif self.dim == 3:
             mat = material.create(1.0, 0.3, 2)
-            cls = greenop.GreenOperator3D
+            cls = material.GreenOperator3D
         else:
             raise ValueError()
         with pytest.raises(ValueError):
@@ -80,7 +80,7 @@ class AbstractTestGreenOperator(test_operators.TestAbstractLinearOperator):
         """
         mat = self.material()
         expected = green_matrix(k,  mat)
-        green = greenop.create(mat)
+        green = mat.green_operator()
         tau = np.zeros((green.isize,), np.float64)
         if flag == 0:
             base = None
@@ -106,7 +106,7 @@ class AbstractTestGreenOperator(test_operators.TestAbstractLinearOperator):
         """
         mat = self.material()
         expected = green_matrix(k,  mat)
-        green = greenop.create(mat)
+        green = mat.green_operator()
         green.set_frequency(k)
         if flag == 0:
             actual = green.to_memoryview()
@@ -120,7 +120,7 @@ class AbstractTestGreenOperator(test_operators.TestAbstractLinearOperator):
 
     def test_set_frequency_invalid_params(self):
         k = np.zeros((self.dim + 1,), dtype=np.float64)
-        green = greenop.create(self.material())
+        green = self.material().green_operator()
         with pytest.raises(ValueError):
             green.set_frequency(k)
 
