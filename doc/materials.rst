@@ -1,8 +1,8 @@
 .. coding: utf-8-unix
 
-***********************************
-Defining material constitutive laws
-***********************************
+*********
+Materials
+*********
 
 Classes and functions for the definition of materials are provided in
 the :mod:`janus.material` package. This package is structured in three
