@@ -1,4 +1,3 @@
-from cython.view cimport array
 from janus.operators cimport AbstractLinearOperator
 
 cdef class AbstractGreenOperator(AbstractLinearOperator):

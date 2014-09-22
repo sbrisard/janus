@@ -1,9 +1,3 @@
-from cython cimport boundscheck
-from cython cimport cdivision
-from cython cimport wraparound
-from cython.view cimport array
-
-from janus.material.elastic.linear.isotropic cimport IsotropicLinearElasticMaterial as Material
 from janus.operators cimport AbstractLinearOperator
 from janus.utils.checkarray cimport check_shape_1d
 
