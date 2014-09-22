@@ -111,10 +111,37 @@ cdef class IsotropicLinearElasticMaterial:
             return GreenOperator3D(self)
 
 
-cdef class GreenOperator2D(AbstractGreenOperator):
+cdef class GreenOperator(AbstractGreenOperator):
+
+    # The auxiliary variables daux1 to daux4 are defined as follows
+    #   daux1 = 1 / g
+    #   daux2 = 1 / [2 * g * (1 - nu)]
+    #   daux3 = 1 / (4 * g)
+    #   daux4 = 1 / (2 * g)
+    # where g (resp. nu) is the shear modulus (resp. Poisson ratio) of the
+    # reference material.
+    cdef double daux1, daux2, daux3, daux4
+    cdef readonly IsotropicLinearElasticMaterial mat
+
+    @cdivision(True)
+    def __cinit__(self, IsotropicLinearElasticMaterial mat):
+        cdef int sym = (mat.dim * (mat.dim + 1)) / 2
+        self.init_sizes(sym, sym)
+        self.dim = mat.dim
+        self.mat = mat
+        cdef double g = mat.g
+        cdef double nu = mat.nu
+        self.daux1 = 1.0 / g
+        self.daux2 = 0.5 / (g * (1.0 - nu))
+        self.daux3 = 0.25 / g
+        self.daux4 = 0.5 / g
+
+
+cdef class GreenOperator2D(GreenOperator):
 
     cdef double g00, g01, g02, g11, g12, g22
 
+    @cdivision(True)
     def __cinit__(self, IsotropicLinearElasticMaterial mat):
         if (mat.dim != 2):
             raise ValueError('plane strain material expected')
@@ -173,7 +200,7 @@ cdef class GreenOperator2D(AbstractGreenOperator):
         out[2, 2] = self.g22
 
 
-cdef class GreenOperator3D(AbstractGreenOperator):
+cdef class GreenOperator3D(GreenOperator):
 
     cdef:
         double g00, g01, g02, g03, g04, g05, g11, g12, g13, g14, g15
