@@ -2,13 +2,12 @@ import gc
 
 import pytest
 
-import janus.greenop as greenop
 import janus.material.elastic.linear.isotropic as material
 
 from janus.discretegreenop import truncated
 
 def truncated_factory():
-    return truncated(greenop.create(material.create(1.0, 0.3, 2)),
+    return truncated(material.create(1.0, 0.3, 2).green_operator(),
                      (128, 128),
                      1.)
 
