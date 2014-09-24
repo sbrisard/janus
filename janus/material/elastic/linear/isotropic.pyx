@@ -17,6 +17,7 @@ from libc.math cimport M_SQRT2
 
 from janus.greenop cimport AbstractGreenOperator
 
+
 def create(g, nu, dim):
     """Create a new isotropic, linear and elastic material.
 
@@ -61,11 +62,7 @@ cpdef double poisson_from_bulk_and_shear_moduli(double k, double g, int dim=3):
 
 cdef class IsotropicLinearElasticMaterial:
 
-    """This class defines isotropic, linear and elastic materials.
-
-    The dimension of the physical space must be 2 (plane strain
-    elasticity) or 3 (3D elasticity). Plane stress elasticity is not
-    available.
+    """Isotropic, linear and elastic materials.
 
     Args:
         g: the shear modulus
@@ -105,6 +102,11 @@ cdef class IsotropicLinearElasticMaterial:
                                                    self.dim)
 
     def green_operator(self):
+        """Return a new Green operator for this material.
+
+        The returned Green operator is the periodic Green operator for
+        strains, which is given in Fourier space.
+        """
         if self.dim == 2:
             return GreenOperator2D(self)
         elif self.dim == 3:
@@ -112,6 +114,21 @@ cdef class IsotropicLinearElasticMaterial:
 
 
 cdef class GreenOperator(AbstractGreenOperator):
+
+    """Periodic Green operator for strains.
+
+    Instances of this class are associated to isotropic, linear elastic
+    materials.
+
+    This class factorizes code common to the 2D and 3D implementations.
+
+    Args:
+        mat: the underlying material
+
+    Attributes:
+        mat: the underlying material
+
+    """
 
     # The auxiliary variables daux1 to daux4 are defined as follows
     #   daux1 = 1 / g
@@ -138,6 +155,10 @@ cdef class GreenOperator(AbstractGreenOperator):
 
 
 cdef class GreenOperator2D(GreenOperator):
+
+    """Periodic Green operator for strains (2D implementation). """
+
+    __doc__ += GreenOperator.__doc__
 
     cdef double g00, g01, g02, g11, g12, g22
 
@@ -201,6 +222,8 @@ cdef class GreenOperator2D(GreenOperator):
 
 
 cdef class GreenOperator3D(GreenOperator):
+
+    """Periodic Green operator for strains (3D implementation). """
 
     cdef:
         double g00, g01, g02, g03, g04, g05, g11, g12, g13, g14, g15
