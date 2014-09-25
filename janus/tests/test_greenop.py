@@ -3,7 +3,6 @@ import itertools
 import numpy as np
 import pytest
 
-import janus.greenop as greenop
 import janus.material.elastic.linear.isotropic as material
 import janus.tests.test_operators as test_operators
 
