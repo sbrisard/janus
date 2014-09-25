@@ -18,7 +18,7 @@ from libc.math cimport M_SQRT2
 from janus.greenop cimport AbstractGreenOperator
 
 
-def create(g, nu, dim):
+def create(g, nu, dim=3):
     """Create a new isotropic, linear and elastic material.
 
     Args:
