@@ -158,8 +158,6 @@ cdef class GreenOperator2D(GreenOperator):
 
     """Periodic Green operator for strains (2D implementation). """
 
-    __doc__ += GreenOperator.__doc__
-
     cdef double g00, g01, g02, g11, g12, g22
 
     @cdivision(True)
