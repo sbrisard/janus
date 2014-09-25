@@ -108,12 +108,12 @@ cdef class IsotropicLinearElasticMaterial:
         strains, which is given in Fourier space.
         """
         if self.dim == 2:
-            return GreenOperator2D(self)
+            return _GreenOperatorForStrains2D(self)
         elif self.dim == 3:
-            return GreenOperator3D(self)
+            return _GreenOperatorForStrains3D(self)
 
 
-cdef class GreenOperator(AbstractGreenOperator):
+cdef class _GreenOperatorForStrains(AbstractGreenOperator):
 
     """Periodic Green operator for strains.
 
@@ -154,7 +154,7 @@ cdef class GreenOperator(AbstractGreenOperator):
         self.daux4 = 0.5 / g
 
 
-cdef class GreenOperator2D(GreenOperator):
+cdef class _GreenOperatorForStrains2D(_GreenOperatorForStrains):
 
     """Periodic Green operator for strains (2D implementation). """
 
@@ -219,7 +219,7 @@ cdef class GreenOperator2D(GreenOperator):
         out[2, 2] = self.g22
 
 
-cdef class GreenOperator3D(GreenOperator):
+cdef class _GreenOperatorForStrains3D(_GreenOperatorForStrains):
 
     """Periodic Green operator for strains (3D implementation). """
 

@@ -63,10 +63,10 @@ class AbstractTestGreenOperator(test_operators.TestAbstractLinearOperator):
     def test_init_invalid_dimension(self):
         if self.dim == 2:
             mat = material.create(1.0, 0.3, 3)
-            cls = material.GreenOperator2D
+            cls = material._GreenOperatorForStrains2D
         elif self.dim == 3:
             mat = material.create(1.0, 0.3, 2)
-            cls = material.GreenOperator3D
+            cls = material._GreenOperatorForStrains3D
         else:
             raise ValueError()
         with pytest.raises(ValueError):
