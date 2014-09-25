@@ -4,7 +4,7 @@ import pytest
 
 import janus.material.elastic.linear.isotropic as material
 
-from janus.discretegreenop import truncated
+from janus.green import truncated
 
 def truncated_factory():
     return truncated(material.create(1.0, 0.3, 2).green_operator(),

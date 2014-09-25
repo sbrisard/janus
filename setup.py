@@ -53,11 +53,8 @@ extensions.append(Extension('janus.operators',
 extensions.append(Extension('janus.material.elastic.linear.isotropic',
                             sources=['janus/material/elastic/linear/isotropic.pyx']))
 
-extensions.append(Extension('janus.greenop',
-                            sources=['janus/greenop.pyx']))
-
-extensions.append(Extension('janus.discretegreenop',
-                            sources=['janus/discretegreenop.pyx'],
+extensions.append(Extension('janus.green',
+                            sources=['janus/green.pyx'],
                             include_dirs=include_dirs,
                             library_dirs=library_dirs))
 

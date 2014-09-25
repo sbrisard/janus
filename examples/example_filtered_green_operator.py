@@ -8,7 +8,7 @@ import skimage.io
 skimage.io.use_plugin('freeimage', 'imread')
 skimage.io.use_plugin('freeimage', 'imsave')
 
-import janus.discretegreenop as discretegreenop
+import janus.green as green
 import janus.material.elastic.linear.isotropic as material
 
 mat = material.create(1.0, 0.3, 2)
@@ -17,7 +17,7 @@ n1 = 256
 n = (n0, n1)
 
 greenc = mat.green_operator()
-greend = discretegreenop.FilteredGreenOperator2D(greenc, n, 1.)
+greend = green.FilteredGreenOperator2D(greenc, n, 1.)
 
 g = np.empty((n0, n1), dtype=np.float64)
 b = np.empty((2,), dtype=np.intc)

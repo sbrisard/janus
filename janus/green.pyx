@@ -8,7 +8,7 @@ from libc.math cimport cos
 
 from janus.fft.serial._serial_fft cimport _RealFFT2D
 from janus.fft.serial._serial_fft cimport _RealFFT3D
-from janus.greenop cimport AbstractGreenOperator
+from janus.operators cimport AbstractLinearOperator
 from janus.operators cimport AbstractStructuredOperator2D
 from janus.operators cimport AbstractStructuredOperator3D
 from janus.utils.checkarray cimport create_or_check_shape_1d
@@ -34,6 +34,57 @@ def filtered(green, n, h, transform=None):
         return FilteredGreenOperator3D(green, n, h, transform)
     else:
         raise ValueError('dim must be 2 or 3 (was {0})'.format(green.dim))
+
+
+cdef class AbstractGreenOperator(AbstractLinearOperator):
+
+    """This class defines Abstract periodic Green operators.
+
+    Green operators are defined as linear operators, which are
+    supplemented with a `set_frequency()` method.
+
+    The __repr__() method assumes that the attribute mat stores the
+    underlying material.
+
+    Attributes:
+        dim: the dimension of the physical space
+
+    """
+
+    cdef void c_set_frequency(self, double[:] k):
+        """Set the current wave-vector of this Green operator.
+
+        Any subsequent call to e.g. c_apply(), c_to_memoryview() are
+        performed with the specified value of k.
+
+        Concrete implementations of this method are not required to
+        perform any test on the validity (size) of k.
+
+        Args:
+            k: the wave-vector (memoryview of float64)
+
+        """
+        raise NotImplementedError
+
+    def set_frequency(self, double[:] k):
+        """Set the current wave-vector of this Green operator.
+
+        Any subsequent call to e.g. apply(), to_memoryview() are
+        performed with the specified value of k.
+
+        Concrete implementations of this method are not required to
+        perform any test on the validity (size) of k.
+
+        Args:
+            k: the wave-vector (memoryview of float64)
+
+        """
+        check_shape_1d(k, self.dim)
+        self.c_set_frequency(k)
+
+    def __repr__(self):
+        return 'Green Operator({0})'.format(self.mat)
+
 
 cdef class DiscreteGreenOperator2D(AbstractStructuredOperator2D):
     cdef readonly AbstractGreenOperator green

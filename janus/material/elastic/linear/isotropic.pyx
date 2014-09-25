@@ -15,7 +15,7 @@ from cython cimport cdivision
 from cython cimport wraparound
 from libc.math cimport M_SQRT2
 
-from janus.greenop cimport AbstractGreenOperator
+from janus.green cimport AbstractGreenOperator
 
 
 def create(g, nu, dim=3):

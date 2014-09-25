@@ -8,8 +8,8 @@ import janus.material.elastic.linear.isotropic as material
 from mpi4py import MPI
 from numpy.testing import assert_allclose
 
-from janus.discretegreenop import truncated
-from janus.discretegreenop import filtered
+from janus.green import truncated
+from janus.green import filtered
 
 ULP = np.finfo(np.float64).eps
 

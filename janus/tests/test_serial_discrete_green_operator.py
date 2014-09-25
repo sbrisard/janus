@@ -9,8 +9,8 @@ import janus.material.elastic.linear.isotropic as material
 
 from numpy.testing import assert_allclose
 
-from janus.discretegreenop import truncated
-from janus.discretegreenop import filtered
+from janus.green import truncated
+from janus.green import filtered
 
 # Default material constants
 MU = 0.75
