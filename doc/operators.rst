@@ -129,7 +129,7 @@ If relevant, the above also applies to the Cython method
 ``c_apply(x, y)``.
 
 API of module :mod:`janus.operators`
-===================================
+====================================
 
 .. automodule:: janus.operators
     :members:
