@@ -9,8 +9,6 @@ User's guide
    operators
    materials
    fft-api
-   greenop-api
-   discretegreenop-api
 
 Indices and tables
 ==================
