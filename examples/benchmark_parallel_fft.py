@@ -4,21 +4,22 @@ import time
 import numpy as np
 import numpy.random as nprnd
 
-sys.path.append('..')
 import janus.fft.parallel
 
 from mpi4py import MPI
 
-def benchmark(n, niter):
-    transform = janus.fft.parallel.create_real((n, n), comm)
+def benchmark(shape, niter):
+    comm = MPI.COMM_WORLD
+    root = 0
+    transform = janus.fft.parallel.create_real(shape, comm)
     local_sizes = comm.gather((transform.rshape[0], transform.offset0))
 
-    if comm.rank == 0:
+    if comm.rank == root:
         r = nprnd.uniform(-1., 1., transform.shape)
-        rlocs = [r[offset0:offset0 + n0] for n0, offset0 in local_sizes]
     else:
-        rlocs = None
-    rloc = comm.scatter(rlocs)
+        r= None
+    rloc = np.empty(transform.rshape, dtype=np.float64)
+    comm.Scatterv(r, rloc, root)
     cloc = np.empty(transform.cshape, dtype=np.float64)
 
     times = []
@@ -32,23 +33,17 @@ def benchmark(n, niter):
 
 if __name__ == '__main__':
 
-    comm = MPI.COMM_WORLD
     janus.fft.parallel.init()
     nprnd.seed(20140121)
 
-    #params = [64, 128, 256, 512, 1024, 2048, 4096]
-    #params = [(64, 50000), (128, 10000), (256, 5000), (512, 5000), (1024, 100), (2048, 100)]
-    params = [(128, 100)]
-    
-    for n, niter in params:
-        """
-        gathered = comm.gather(benchmark(n, max_err, max_iter))
-        if gathered is not None:
-            dummy = list(zip(*gathered))
-            mean = np.
-        """
-        mean, std = benchmark(n, niter)
-        err = 2.6 * std / np.sqrt(niter)
-        print(n, mean, niter, err, err / mean * 100)
+    params = [((128, 128, 128), 15000),
+              ((256, 256, 256), 10000),
+              ((512, 512, 512), 1000)]
+
+    for shape, niter in params:
+        mean, std = benchmark(shape, niter)
+        if MPI.COMM_WORLD.rank == 0:
+            args = map(str, shape + (niter, MPI.COMM_WORLD.size, mean, std))
+            print(','.join(args))
 
     MPI.Finalize()
