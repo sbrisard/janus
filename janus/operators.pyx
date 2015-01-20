@@ -52,12 +52,14 @@ from janus.utils.checkarray cimport create_or_check_shape_4d
 def isotropic_4(sph, dev, dim):
     """Create a fourth rank, isotropic tensor.
 
-    :param float sph: the spherical projection of the returned tensor
-    :param float dev: the deviatoric projection of the returned tensor
-    :param int dim: the dimension of the physical space on which the
-        returned tensor operates (int)
+    Args:
+        sph: the spherical projection of the returned tensor (float)
+        dev: the deviatoric projection of the returned tensor (float)
+        dim: the dimension of the physical space on which the returned
+             tensor operates (int)
 
-    :rtype: :class:`FourthRankIsotropicTensor`
+    Returns:
+        A new instance of FourthRankIsotropicTensor.
 
     """
     if dim == 2:
@@ -71,13 +73,15 @@ def isotropic_4(sph, dev, dim):
 def block_diagonal_operator(loc):
     """Create a block-diagonal operator.
 
-    The returned instance keeps a *shallow* copy of `loc`.
+    The returned instance keeps a *shallow* copy of loc.
 
-    :param loc: the array of local operators
-    :type loc: 2D memoryview of :class:`AbstractOperator`
+    Args:
+        loc: the array of local operators (2D memoryview of
+             AbstractOperator)
 
-    :rtype: :class:`BlockDiagonalOperator2D` or
-            :class:`BlockDiagonalOperator3D`
+    Returns:
+        A new instance of BlockDiagonalOperator2D or
+        BlockDiagonalOperator3D.
 
     """
     dim = len(loc.shape)
@@ -95,11 +99,12 @@ def block_diagonal_linear_operator(a):
 
     The returned instance keeps a *shallow* copy of `a`.
 
-    :param a: the array of local matrices
-    :type a: 4D or 5D memoryview of `float`
+    Args:
+        a: the array of local matrices (4D or 5D memoryview of float)
 
-    :rtype: :class:`BlockDiagonalLinearOperator2D` or
-            :class:`BlockDiagonalLinearOperator3D`
+    Returns:
+        A new instance of BlockDiagonalLinearOperator2D or
+        BlockDiagonalLinearOperator3D.
 
     """
     dim = len(a.shape) - 2
@@ -116,11 +121,12 @@ cdef class AbstractOperator:
 
     """General operator.
 
-    Concrete instances of this class map arrays of size `isize` to
-    arrays of size `osize`.
+    Concrete instances of this class map arrays of size isize to
+    arrays of size osize.
 
-    :var int isize: the size of the input
-    :var int osize: the size of the output
+    Attributes:
+        isize: the size of the input (int, read-only)
+        osize: the size of the output (int, read-only)
 
     """
 
@@ -128,7 +134,7 @@ cdef class AbstractOperator:
         pass
 
     def init_sizes(self, int isize, int osize):
-        """Initialize the values of the `isize` and `osize` attributes.
+        """Initialize the values of the isize and osize attributes.
 
         This method is provided as a convenience to users who want to
         create pure Python implementations of this class. It should be
@@ -136,8 +142,9 @@ cdef class AbstractOperator:
         can potentially modify the `isize` and `osize` attributes (which
         are otherwise read-only).
 
-        :param int isize: the size of the input
-        :param int osize: the size of the output
+        Args:
+            isize: the size of the input (int)
+            osize: the size of the output (int)
 
         """
         if isize <= 0:
@@ -151,19 +158,18 @@ cdef class AbstractOperator:
         pass
 
     def apply(self, double[:] x, double[:] y=None):
-        """Return the result of applying this operator to `x`.
+        """Return the result of applying this operator to x.
 
-        If `y` is `None`, then a new memoryview is created and returned.
-        Otherwise, the image of `x` is stored in `y`, and a view of `y`
-        is returned.
+        If y is None, then a new memoryview is created and returned.
+        Otherwise, the image of x is stored in y, and a view of y is
+        returned.
 
-        :param x: the input vector
-        :param y: the output vector (optional)
-        :type x: 1D memoryview of float
-        :type y: 1D memoryview of float
+        Args:
+            x: the input vector (1D memoryview of float)
+            y: the output vector (1D memoryview of float, optional)
 
-        :returns: the image of `x`
-        :rtype: 1D memoryview of float
+        Returns:
+            The image of x as a 1D memoryview of float.
 
         """
         check_shape_1d(x, self.isize)
@@ -174,10 +180,11 @@ cdef class AbstractOperator:
 
 cdef class AbstractLinearOperator(AbstractOperator):
 
-    """Specialization of :class:`AbstractOperator` to linear operators.
+    """Specialization of class AbstractOperator to linear operators.
 
-    This abstract class defines the method :meth:`to_memoryview` which
-    returns the matrix of this linear operator as a memoryview.
+    This abstract class defines the method to_memoryview which returns
+    the matrix of this linear operator as a memoryview.
+
     """
 
     cdef void c_to_memoryview(self, double[:, :] out):
@@ -186,14 +193,15 @@ cdef class AbstractLinearOperator(AbstractOperator):
     def to_memoryview(self, double[:, :] out=None):
         """Return the matrix of this operator as a memoryview.
 
-        If `out` is `None`, a new memoryview is allocated and returned.
-        Otherwise, the matrix is stored in `out`, and a view of `out` is
+        If out is None, a new memoryview is allocated and returned.
+        Otherwise, the matrix is stored in out, and a view of out is
         returned.
 
-        :param out: the output array
-        :type out: 2D memoryview of float
-        :returns: the matrix of this operator as a memoryview
-        :rtype: 2D memoryview of float
+        Args:
+            out: the output array (2D memoryview of float)
+
+        Returns
+            The matrix of this operator as a 2D memoryview of float.
 
         """
         out = create_or_check_shape_2d(out, self.osize, self.isize)
@@ -208,31 +216,37 @@ cdef class FourthRankIsotropicTensor(AbstractLinearOperator):
 
     Such a tensor is defined by its spherical and deviatoric
     projections. **Warning:** this class should *not* be instantiated
-    directly, as the object returned by ``__cinit__`` would not be in a
-    legal state. Use :func:`isotropic_4` instead.
+    directly, as the object returned by __cinit__ would not be in a
+    legal state. Use the function isotropic_4 instead.
 
-    Any fourth rank, isotropic tensor ``T`` is a linear combination of
-    the spherical projection tensor ``J`` and the deviatoric projection
-    tensor ``K`` ::
+    Any fourth rank, isotropic tensor T is a linear combination of
+    the spherical projection tensor J and the deviatoric projection
+    tensor K
 
         T = sph * J + dev * K.
 
-    ``sph`` and ``dev`` are the two coefficients which are passed to the
-    initializer of this class. The components of ``J`` are ::
+    sph and dev are the two coefficients which are passed to the
+    initializer of this class. The components of J are
 
         J_ijkl = δ_ij * δ_kl / d,
 
-    where ``δ_ij`` denotes the Kronecker symbol, and ``d`` is the
-    dimension of the space on which the tensor operates. The components
-    of ``K`` are found from the identity ``K = I - J``, where ``I`` is
-    the fourth-rank identity tensor ::
+    where δ_ij denotes the Kronecker symbol, and d is the dimension of
+    the space on which the tensor operates. The components of K are
+    found from the identity K = I - J, where I is the fourth-rank
+    identity tensor
 
         I_ijkl = (δ_ik * δ_jl + δ_il * δ_jk) / 2.
 
-    :param float sph: the spherical projection of the tensor
-    :param float dev: the deviatoric projection of the tensor
-    :param int dim: the dimension of the physical space on which the tensor
-        operates
+    Attributes
+        sph: the spherical projection of the tensor (float, readonly)
+        dev: the deviatoric projection of the tensor (float, readonly)
+        dim: the dimension of the physical space on which the tensor
+             operates (dim, readonly)
+
+    Args:
+        sph: see attribute with same name
+        dev: see attribute with same name
+        dim: see attribute with same name
 
     """
 
@@ -253,7 +267,7 @@ cdef class FourthRankIsotropicTensor(AbstractLinearOperator):
 cdef class FourthRankIsotropicTensor2D(FourthRankIsotropicTensor):
 
     """
-    Specialization of :class:`FourthRankIsotropicTensor` to 2D.
+    Specialization of class FourthRankIsotropicTensor to 2D.
 
     The present implementation allows for in-place operations.
 
@@ -290,7 +304,7 @@ cdef class FourthRankIsotropicTensor2D(FourthRankIsotropicTensor):
 cdef class FourthRankIsotropicTensor3D(FourthRankIsotropicTensor):
 
     """
-    Specialization of :class:`FourthRankIsotropicTensor` to 3D.
+    Specialization of class FourthRankIsotropicTensor to 3D.
 
     The present implementation allows for in-place operations.
 
@@ -359,25 +373,24 @@ cdef class AbstractStructuredOperator2D:
 
     """Operator applied to vectorial data structured in a 2D grid.
 
-    Structured operators map real vectors of dimension ``isize`` to real
-    vectors of dimension ``osize``. Input and output vectors are
+    Structured operators map real vectors of dimension isize to real
+    vectors of dimension osize. Input and output vectors are
     structured in 2D grids, each grid-cell being a vector itself.
-    Therefore, the input (resp. output) is a memoryview of floats of
-    shape ``(shape0, shape1, ishape2)``
-    [resp. ``(shape0, shape1, oshape2)``], with ::
+    Therefore, the input (resp. output) is a memoryview of float of
+    shape (shape0, shape1, ishape2) [resp. (shape0, shape1, oshape2)],
+    with
 
         isize = shape0 * shape1 * ishape2
         osize = shape0 * shape1 * oshape2
 
-    :var int dim: the dimension of the structured grid, 2
-    :var int shape0: the first dimension of the input and output
-    :var int shape1: the second dimension of the input and output
-    :var int ishape2: the third dimension of the input
-    :var int oshape2: the third dimension of the output
-    :var ishape: the shape of the input, ``(shape0, shape1, ishape2)``
-    :var oshape: the shape of the output, ``(shape0, shape1, oshape2)``
-    :type ishape: tuple of `int`
-    :type oshape: tuple of `int`
+    Attributes:
+        dim: the dimension of the structured grid (int, 2)
+        shape0: the first dimension of the input and output (int)
+        shape1: the second dimension of the input and output (int)
+        ishape2: the third dimension of the input (int)
+        oshape2: the third dimension of the output (int)
+        ishape: the shape of the input, (shape0, shape1, ishape2)
+        oshape: the shape of the output, (shape0, shape1, oshape2)
 
     """
 
@@ -385,7 +398,7 @@ cdef class AbstractStructuredOperator2D:
         self.dim = 2
 
     def init_shapes(self, int shape0, int shape1, int ishape2, int oshape2):
-        """Initialize the values of the `*shape*` attributes.
+        """Initialize the values of the *shape** attributes.
 
         This method is provided as a convenience to users who want to
         create pure Python implementations of this class. It should be
@@ -393,10 +406,11 @@ cdef class AbstractStructuredOperator2D:
         can potentially modify these attributes (which are otherwise
         read-only).
 
-        :param int shape0: the first dimension of the input and output
-        :param int shape1: the second dimension of the input and output
-        :param int ishape2: the third dimension of the input
-        :param int oshape2: the third dimension of the output
+        Args:
+            shape0: the first dimension of the input and output (int)
+            shape1: the second dimension of the input and output (int)
+            ishape2: the third dimension of the input (int)
+            oshape2: the third dimension of the output (int)
 
         """
         if shape0 <= 0:
@@ -418,24 +432,21 @@ cdef class AbstractStructuredOperator2D:
         pass
 
     def apply(self, double[:, :, :] x, double[:, :, :] y=None):
-        """apply(x, y=None)
+        """Return the result of applying this operator to x.
 
-        Return the result of applying this operator to `x`.
-
-        If `y` is `None`, then a new memoryview is created and returned.
-        Otherwise, the image of `x` is stored in `y`, and a view of `y`
-        is returned.
+        If y is None, then a new memoryview is created and returned.
+        Otherwise, the image of x is stored in y, and a view of y is
+        returned.
 
         The default implementation calls the (Cython) method
-        ``c_apply()``.
+        c_apply().
 
-        :param x: the input vector
-        :param y: the output vector
-        :type x: 3D memoryview of float
-        :type y: 3D memoryview of float
+        Args:
+            x: the input vector (3D memoryview of float)
+            y: the output vector (3D memoryview of float)
 
-        :returns: the image of `x`
-        :rtype: 3D memoryview of float
+        Returns:
+        The image of x, as a 3D memoryview of float.
 
         """
         check_shape_3d(x, self.shape0, self.shape1, self.ishape2)
@@ -449,28 +460,27 @@ cdef class AbstractStructuredOperator3D:
 
     """Operator applied to vectorial data structured in a 3D grid.
 
-    Structured operators map real vectors of dimension ``isize`` to real
-    vectors of dimension ``osize``. Input and output vectors are
+    Structured operators map real vectors of dimension isize to real
+    vectors of dimension osize. Input and output vectors are
     structured in 3D grids, each grid-cell being a vector itself.
     Therefore, the input (resp. output) is a memoryview of float of
-    shape ``(shape0, shape1, shape2, ishape3)``
-    [resp. ``(shape0, shape1, shape2, oshape3)``], with ::
+    shape (shape0, shape1, shape2, ishape3)
+    [resp. (shape0, shape1, shape2, oshape3)], with
 
         isize = shape0 * shape1 * shape2 * ishape3
         osize = shape0 * shape1 * shape2 * oshape3
 
-    :var int dim: the dimension of the structured grid, 3
-    :var int shape0: the first dimension of the input and output
-    :var int shape1: the second dimension of the input and output
-    :var int shape2: the third dimension of the input and output
-    :var int ishape3: the fourth dimension of the input
-    :var int oshape3: the fourth dimension of the output
-    :var ishape: the shape of the input,
-        ``(shape0, shape1, shape2, ishape3)``
-    :var oshape: the shape of the output,
-        ``(shape0, shape1, shape2, oshape3)``
-    :type ishape: tuple of `int`
-    :type oshape: tuple of `int`
+    Attributes:
+        dim: the dimension of the structured grid, 3
+        shape0: the first dimension of the input and output (int)
+        shape1: the second dimension of the input and output (int)
+        shape2: the third dimension of the input and output (int)
+        ishape3: the fourth dimension of the input (int)
+        oshape3: the fourth dimension of the output (int)
+        ishape: the shape of the input,
+                (shape0, shape1, shape2, ishape3)
+        oshape: the shape of the output,
+                (shape0, shape1, shape2, oshape3)
 
     """
 
@@ -479,7 +489,7 @@ cdef class AbstractStructuredOperator3D:
 
     def init_shapes(self, int shape0, int shape1, int shape2,
                     int ishape3, int oshape3):
-        """Initialize the values of the `*shape*` attributes.
+        """Initialize the values of the *shape* attributes.
 
         This method is provided as a convenience to users who want to
         create pure Python implementations of this class. It should be
@@ -487,11 +497,12 @@ cdef class AbstractStructuredOperator3D:
         can potentially modify these attributes (which are otherwise
         read-only).
 
-        :param int shape0: the first dimension of the input and output
-        :param int shape1: the second dimension of the input and output
-        :param int shape2: the third dimension of the input and output
-        :param int ishape3: the fourth dimension of the input
-        :param int oshape3: the fourth dimension of the output
+        Args:
+            shape0: the first dimension of the input and output
+            shape1: the second dimension of the input and output
+            shape2: the third dimension of the input and output
+            ishape3: the fourth dimension of the input
+            oshape3: the fourth dimension of the output
 
         """
         if shape0 <= 0:
@@ -516,22 +527,20 @@ cdef class AbstractStructuredOperator3D:
         pass
 
     def apply(self, double[:, :, :, :] x, double[:, :, :, :] y=None):
-        """Return the result of applying this operator to `x`.
+        """Return the result of applying this operator to x.
 
-        If `y` is `None`, then a new memoryview is created and returned.
-        Otherwise, the image of `x` is stored in `y`, and a view of `y`
-        is returned.
+        If y is None, then a new memoryview is created and returned.
+        Otherwise, the image of x is stored in y, and a view of y is
+        returned.
 
-        The default implementation calls the (Cython) method
-        ``c_apply()``.
+        The default implementation calls the (Cython) method c_apply().
 
-        :param x: the input vector
-        :param y: the output vector
-        :type x: 4D memoryview of float
-        :type y: 4D memoryview of float
+        Args:
+            x: the input vector (4D memoryview of float)
+            y: the output vector (4D memoryview of float)
 
-        :returns: the image of `x`
-        :rtype: 4D memoryview of float
+        Returns:
+            The image of x as a 4D memoryview of float.
 
         """
         check_shape_4d(x,
@@ -548,14 +557,15 @@ cdef class BlockDiagonalOperator2D(AbstractStructuredOperator2D):
 
     """Block-diagonal operator with 2D layout of the (vectorial) data.
 
-    If the local operators `loc` allow for in-place operations, then
+    If the local operators loc allow for in-place operations, then
     the block-diagonal operator also allows for in-place operations.
 
     Instances of this class keep a *shallow* copy of the array of
     local operators passed to the initializer.
 
-    :param loc: the array of local operators
-    :type loc: 2D memoryview of :class:`AbstractOperator`
+    Args:
+        loc: the array of local operators (2D memoryview of
+        AbstractOperator)
 
     """
 
@@ -598,14 +608,15 @@ cdef class BlockDiagonalOperator3D(AbstractStructuredOperator3D):
 
     """Block-diagonal operator with 3D layout of the (vectorial) data.
 
-    If the local operators `loc` allow for in-place operations, then
+    If the local operators loc allow for in-place operations, then
     the block-diagonal operator also allows for in-place operations.
 
     Instances of this class keep a *shallow* copy of the array of
     local operators passed to the initializer.
 
-    :param loc: the array of local operators
-    :type loc: 3D memoryview of :class:`AbstractOperator`
+    Args:
+        loc: the array of local operators (3D memoryview of
+             AbstractOperator)
 
     """
 
@@ -653,8 +664,8 @@ cdef class BlockDiagonalLinearOperator2D(AbstractStructuredOperator2D):
     Instances of this class keep a *shallow* copy of the array of
     local matrices passed to the initializer.
 
-    :param a: the array of local matrices
-    :type a: 4D memoryview of `float`
+    Attributes:
+        a: the array of local matrices (4D memoryview of float)
 
     """
 
@@ -703,26 +714,25 @@ cdef class BlockDiagonalLinearOperator2D(AbstractStructuredOperator2D):
                     y_loc[i2] = yy
 
     def apply_transpose(self, double[:, :, :] x, double[:, :, :] y=None):
-        """Return the result of applying the transpose of this operator to `x`.
+        """Return the result of applying the transpose of this operator to x.
 
-        The output is defined as follows ::
+        The output is defined as follows
 
             y[i0, i1, i2] = sum(a[i0, i1, j2, i2] * x[i0, i1, j2], j2)
 
-        If `y` is `None`, then a new memoryview is created and returned.
-        Otherwise, the image of `x` is stored in `y`, and a view of `y`
-        is returned.
+        If y is None, then a new memoryview is created and returned.
+        Otherwise, the image of x is stored in y, and a view of y is
+        returned.
 
         The default implementation calls the (Cython) method
-        ``c_apply_transpose()``.
+        c_apply_transpose().
 
-        :param x: the input vector
-        :param y: the output vector
-        :type x: 3D memoryview of float
-        :type y: 3D memoryview of float
+        Args:
+            x: the input vector (3D memoryview of float)
+            y: the output vector (3D memoryview of float)
 
-        :returns: the image of `x`
-        :rtype: 3D memoryview of float
+        Returns:
+            The image of x as a 3D memoryview of float
 
         """
         check_shape_3d(x, self.shape0, self.shape1, self.oshape2)
@@ -739,8 +749,8 @@ cdef class BlockDiagonalLinearOperator3D(AbstractStructuredOperator3D):
     Instances of this class keep a *shallow* copy of the array of
     local matrices passed to the initializer.
 
-    :param a: the array of local matrices
-    :type a: 5D memoryview of `float`
+    Attributes:
+        a: the array of local matrices (5D memoryview of float)
 
     """
 
@@ -793,27 +803,26 @@ cdef class BlockDiagonalLinearOperator3D(AbstractStructuredOperator3D):
                         y_loc[i3] = yy
 
     def apply_transpose(self, double[:, :, :, :] x, double[:, :, :, :] y=None):
-        """Return the result of applying the transpose of this operator to `x`.
+        """Return the result of applying the transpose of this operator to x.
 
-        The output is defined as follows ::
+        The output is defined as follows
 
             y[i0, i1, i2, i3] = sum(a[i0, i1, i2, j3, i3] *
                                     x[i0, i1, i2, j3], j3)
 
-        If `y` is `None`, then a new memoryview is created and returned.
-        Otherwise, the image of `x` is stored in `y`, and a view of `y`
-        is returned.
+        If y is None, then a new memoryview is created and returned.
+        Otherwise, the image of x is stored in y, and a view of y is
+        returned.
 
         The default implementation calls the (Cython) method
-        ``c_apply_transpose()``.
+        c_apply_transpose().
 
-        :param x: the input vector
-        :param y: the output vector
-        :type x: 4D memoryview of float
-        :type y: 4D memoryview of float
+        Args:
+            x: the input vector (4D memoryview of float)
+            y: the output vector (4D memoryview of float)
 
-        :returns: the image of `x`
-        :rtype: 3D memoryview of float
+        Returns:
+            The image of x as a 4D memoryview of float.
 
         """
         check_shape_4d(x,
