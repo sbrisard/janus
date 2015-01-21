@@ -44,6 +44,6 @@ if __name__ == '__main__':
         mean, std = benchmark(shape, niter)
         if MPI.COMM_WORLD.rank == 0:
             args = map(str, shape + (niter, MPI.COMM_WORLD.size, mean, std))
-            print(','.join(args))
+            print(','.join(args), flush=True)
 
     MPI.Finalize()
