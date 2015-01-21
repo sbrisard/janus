@@ -2,7 +2,6 @@ import sys
 import time
 
 import numpy as np
-import numpy.random as nprnd
 
 import janus.fft.parallel
 
@@ -15,7 +14,7 @@ def benchmark(shape, niter):
     local_sizes = comm.gather((transform.rshape[0], transform.offset0))
 
     if comm.rank == root:
-        r = nprnd.uniform(-1., 1., transform.shape)
+        r = np.random.uniform(-1., 1., transform.shape)
     else:
         r= None
     rloc = np.empty(transform.rshape, dtype=np.float64)
@@ -34,7 +33,7 @@ def benchmark(shape, niter):
 if __name__ == '__main__':
 
     janus.fft.parallel.init()
-    nprnd.seed(20140121)
+    np.random.seed(20140121)
 
     params = [((128, 128, 128), 15000),
               ((256, 256, 256), 10000),

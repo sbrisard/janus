@@ -20,7 +20,7 @@ def benchmark(shape, niter):
 
 if __name__ == '__main__':
 
-    nprnd.seed(20140121)
+    np.random.seed(20140121)
 
     params = [((128, 128, 128), 15000),
               ((256, 256, 256), 10000),
