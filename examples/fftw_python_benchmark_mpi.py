@@ -27,7 +27,7 @@ def benchmark(shape, niter):
         t1 = time.perf_counter()
         transform.r2c(rloc, cloc)
         t2 = time.perf_counter()
-        times.append(t2 - t1)
+        times.append(1E3 * (t2 - t1))
 
     return np.mean(times), np.std(times)
 
