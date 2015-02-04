@@ -8,6 +8,7 @@ User's guide
    introduction
    operators
    materials
+   fft
 
 Indices and tables
 ==================
