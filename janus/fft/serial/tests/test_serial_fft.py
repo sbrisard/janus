@@ -13,14 +13,12 @@ def do_test_r2c(shape, inplace, delta):
     transform = janus.fft.serial.create_real(shape)
     a = 2. * nprnd.rand(*transform.rshape) - 1.
     if inplace:
-        output = transform.r2c(a, np.empty(transform.cshape, dtype=np.float64))
+        output = np.empty(transform.cshape, dtype=np.float64)
     else:
-        output = transform.r2c(a)
+        output = None
 
-    output = np.asarray(output)
-    output = np.rollaxis(output, output.ndim - 1, 0)
-    actual = output[0::2] + 1j * output[1::2]
-    actual = np.rollaxis(actual, 0, actual.ndim)
+    output = np.asarray(transform.r2c(a, output))
+    actual = output[..., 0::2] + 1j * output[..., 1::2]
     expected = npfft.rfftn(a)
 
     error = (np.sum(np.absolute(actual - expected))
