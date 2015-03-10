@@ -10,15 +10,10 @@ Before the main methods and functions of the :mod:`janus.fft` module are introdu
 
 .. TODO Confirm above point on performance hit.
 
-Although not essential, it might be useful to have a look to the FFTW `manual <http://www.fftw.org/fftw3_doc/>`_.
+Although not essential, it might be useful to have a look to the FFTW `manual <http://www.fftw.org/fftw3_doc/>`_. For the time being, only two and three dimensional real-to-complex transforms are implemented.
 
-Allocation of FFT objects
-=========================
-
-For the time being, only two and three dimensional real-to-complex transforms are implemented.
-
-Serial transforms
------------------
+Serial computations
+===================
 
 The following piece of code creates an object ``transform`` which can perform real FFTs on ``32x64`` grids of real numbers.
 
@@ -91,8 +86,9 @@ and ``transform.c2r()``
 >>> assert out.base is x2
 >>> assert np.sum((x2 - x1)**2) == 0.0
 
-Parallel transforms
--------------------
+Parallel computations
+=====================
+
 The module ``janus.fft.parallel`` is a wrapper around the ``fftw3-mpi`` library (refer to the FFTW `manual <http://www.fftw.org/fftw3_doc/Distributed_002dmemory-FFTW-with-MPI.html#Distributed_002dmemory-FFTW-with-MPI>`_ for the inner workings of this library). This module must be used along with the `mpi4py <https://bitbucket.org/mpi4py/mpi4py>`_ module to handle MPI communications.
 
 The Python API is very similar to the API for serial transforms. However, computing a parallel FFT is slightly more involved than computing a serial FFT, because the data must be distributed across the processes. The computation must go through the following steps
