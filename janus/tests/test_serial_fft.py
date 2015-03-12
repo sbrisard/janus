@@ -1,6 +1,4 @@
 import numpy as np
-import numpy.random
-import numpy.fft
 import pytest
 
 import janus.fft.serial
@@ -38,7 +36,8 @@ def pytest_generate_tests(metafunc):
 
 def test_r2c(shape, inplace, delta):
     transform = janus.fft.serial.create_real(shape)
-    a = 2. * numpy.random.rand(*transform.rshape) - 1.
+    np.random.seed(20150312)
+    a = 2. * np.random.rand(*transform.rshape) - 1.
     if inplace:
         output = np.empty(transform.cshape, dtype=np.float64)
     else:
@@ -46,7 +45,7 @@ def test_r2c(shape, inplace, delta):
 
     output = np.asarray(transform.r2c(a, output))
     actual = output[..., 0::2] + 1j * output[..., 1::2]
-    expected = numpy.fft.rfftn(a)
+    expected = np.fft.rfftn(a)
 
     error = (np.sum(np.absolute(actual - expected))
              / np.sum(np.absolute(expected)))
@@ -56,7 +55,8 @@ def test_r2c(shape, inplace, delta):
 
 def test_c2r(shape, delta, inplace):
     transform = janus.fft.serial.create_real(shape)
-    expected = 2. * numpy.random.rand(*transform.rshape) - 1.
+    np.random.seed(20150312)
+    expected = 2. * np.random.rand(*transform.rshape) - 1.
     a = np.asarray(transform.r2c(expected))
     if inplace:
         actual = transform.c2r(a, np.empty(transform.rshape, dtype=np.float64))
