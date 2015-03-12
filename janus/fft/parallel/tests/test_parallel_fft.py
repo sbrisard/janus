@@ -1,15 +1,18 @@
 import numpy as np
-import numpy.random as nprnd
+import numpy.random
+import pytest
 
 import janus.fft.serial
 import janus.fft.parallel
 
 from mpi4py import MPI
-from nose.tools import assert_equal
-from nose.tools import nottest
 
-@nottest
-def do_test_r2c(shape):
+
+@pytest.mark.parametrize('shape', [(31, 15),
+                                   (31, 16),
+                                   (32, 15),
+                                   (32, 16)])
+def test_r2c(shape):
     comm = MPI.COMM_WORLD
     root = 0
     rank = comm.rank
@@ -21,7 +24,7 @@ def do_test_r2c(shape):
     local_sizes = comm.gather(sendobj=(pfft.rshape[0], pfft.offset0), root=root)
 
     # Root process creates global array, and scatters sub-arrays
-    rglob = 2. * nprnd.rand(*shape) - 1.
+    rglob = 2. * numpy.random.rand(*shape) - 1.
     if rank == root:
         rlocs = [rglob[offset0:offset0 + n0] for n0, offset0 in local_sizes]
     else:
@@ -41,10 +44,4 @@ def do_test_r2c(shape):
             actual[offset0:offset0 + n0] = cloc
         expected = sfft.r2c(rglob)
         norm = np.sqrt(np.sum((actual - expected)**2))
-        assert_equal(norm, 0.)
-
-def test_transform():
-   shapes = [(31, 15), (31, 16), (32, 15), (32, 16)]
-   for shape in shapes:
-       yield do_test_r2c, shape
-       
+        assert norm == 0.
