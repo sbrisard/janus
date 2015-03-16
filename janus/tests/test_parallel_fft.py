@@ -7,8 +7,6 @@ import janus.fft.parallel
 from mpi4py import MPI
 
 
-# TODO Scatterv fails with arrays of unequal size
-# (which happens with n0 == 31)
 @pytest.mark.parametrize('shape', [(31, 15), (31, 16), (32, 15), (32, 16)])
 def test_r2c(shape):
     comm = MPI.COMM_WORLD
