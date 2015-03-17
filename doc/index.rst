@@ -9,6 +9,7 @@ User's guide
    operators
    materials
    fft
+   ./apidoc/modules
 
 Indices and tables
 ==================
