@@ -104,23 +104,27 @@ This is illustrated in the step-by-step tutorial below. This tutorial aims again
 
     $ mpiexec -np 2 python3 parallel_fft_tutorial.py
 
-where the number of processes can be adjusted (all output produced below was obtained with two parallel processes). A few modules must first be imported
+where the number of processes can be adjusted (all output produced below was obtained with two parallel processes).
+
+Before we proceed with the description of the program, it should be noted that communication will be carried out with the uppercase versions `MPI.Comm.Gather` and `MPI.Comm.Scatter`. The lowercase versions of `MPI.Comm.scatter` and `MPI.Comm.gather` are slightly easier to use, but communicate objects through pickling. This approach fails with very large objects (the size limit is much lower than the intrinsic MPI size limit). With `MPI.Comm.Gather` and `MPI.Comm.Scatter`, the intrinsic MPI size limit is restored. The FFT objects defined in the module :mod:`janus.fft.parallel` provide attributes to help call these methods.
+
+A few modules must first be imported
 
 .. literalinclude:: parallel_fft_tutorial.py
-  :start-after: imports
-  :end-before: imports
+  :start-after: Imports
+  :end-before: Init
 
-Note that `mpi4py <https://bitbucket.org/mpi4py/mpi4py>`_ is used to handle MPI inter-processes communications. Then, a few useful variables are created  and the input data, ``x`` is generated (step 1)
+Then, some useful variables are created
 
 .. literalinclude:: parallel_fft_tutorial.py
-  :start-after: step_1
-  :end-before: step_1
+  :start-after: Init
+  :end-before: Create
 
 Then, the transform objects (one for each process) are created (step 2), and their various shapes are printed out.
 
 .. literalinclude:: parallel_fft_tutorial.py
-  :start-after: step_2
-  :end-before: step_2
+  :start-after: Create
+  :end-before: Prepare
 
 This code snippet outputs the following messages
 
@@ -130,37 +134,36 @@ This code snippet outputs the following messages
     rshape = (16, 64)
     cshape = (16, 66)
 
-The ``transform.shape`` attribute refers to the *global* (logical) shape of the transform. Since the data is distributed across all processes, the *local* size in memory of the input and output data differ from ``transform.shape``. Accordingly, the ``transform.rshape`` (resp. ``transform.cshape``) attribute refers to the local shape of the real, input (resp. complex, output) data, for the current process. As expected with FFTW, it is observed that the data is distributed with respect to the first dimension. Indeed, the global, first dimension is 64, and the above example is run with 2 processes; therefore, the local first dimension is ``64 / 2 = 32``.
+The `transform.shape` attribute refers to the *global* (logical) shape of the transform. Since the data is distributed across all processes, the *local* size in memory of the input and output data differ from `transform.shape`. Accordingly, the `transform.rshape` (resp. `transform.cshape`) attribute refers to the local shape of the real, input (resp. complex, output) data, for the current process. As expected with FFTW, it is observed that the data is distributed with respect to the first dimension. Indeed, the global, first dimension is 64, and the above example is run with 2 processes; therefore, the local first dimension is ``64 / 2 = 32``.
 
-In order to figure out how to scatter the input data, the root process then gathers all local sizes (step 3)
-
-.. literalinclude:: parallel_fft_tutorial.py
-  :start-after: step_3
-  :end-before: step_3
-
-Then the input data ``x`` is scattered across all processes; note that ``comm.Scatterv`` (in module mpi4py) is particularly well suited to the task
+In order to figure out how to scatter the input data, the root process then gathers all local sizes and displacements, and the parameters to be passed to `mpi4py.MPI.Scatterv()` and `mpi4py.MPI.Gatherv()` are prepared
 
 .. literalinclude:: parallel_fft_tutorial.py
-  :start-after: step_4
-  :end-before: step_4
+  :start-after: Prepare
+  :end-before: Scatter
+
+Then the input data `x` is scattered across all processes
+
+.. literalinclude:: parallel_fft_tutorial.py
+  :start-after: Scatter
+  :end-before: Execute
 
 Each process then executes its transform
 
 .. literalinclude:: parallel_fft_tutorial.py
-  :start-after: step_5
-  :end-before: step_5
+  :start-after: Execute
+  :end-before: Gather
 
 and the root process finally gathers the results
 
 .. literalinclude:: parallel_fft_tutorial.py
-  :start-after: step_6
-  :end-before: step_6
+  :start-after: Gather
+  :end-before: Validate
 
 The initialization of ``y`` is a bit clumsy at the present time. To check that the computation is correct, the same transform is finally computed locally by the root process
 
 .. literalinclude:: parallel_fft_tutorial.py
-  :start-after: step_7
-  :end-before: step_7
+  :start-after: Validate
 
 
 The complete program
