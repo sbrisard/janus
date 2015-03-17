@@ -47,9 +47,13 @@ cdef class _RealFFT2D:
                   ptrdiff_t n0_loc, ptrdiff_t offset0):
         self.rshape0 = n0_loc
         self.rshape1 = n1
+        self.isize = self.rshape0 * self.rshape1
         self.cshape0 = n0_loc
         self.cshape1 = 2 * (n1 / 2 + 1)
+        self.osize = self.cshape0 * self.cshape1
         self.offset0 = offset0
+        self.idispl = self.offset0 * self.rshape1
+        self.odispl = self.offset0 * self.cshape1
         self.padding = padding(n1)
         self.shape = n0, n1
         self.rshape = self.rshape0, self.rshape1
@@ -167,10 +171,14 @@ cdef class _RealFFT3D:
         self.rshape0 = n0_loc
         self.rshape1 = n1
         self.rshape2 = n2
+        self.isize = self.rshape0 * self.rshape1 * self.rshape2
         self.cshape0 = n0_loc
         self.cshape1 = n1
         self.cshape2 = 2 * (n2 / 2 + 1)
+        self.osize = self.oshape0 * self.oshape1 * self.oshape2
         self.offset0 = offset0
+        self.idispl = self.offset0 * self.rshape1 * self.rshape2
+        self.odispl = self.offset0 * self.cshape1 * self.cshape2
         self.padding = padding(self.rshape2)
         self.shape = n0, n1, n2
         self.rshape = self.rshape0, self.rshape1, self.rshape2

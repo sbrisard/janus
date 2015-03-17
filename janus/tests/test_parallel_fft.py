@@ -14,13 +14,9 @@ def test_r2c(shape):
 
     janus.fft.parallel.init()
     pfft = janus.fft.parallel.create_real(shape, comm)
-    # TODO Define isize and osize for FFT objects.
-    sendobj = (np.product(pfft.rshape),
-               pfft.offset0 * np.product(pfft.rshape[1:]),
-               np.product(pfft.cshape),
-               pfft.offset0 * np.product(pfft.cshape[1:]))
-    counts_and_displs = comm.gather(sendobj=sendobj, root=root)
-
+    counts_and_displs = comm.gather(sendobj=(pfft.isize, pfft.idispl,
+                                             pfft.osize, pfft.odispl),
+                                    root=root)
     if comm.rank == root:
         np.random.seed(20150312)
         rglob = 2. * np.random.rand(*shape) - 1.
