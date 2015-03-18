@@ -8,6 +8,7 @@ import janus.fft.parallel
 
 from mpi4py import MPI
 
+ULP = np.finfo(np.float64).eps
 SIZES = [7, 8, 9, 15, 16, 17, 31, 32, 33]
 SHAPES_2D = list(itertools.product(SIZES, SIZES))
 SHAPES_3D = list(itertools.product(SIZES, SIZES, SIZES))
@@ -44,6 +45,7 @@ def test_r2c(shape):
 
     if comm.rank == root:
         sfft = janus.fft.serial.create_real(shape)
-        expected = sfft.r2c(rglob)
-        norm = np.sqrt(np.sum((actual - expected)**2))
-        assert norm == 0.
+        expected = np.asarray(sfft.r2c(rglob))
+        norm_err = np.sqrt(np.sum((actual - expected)**2))
+        norm_ref = np.sqrt(np.sum(expected**2))
+        assert norm_err <= ULP * norm_ref
