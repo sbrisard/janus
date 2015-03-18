@@ -1,3 +1,5 @@
+import itertools
+
 import numpy as np
 import pytest
 
@@ -6,8 +8,12 @@ import janus.fft.parallel
 
 from mpi4py import MPI
 
+SIZES = [7, 8, 9, 15, 16, 17, 31, 32, 33]
+SHAPES_2D = list(itertools.product(SIZES, SIZES))
+SHAPES_3D = list(itertools.product(SIZES, SIZES, SIZES))
+SHAPES = SHAPES_2D + SHAPES_3D
 
-@pytest.mark.parametrize('shape', [(31, 15), (31, 16), (32, 15), (32, 16)])
+@pytest.mark.parametrize('shape', SHAPES)
 def test_r2c(shape):
     comm = MPI.COMM_WORLD
     root = 0
