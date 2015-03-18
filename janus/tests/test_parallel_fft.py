@@ -13,76 +13,50 @@ SIZES = [7, 8, 9, 15, 16, 17, 31, 32, 33]
 SHAPES_2D = list(itertools.product(SIZES, SIZES))
 SHAPES_3D = list(itertools.product(SIZES, SIZES, SIZES))
 SHAPES = SHAPES_2D + SHAPES_3D
+PARAMS = list(itertools.product(SHAPES, [False, True]))
 
-@pytest.mark.parametrize('shape', SHAPES)
-def test_r2c(shape):
+@pytest.mark.parametrize('global_ishape, inverse', PARAMS)
+def test_transform(global_ishape, inverse):
     comm = MPI.COMM_WORLD
     root = 0
 
     janus.fft.parallel.init()
-    pfft = janus.fft.parallel.create_real(shape, comm)
+    pfft = janus.fft.parallel.create_real(global_ishape, comm)
     counts_and_displs = comm.gather(sendobj=(pfft.isize, pfft.idispl,
                                              pfft.osize, pfft.odispl),
                                     root=root)
+    # TODO See Issue #7
+    global_oshape = (pfft.shape[0],) + pfft.cshape[1:]
     if comm.rank == root:
-        np.random.seed(20150312)
-        rglob = 2. * np.random.rand(*shape) - 1.
         icounts, idispls, ocounts, odispls = zip(*counts_and_displs)
-    else:
-        rglob = None
-        icounts, idispls, ocounts, odispls = None, None, None, None
-    rloc = np.empty(pfft.rshape, dtype=np.float64)
-    comm.Scatterv([rglob, icounts, idispls, MPI.DOUBLE], rloc, root)
-    cloc = np.empty(pfft.cshape, dtype=np.float64)
-    pfft.r2c(rloc, cloc)
-    if comm.rank == root:
-        # TODO See Issue #7
-        actual = np.empty((pfft.shape[0],) + pfft.cshape[1:],
-                          dtype=np.float64)
-    else:
-        actual = None
-    comm.Gatherv(cloc, [actual, ocounts, odispls, MPI.DOUBLE], root)
-
-    if comm.rank == root:
-        sfft = janus.fft.serial.create_real(shape)
-        expected = np.asarray(sfft.r2c(rglob))
-        norm_err = np.sqrt(np.sum((actual - expected)**2))
-        norm_ref = np.sqrt(np.sum(expected**2))
-        assert norm_err <= ULP * norm_ref
-
-@pytest.mark.parametrize('shape', SHAPES)
-def test_c2r(shape):
-    comm = MPI.COMM_WORLD
-    root = 0
-
-    janus.fft.parallel.init()
-    pfft = janus.fft.parallel.create_real(shape, comm)
-    counts_and_displs = comm.gather(sendobj=(pfft.isize, pfft.idispl,
-                                             pfft.osize, pfft.odispl),
-                                    root=root)
-    if comm.rank == root:
+        if inverse:
+            xshape, xcounts, xdispls = global_oshape, ocounts, odispls
+            yshape, ycounts, ydispls = global_ishape, icounts, idispls
+        else:
+            xshape, xcounts, xdispls = global_ishape, icounts, idispls
+            yshape, ycounts, ydispls = global_oshape, ocounts, odispls
         np.random.seed(20150312)
-        # TODO See Issue #7
-        oshape = (pfft.shape[0],) + pfft.cshape[1:]
-        cglob = 2. * np.random.rand(*oshape) - 1.
-        icounts, idispls, ocounts, odispls = zip(*counts_and_displs)
+        x = 2. * np.random.rand(*xshape) - 1.
+        y = np.empty(yshape, dtype=np.float64)
     else:
-        cglob = None
-        icounts, idispls, ocounts, odispls = None, None, None, None
-    rloc = np.empty(pfft.rshape, dtype=np.float64)
-    cloc = np.empty(pfft.cshape, dtype=np.float64)
-    comm.Scatterv([cglob, ocounts, odispls, MPI.DOUBLE], cloc, root)
-    pfft.c2r(cloc, rloc)
-    if comm.rank == root:
-        # TODO See Issue #7
-        actual = np.empty(shape, dtype=np.float64)
+        x, xcounts, xdispls = None, None, None
+        y, ycounts, ydispls = None, None, None
+
+    if inverse:
+        xshape, yshape, transform = pfft.cshape, pfft.rshape, pfft.c2r
     else:
-        actual = None
-    comm.Gatherv(rloc, [actual, icounts, idispls, MPI.DOUBLE], root)
+        xshape, yshape, transform = pfft.rshape, pfft.cshape, pfft.r2c
+
+    xloc = np.empty(xshape, dtype=np.float64)
+    yloc = np.empty(yshape, dtype=np.float64)
+    comm.Scatterv([x, xcounts, xdispls, MPI.DOUBLE], xloc, root)
+    transform(xloc, yloc)
+    comm.Gatherv(yloc, [y, ycounts, ydispls, MPI.DOUBLE], root)
 
     if comm.rank == root:
-        sfft = janus.fft.serial.create_real(shape)
-        expected = np.asarray(sfft.c2r(cglob))
-        norm_err = np.sqrt(np.sum((actual - expected)**2))
-        norm_ref = np.sqrt(np.sum(expected**2))
+        sfft = janus.fft.serial.create_real(global_ishape)
+        yref = sfft.c2r(x) if inverse else sfft.r2c(x)
+        yref = np.asarray(yref)
+        norm_err = np.sqrt(np.sum((y - yref)**2))
+        norm_ref = np.sqrt(np.sum(yref**2))
         assert norm_err <= ULP * norm_ref
