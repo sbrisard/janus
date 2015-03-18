@@ -20,7 +20,6 @@ def test_transform(global_ishape, inverse):
     comm = MPI.COMM_WORLD
     root = 0
 
-    janus.fft.parallel.init()
     pfft = janus.fft.parallel.create_real(global_ishape, comm)
     counts_and_displs = comm.gather(sendobj=(pfft.isize, pfft.idispl,
                                              pfft.osize, pfft.odispl),
