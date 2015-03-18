@@ -49,3 +49,40 @@ def test_r2c(shape):
         norm_err = np.sqrt(np.sum((actual - expected)**2))
         norm_ref = np.sqrt(np.sum(expected**2))
         assert norm_err <= ULP * norm_ref
+
+@pytest.mark.parametrize('shape', SHAPES)
+def test_c2r(shape):
+    comm = MPI.COMM_WORLD
+    root = 0
+
+    janus.fft.parallel.init()
+    pfft = janus.fft.parallel.create_real(shape, comm)
+    counts_and_displs = comm.gather(sendobj=(pfft.isize, pfft.idispl,
+                                             pfft.osize, pfft.odispl),
+                                    root=root)
+    if comm.rank == root:
+        np.random.seed(20150312)
+        # TODO See Issue #7
+        oshape = (pfft.shape[0],) + pfft.cshape[1:]
+        cglob = 2. * np.random.rand(*oshape) - 1.
+        icounts, idispls, ocounts, odispls = zip(*counts_and_displs)
+    else:
+        cglob = None
+        icounts, idispls, ocounts, odispls = None, None, None, None
+    rloc = np.empty(pfft.rshape, dtype=np.float64)
+    cloc = np.empty(pfft.cshape, dtype=np.float64)
+    comm.Scatterv([cglob, ocounts, odispls, MPI.DOUBLE], cloc, root)
+    pfft.c2r(cloc, rloc)
+    if comm.rank == root:
+        # TODO See Issue #7
+        actual = np.empty(shape, dtype=np.float64)
+    else:
+        actual = None
+    comm.Gatherv(rloc, [actual, icounts, idispls, MPI.DOUBLE], root)
+
+    if comm.rank == root:
+        sfft = janus.fft.serial.create_real(shape)
+        expected = np.asarray(sfft.c2r(cglob))
+        norm_err = np.sqrt(np.sum((actual - expected)**2))
+        norm_ref = np.sqrt(np.sum(expected**2))
+        assert norm_err <= ULP * norm_ref
