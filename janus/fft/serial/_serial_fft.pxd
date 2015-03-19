@@ -10,12 +10,12 @@ cdef inline int padding(int n):
 cdef class _RealFFT2D:
     cdef:
         int padding
-        ptrdiff_t rshape0, rshape1, cshape0, cshape1
+        ptrdiff_t ishape0, ishape1, oshape0, oshape1
         double *buffer
         double scaling
         fftw_plan plan_r2c, plan_c2r
         readonly ptrdiff_t isize, osize, offset0, idispl, odispl
-        readonly tuple shape, rshape, cshape
+        readonly tuple shape, ishape, oshape
 
     cdef inline void check_real_array(self, double[:, :] r) except *
     cdef inline void check_complex_array(self, double[:, :] c) except *
@@ -30,12 +30,12 @@ cdef class _RealFFT2D:
 cdef class _RealFFT3D:
     cdef:
         int padding
-        ptrdiff_t rshape0, rshape1, rshape2, cshape0, cshape1, cshape2
+        ptrdiff_t ishape0, ishape1, ishape2, oshape0, oshape1, oshape2
         double *buffer
         double scaling
         fftw_plan plan_r2c, plan_c2r
         readonly ptrdiff_t isize, osize, offset0, idispl, odispl
-        readonly tuple shape, rshape, cshape
+        readonly tuple shape, ishape, oshape
 
     cdef inline void check_real_array(self, double[:, :, :] r) except *
     cdef inline void check_complex_array(self, double[:, :, :] c) except *

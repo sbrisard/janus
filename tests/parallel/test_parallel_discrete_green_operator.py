@@ -44,7 +44,7 @@ class AbstractTestParallelDiscreteGreenOperator:
 
         # Create local FFT object, and send local grid-size to root process
         transform = fft.create_real(n, comm)
-        n_locs = comm.gather((transform.rshape[0], transform.offset0), root)
+        n_locs = comm.gather((transform.ishape[0], transform.offset0), root)
 
         green = self.greend(material.create(0.75, 0.3, len(n))
                                     .green_operator(),
@@ -61,13 +61,13 @@ class AbstractTestParallelDiscreteGreenOperator:
         # elif flag == 1:
         #     y_loc = green.apply(x_loc, x_loc)
         # elif flag == 2:
-        #     base = np.empty(transform.rshape + (green.oshape[-1],),
+        #     base = np.empty(transform.ishape + (green.oshape[-1],),
         #                     dtype=np.float64)
         #     y_loc = green.apply(x_loc, base)
         # else:
         #     raise ValueError()
 
-        y_loc = np.empty(transform.rshape + (green.oshape[-1],),
+        y_loc = np.empty(transform.ishape + (green.oshape[-1],),
                         dtype=np.float64)
         green.apply(x_loc, y_loc)
 

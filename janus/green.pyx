@@ -116,17 +116,17 @@ cdef class DiscreteGreenOperator2D(AbstractStructuredOperator2D):
             if transform.shape != shape:
                 raise ValueError('shape of transform must be {0} [was {1}]'
                                  .format(shape, transform.shape))
-            self.dft_x = array((transform.cshape0, transform.cshape1,
+            self.dft_x = array((transform.oshape0, transform.oshape1,
                                 green.isize), sizeof(double), 'd')
             if green.osize == green.isize:
                 self.dft_y = self.dft_x
             else:
-                self.dft_y = array((transform.cshape0, transform.cshape1,
+                self.dft_y = array((transform.oshape0, transform.oshape1,
                                     green.osize), sizeof(double), 'd')
             self.global_shape0 = transform.shape[0]
             self.offset0 = transform.offset0
-            shape0 = transform.rshape0
-            shape1 = transform.rshape1
+            shape0 = transform.ishape0
+            shape1 = transform.ishape1
         else:
             self.dft_x = None
             self.dft_y = None
@@ -240,20 +240,20 @@ cdef class DiscreteGreenOperator3D(AbstractStructuredOperator3D):
             if transform.shape != shape:
                 raise ValueError('shape of transform must be {0} [was {1}]'
                                  .format(shape, transform.shape))
-            self.dft_x = array((transform.cshape0, transform.cshape1,
-                                transform.cshape2, green.isize),
+            self.dft_x = array((transform.oshape0, transform.oshape1,
+                                transform.oshape2, green.isize),
                                sizeof(double), 'd')
             if green.osize == green.isize:
                 self.dft_y = self.dft_x
             else:
-                self.dft_y = array((transform.cshape0, transform.cshape1,
-                                    transform.cshape2, green.osize),
+                self.dft_y = array((transform.oshape0, transform.oshape1,
+                                    transform.oshape2, green.osize),
                                    sizeof(double), 'd')
             self.global_shape0 = transform.shape[0]
             self.offset0 = transform.offset0
-            shape0 = transform.rshape0
-            shape1 = transform.rshape1
-            shape2 = transform.rshape2
+            shape0 = transform.ishape0
+            shape1 = transform.ishape1
+            shape2 = transform.ishape2
         else:
             self.dft_x = None
             self.dft_y = None

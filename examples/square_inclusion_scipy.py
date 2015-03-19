@@ -24,7 +24,7 @@ class SquareInclusion:
         self.dtype = np.float64
         transform = fft.create_real((self.n0, self.n1))
         self.green = green.filtered(mat_0.green_operator(),
-                                              transform.rshape,
+                                              transform.ishape,
                                               1., transform)
         aux_i = operators.isotropic_4((mat_i.k - mat_0.k) / 2.,
                                       (mat_i.g - mat_0.g) / 2.,
@@ -33,7 +33,7 @@ class SquareInclusion:
                                       (mat_m.g - mat_0.g) / 2.,
                                       dim=2)
 
-        op_loc = np.empty(transform.rshape, dtype=object)
+        op_loc = np.empty(transform.ishape, dtype=object)
 
         imax = int(np.ceil(n * a - 0.5))
 

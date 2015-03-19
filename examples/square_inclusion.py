@@ -17,8 +17,8 @@ from petsc4py import PETSc
 class SquareInclusion:
     def __init__(self, a, mat_i, mat_m, mat_0, n, comm=MPI.COMM_WORLD):
         transform = fft.create_real((n, n), comm)
-        self.n0 = transform.rshape[0]
-        self.n1 = transform.rshape[1]
+        self.n0 = transform.ishape[0]
+        self.n1 = transform.ishape[1]
         self.offset0 = transform.offset0
         self.green = green.truncated(mat_0.green_operator(),
                                                (n, n), 1., transform)
@@ -29,7 +29,7 @@ class SquareInclusion:
                                       1. / (2. * (mat_m.g - mat_0.g)),
                                       dim=2)
 
-        ops = np.empty(transform.rshape, dtype=object)
+        ops = np.empty(transform.ishape, dtype=object)
         ops[:, :] = aux_m
         imax = int(np.ceil(n * a - 0.5))
         ops[:imax - self.offset0, :imax] = aux_i

@@ -11,15 +11,15 @@ def benchmark(shape, niter):
     comm = MPI.COMM_WORLD
     root = 0
     transform = janus.fft.parallel.create_real(shape, comm)
-    local_sizes = comm.gather((transform.rshape[0], transform.offset0))
+    local_sizes = comm.gather((transform.ishape[0], transform.offset0))
 
     if comm.rank == root:
         r = np.random.uniform(-1., 1., transform.shape)
     else:
         r= None
-    rloc = np.empty(transform.rshape, dtype=np.float64)
+    rloc = np.empty(transform.ishape, dtype=np.float64)
     comm.Scatterv(r, rloc, root)
-    cloc = np.empty(transform.cshape, dtype=np.float64)
+    cloc = np.empty(transform.oshape, dtype=np.float64)
 
     times = []
     for i in range(niter):

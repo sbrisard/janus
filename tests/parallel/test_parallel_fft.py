@@ -25,7 +25,7 @@ def test_transform(global_ishape, inverse):
                                              pfft.osize, pfft.odispl),
                                     root=root)
     # TODO See Issue #7
-    global_oshape = (pfft.shape[0],) + pfft.cshape[1:]
+    global_oshape = (pfft.shape[0],) + pfft.oshape[1:]
     if comm.rank == root:
         icounts, idispls, ocounts, odispls = zip(*counts_and_displs)
         if inverse:
@@ -42,9 +42,9 @@ def test_transform(global_ishape, inverse):
         y, ycounts, ydispls = None, None, None
 
     if inverse:
-        xshape, yshape, transform = pfft.cshape, pfft.rshape, pfft.c2r
+        xshape, yshape, transform = pfft.oshape, pfft.ishape, pfft.c2r
     else:
-        xshape, yshape, transform = pfft.rshape, pfft.cshape, pfft.r2c
+        xshape, yshape, transform = pfft.ishape, pfft.oshape, pfft.r2c
 
     xloc = np.empty(xshape, dtype=np.float64)
     yloc = np.empty(yshape, dtype=np.float64)

@@ -192,7 +192,7 @@ class AbstractTestDiscreteGreenOperator:
         elif flag == 1:
             actual = green.apply(x, x)
         elif flag == 2:
-            base = np.zeros(transform.rshape + (green.oshape[-1],), np.float64)
+            base = np.zeros(transform.ishape + (green.oshape[-1],), np.float64)
             actual = green.apply(x, base)
         else:
             raise ValueError()

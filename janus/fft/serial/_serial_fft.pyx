@@ -31,7 +31,7 @@ cdef create_real_2D(ptrdiff_t n0, ptrdiff_t n1):
 cdef create_real_3D(ptrdiff_t n0, ptrdiff_t n1, ptrdiff_t n2):
 
     cdef _RealFFT3D fft = _RealFFT3D(n0, n1, n2, n0, 0)
-    fft.buffer = fftw_alloc_real(fft.cshape0 * fft.cshape1 * fft.cshape2)
+    fft.buffer = fftw_alloc_real(fft.oshape0 * fft.oshape1 * fft.oshape2)
     fft.plan_r2c = fftw_plan_dft_r2c_3d(n0, n1, n2,
                                         fft.buffer, <fftw_complex *> fft.buffer,
                                         FFTW_ESTIMATE)
@@ -45,19 +45,19 @@ cdef class _RealFFT2D:
     @cython.boundscheck(False)
     def __cinit__(self, ptrdiff_t n0, ptrdiff_t n1,
                   ptrdiff_t n0_loc, ptrdiff_t offset0):
-        self.rshape0 = n0_loc
-        self.rshape1 = n1
-        self.isize = self.rshape0 * self.rshape1
-        self.cshape0 = n0_loc
-        self.cshape1 = 2 * (n1 / 2 + 1)
-        self.osize = self.cshape0 * self.cshape1
+        self.ishape0 = n0_loc
+        self.ishape1 = n1
+        self.isize = self.ishape0 * self.ishape1
+        self.oshape0 = n0_loc
+        self.oshape1 = 2 * (n1 / 2 + 1)
+        self.osize = self.oshape0 * self.oshape1
         self.offset0 = offset0
-        self.idispl = self.offset0 * self.rshape1
-        self.odispl = self.offset0 * self.cshape1
+        self.idispl = self.offset0 * self.ishape1
+        self.odispl = self.offset0 * self.oshape1
         self.padding = padding(n1)
         self.shape = n0, n1
-        self.rshape = self.rshape0, self.rshape1
-        self.cshape = self.cshape0, self.cshape1
+        self.ishape = self.ishape0, self.ishape1
+        self.oshape = self.oshape0, self.oshape1
         self.scaling = 1. / <double> (n0 * n1)
 
     def __dealloc__(self):
@@ -67,15 +67,15 @@ cdef class _RealFFT2D:
 
     @cython.boundscheck(False)
     cdef inline void check_real_array(self, double[:, :] r) except *:
-        if r.shape[0] != self.rshape0 or r.shape[1] != self.rshape1:
-            raise ValueError(INVALID_REAL_ARRAY_SHAPE.format(self.rshape,
+        if r.shape[0] != self.ishape0 or r.shape[1] != self.ishape1:
+            raise ValueError(INVALID_REAL_ARRAY_SHAPE.format(self.ishape,
                                                              r.shape[0],
                                                              r.shape[1]))
 
     @cython.boundscheck(False)
     cdef inline void check_complex_array(self, double[:, :] c) except *:
-        if c.shape[0] != self.cshape0 or c.shape[1] != self.cshape1:
-            raise ValueError(INVALID_COMPLEX_ARRAY_SHAPE.format(self.cshape,
+        if c.shape[0] != self.oshape0 or c.shape[1] != self.oshape1:
+            raise ValueError(INVALID_COMPLEX_ARRAY_SHAPE.format(self.oshape,
                                                                 c.shape[0],
                                                                 c.shape[1]))
 
@@ -139,26 +139,26 @@ cdef class _RealFFT2D:
     cpdef double[:, :] r2c(self, double[:, :] r, double[:, :] c = None):
         self.check_real_array(r)
         if c is None:
-             c = array(shape=self.cshape, itemsize=SIZEOF_DOUBLE, format='d')
+             c = array(shape=self.oshape, itemsize=SIZEOF_DOUBLE, format='d')
         else:
              self.check_complex_array(c)
 
-        self.copy_to_buffer(r, self.rshape0, self.rshape1, self.padding)
+        self.copy_to_buffer(r, self.ishape0, self.ishape1, self.padding)
         fftw_execute(self.plan_r2c)
-        self.copy_from_buffer(c, self.cshape0, self.cshape1, 0, 1.)
+        self.copy_from_buffer(c, self.oshape0, self.oshape1, 0, 1.)
 
         return c
 
     cpdef double[:, :] c2r(self, double[:, :] c, double[:, :] r = None):
         self.check_complex_array(c)
         if r is None:
-             r = array(shape=self.rshape, itemsize=SIZEOF_DOUBLE, format='d')
+             r = array(shape=self.ishape, itemsize=SIZEOF_DOUBLE, format='d')
         else:
              self.check_real_array(r)
 
-        self.copy_to_buffer(c, self.cshape0, self.cshape1, 0)
+        self.copy_to_buffer(c, self.oshape0, self.oshape1, 0)
         fftw_execute(self.plan_c2r)
-        self.copy_from_buffer(r, self.rshape0, self.rshape1, self.padding,
+        self.copy_from_buffer(r, self.ishape0, self.ishape1, self.padding,
                               self.scaling)
 
         return r
@@ -168,21 +168,21 @@ cdef class _RealFFT3D:
     @cython.boundscheck(False)
     def __cinit__(self, ptrdiff_t n0, ptrdiff_t n1, ptrdiff_t n2,
                   ptrdiff_t n0_loc, ptrdiff_t offset0):
-        self.rshape0 = n0_loc
-        self.rshape1 = n1
-        self.rshape2 = n2
-        self.isize = self.rshape0 * self.rshape1 * self.rshape2
-        self.cshape0 = n0_loc
-        self.cshape1 = n1
-        self.cshape2 = 2 * (n2 / 2 + 1)
-        self.osize = self.cshape0 * self.cshape1 * self.cshape2
+        self.ishape0 = n0_loc
+        self.ishape1 = n1
+        self.ishape2 = n2
+        self.isize = self.ishape0 * self.ishape1 * self.ishape2
+        self.oshape0 = n0_loc
+        self.oshape1 = n1
+        self.oshape2 = 2 * (n2 / 2 + 1)
+        self.osize = self.oshape0 * self.oshape1 * self.oshape2
         self.offset0 = offset0
-        self.idispl = self.offset0 * self.rshape1 * self.rshape2
-        self.odispl = self.offset0 * self.cshape1 * self.cshape2
-        self.padding = padding(self.rshape2)
+        self.idispl = self.offset0 * self.ishape1 * self.ishape2
+        self.odispl = self.offset0 * self.oshape1 * self.oshape2
+        self.padding = padding(self.ishape2)
         self.shape = n0, n1, n2
-        self.rshape = self.rshape0, self.rshape1, self.rshape2
-        self.cshape = self.cshape0, self.cshape1, self.cshape2
+        self.ishape = self.ishape0, self.ishape1, self.ishape2
+        self.oshape = self.oshape0, self.oshape1, self.oshape2
         self.scaling = 1. / <double> (n0 * n1 * n2)
 
     def __dealloc__(self):
@@ -192,19 +192,19 @@ cdef class _RealFFT3D:
 
     @cython.boundscheck(False)
     cdef inline void check_real_array(self, double[:, :, :] r) except *:
-        if (r.shape[0] != self.rshape0 or r.shape[1] != self.rshape1
-            or r.shape[2] != self.rshape2):
+        if (r.shape[0] != self.ishape0 or r.shape[1] != self.ishape1
+            or r.shape[2] != self.ishape2):
             # TODO Adapt error message
-            raise ValueError(INVALID_REAL_ARRAY_SHAPE.format(self.rshape,
+            raise ValueError(INVALID_REAL_ARRAY_SHAPE.format(self.ishape,
                                                              r.shape[0],
                                                              r.shape[1]))
 
     @cython.boundscheck(False)
     cdef inline void check_complex_array(self, double[:, :, :] c) except *:
-        if (c.shape[0] != self.cshape0 or c.shape[1] != self.cshape1
-                or c.shape[2] != self.cshape2):
+        if (c.shape[0] != self.oshape0 or c.shape[1] != self.oshape1
+                or c.shape[2] != self.oshape2):
             # TODO Adapt error message
-            raise ValueError(INVALID_COMPLEX_ARRAY_SHAPE.format(self.cshape,
+            raise ValueError(INVALID_COMPLEX_ARRAY_SHAPE.format(self.oshape,
                                                                 c.shape[0],
                                                                 c.shape[1]))
 
@@ -283,14 +283,14 @@ cdef class _RealFFT3D:
                               double[:, :, :] c = None):
         self.check_real_array(r)
         if c is None:
-             c = array(shape=self.cshape, itemsize=SIZEOF_DOUBLE, format='d')
+             c = array(shape=self.oshape, itemsize=SIZEOF_DOUBLE, format='d')
         else:
              self.check_complex_array(c)
 
-        self.copy_to_buffer(r, self.rshape0, self.rshape1, self.rshape2,
+        self.copy_to_buffer(r, self.ishape0, self.ishape1, self.ishape2,
                             self.padding)
         fftw_execute(self.plan_r2c)
-        self.copy_from_buffer(c, self.cshape0, self.cshape1, self.cshape2, 0, 1.)
+        self.copy_from_buffer(c, self.oshape0, self.oshape1, self.oshape2, 0, 1.)
 
         return c
 
@@ -298,13 +298,13 @@ cdef class _RealFFT3D:
                               double[:, :, :] r = None):
         self.check_complex_array(c)
         if r is None:
-             r = array(shape=self.rshape, itemsize=SIZEOF_DOUBLE, format='d')
+             r = array(shape=self.ishape, itemsize=SIZEOF_DOUBLE, format='d')
         else:
              self.check_real_array(r)
 
-        self.copy_to_buffer(c, self.cshape0, self.cshape1, self.cshape2, 0)
+        self.copy_to_buffer(c, self.oshape0, self.oshape1, self.oshape2, 0)
         fftw_execute(self.plan_c2r)
-        self.copy_from_buffer(r, self.rshape0, self.rshape1, self.rshape2,
+        self.copy_from_buffer(r, self.ishape0, self.ishape1, self.ishape2,
                               self.padding, self.scaling)
 
 

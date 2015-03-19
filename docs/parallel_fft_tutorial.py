@@ -14,8 +14,8 @@ if __name__ == '__main__':
     transform = janus.fft.parallel.create_real(shape, comm)
     if comm.rank == root:
         print('shape  = {}'.format(transform.shape))
-        print('rshape = {}'.format(transform.rshape))
-        print('cshape = {}'.format(transform.cshape))
+        print('ishape = {}'.format(transform.ishape))
+        print('oshape = {}'.format(transform.oshape))
     # Prepare communications
     counts_and_displs = comm.gather(sendobj=(transform.isize, transform.idispl,
                                              transform.osize, transform.odispl),
@@ -27,14 +27,14 @@ if __name__ == '__main__':
     else:
         x, icounts, idispls, ocounts, odispls = None, None, None, None, None
     # Scatter input data
-    x_loc = np.empty(transform.rshape, dtype=np.float64)
+    x_loc = np.empty(transform.ishape, dtype=np.float64)
     comm.Scatterv([x, icounts, idispls, MPI.DOUBLE], x_loc, root)
     # Execute transform
     y_loc = transform.r2c(x_loc)
     # Gather output data
     if comm.rank == root:
         # TODO See Issue #7
-        y = np.empty((transform.shape[0],) + transform.cshape[1:],
+        y = np.empty((transform.shape[0],) + transform.oshape[1:],
                      dtype=np.float64)
     else:
         y = None

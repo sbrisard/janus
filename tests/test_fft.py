@@ -31,15 +31,15 @@ def pytest_generate_tests(metafunc):
                   ((128, 64, 32), (128, 64, 32), (128, 64, 33)),]
         params = ([x + (True,) for x in shapes] +
                   [x + (False,) for x in shapes])
-        metafunc.parametrize('shape, rshape, cshape, direct', params)
+        metafunc.parametrize('shape, ishape, oshape, direct', params)
 
 
 def test_r2c(shape, inplace, delta):
     transform = janus.fft.serial.create_real(shape)
     np.random.seed(20150312)
-    a = 2. * np.random.rand(*transform.rshape) - 1.
+    a = 2. * np.random.rand(*transform.ishape) - 1.
     if inplace:
-        output = np.empty(transform.cshape, dtype=np.float64)
+        output = np.empty(transform.oshape, dtype=np.float64)
     else:
         output = None
 
@@ -56,10 +56,10 @@ def test_r2c(shape, inplace, delta):
 def test_c2r(shape, delta, inplace):
     transform = janus.fft.serial.create_real(shape)
     np.random.seed(20150312)
-    expected = 2. * np.random.rand(*transform.rshape) - 1.
+    expected = 2. * np.random.rand(*transform.ishape) - 1.
     a = np.asarray(transform.r2c(expected))
     if inplace:
-        actual = transform.c2r(a, np.empty(transform.rshape, dtype=np.float64))
+        actual = transform.c2r(a, np.empty(transform.ishape, dtype=np.float64))
     else:
         actual = transform.c2r(a)
     actual = np.asarray(actual)
@@ -70,9 +70,9 @@ def test_c2r(shape, delta, inplace):
     assert error <= delta
 
 
-def test_invalid_params(shape, rshape, cshape, direct):
-    r = np.empty(rshape, dtype = np.float64)
-    c = np.empty(cshape, dtype = np.float64)
+def test_invalid_params(shape, ishape, oshape, direct):
+    r = np.empty(ishape, dtype = np.float64)
+    c = np.empty(oshape, dtype = np.float64)
     with pytest.raises(ValueError):
         if direct:
             janus.fft.serial.create_real(shape).r2c(r, c)

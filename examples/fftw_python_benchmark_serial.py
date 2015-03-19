@@ -8,7 +8,7 @@ import janus.fft.serial
 def benchmark(shape, niter):
     transform = janus.fft.serial.create_real(shape)
     r = np.random.uniform(-1., 1., transform.shape)
-    c = np.empty(transform.cshape, dtype=np.float64)
+    c = np.empty(transform.oshape, dtype=np.float64)
     times = []
     for i in range(niter):
         t1 = time.perf_counter()
