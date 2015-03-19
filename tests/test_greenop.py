@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 import janus.material.elastic.linear.isotropic as material
-import janus.tests.test_operators as test_operators
+import test_operators
 
 from numpy import cos
 from numpy import sin
