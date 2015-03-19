@@ -19,9 +19,7 @@ class TestIsotropicLinearElasticMaterial:
         assert mat.k == k
         assert mat.nu == nu
 
-    @pytest.mark.parametrize('g, nu, dim', [(0.0, 0.3, 2),
-                                            (0.0, 0.3, 3),
-                                            (-1.0, 0.3, 2),
+    @pytest.mark.parametrize('g, nu, dim', [(-1.0, 0.3, 2),
                                             (-1.0, 0.3, 3),
                                             (1.0, -1.0, 2),
                                             (1.0, -1.5, 2),
