@@ -100,7 +100,7 @@ class TestParallelTruncatedGreenOperator(AbstractTestParallelDiscreteGreenOperat
                   (template_3D.format('yz'), ULP),
                   (template_3D.format('zx'), ULP),
                   (template_3D.format('xy'), ULP)]
-        return [(os.path.join(directory, 'data', filename), rtol)
+        return [(os.path.join(directory, '..', 'data', filename), rtol)
                 for filename, rtol in params]
 
 
@@ -125,5 +125,5 @@ class TestParallelFilteredGreenOperator(AbstractTestParallelDiscreteGreenOperato
                   (template_3D.format('yz'), ULP),
                   (template_3D.format('zx'), ULP),
                   (template_3D.format('xy'), ULP)]
-        return [(os.path.join(directory, 'data', filename), rtol)
+        return [(os.path.join(directory, '..', 'data', filename), rtol)
                 for filename, rtol in params]
