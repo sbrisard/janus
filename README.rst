@@ -16,10 +16,10 @@ History of changes
 
 The following attributes of FFT objects were renamed (incompatible changes)
 
-- `rshape` → `ishape`: the shape of the *local* input array,
-- `cshape` → `oshape`: the shape of the *local* output array,
-- `shape` → `global_ishape`: the shape of the *global* input array.
+- ``rshape`` → ``ishape``: the shape of the *local* input array,
+- ``cshape`` → ``oshape``: the shape of the *local* output array,
+- ``shape`` → ``global_ishape``: the shape of the *global* input array.
 
 Besides, the following attribute was added
 
-- `global_oshape`: the shape of the *global* output array.
+- ``global_oshape``: the shape of the *global* output array.
