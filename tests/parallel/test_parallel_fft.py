@@ -24,8 +24,7 @@ def test_transform(global_ishape, inverse):
     counts_and_displs = comm.gather(sendobj=(pfft.isize, pfft.idispl,
                                              pfft.osize, pfft.odispl),
                                     root=root)
-    # TODO See Issue #7
-    global_oshape = (pfft.shape[0],) + pfft.oshape[1:]
+    global_oshape = pfft.global_oshape
     if comm.rank == root:
         icounts, idispls, ocounts, odispls = zip(*counts_and_displs)
         if inverse:

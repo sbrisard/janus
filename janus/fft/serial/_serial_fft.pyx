@@ -58,6 +58,7 @@ cdef class _RealFFT2D:
         self.shape = n0, n1
         self.ishape = self.ishape0, self.ishape1
         self.oshape = self.oshape0, self.oshape1
+        self.global_oshape = n0, self.oshape1
         self.scaling = 1. / <double> (n0 * n1)
 
     def __dealloc__(self):
@@ -183,6 +184,7 @@ cdef class _RealFFT3D:
         self.shape = n0, n1, n2
         self.ishape = self.ishape0, self.ishape1, self.ishape2
         self.oshape = self.oshape0, self.oshape1, self.oshape2
+        self.global_oshape = n0, self.oshape1, self.oshape2
         self.scaling = 1. / <double> (n0 * n1 * n2)
 
     def __dealloc__(self):

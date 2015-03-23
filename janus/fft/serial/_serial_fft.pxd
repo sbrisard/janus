@@ -15,7 +15,7 @@ cdef class _RealFFT2D:
         double scaling
         fftw_plan plan_r2c, plan_c2r
         readonly ptrdiff_t isize, osize, offset0, idispl, odispl
-        readonly tuple shape, ishape, oshape
+        readonly tuple shape, ishape, oshape, global_oshape
 
     cdef inline void check_real_array(self, double[:, :] r) except *
     cdef inline void check_complex_array(self, double[:, :] c) except *
@@ -35,7 +35,7 @@ cdef class _RealFFT3D:
         double scaling
         fftw_plan plan_r2c, plan_c2r
         readonly ptrdiff_t isize, osize, offset0, idispl, odispl
-        readonly tuple shape, ishape, oshape
+        readonly tuple shape, ishape, oshape, global_oshape
 
     cdef inline void check_real_array(self, double[:, :, :] r) except *
     cdef inline void check_complex_array(self, double[:, :, :] c) except *
