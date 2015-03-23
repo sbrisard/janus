@@ -55,9 +55,9 @@ cdef class _RealFFT2D:
         self.idispl = self.offset0 * self.ishape1
         self.odispl = self.offset0 * self.oshape1
         self.padding = padding(n1)
-        self.shape = n0, n1
         self.ishape = self.ishape0, self.ishape1
         self.oshape = self.oshape0, self.oshape1
+        self.global_ishape = n0, n1
         self.global_oshape = n0, self.oshape1
         self.scaling = 1. / <double> (n0 * n1)
 
@@ -181,9 +181,9 @@ cdef class _RealFFT3D:
         self.idispl = self.offset0 * self.ishape1 * self.ishape2
         self.odispl = self.offset0 * self.oshape1 * self.oshape2
         self.padding = padding(self.ishape2)
-        self.shape = n0, n1, n2
         self.ishape = self.ishape0, self.ishape1, self.ishape2
         self.oshape = self.oshape0, self.oshape1, self.oshape2
+        self.global_ishape = n0, n1, n2
         self.global_oshape = n0, self.oshape1, self.oshape2
         self.scaling = 1. / <double> (n0 * n1 * n2)
 

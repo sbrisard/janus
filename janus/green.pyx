@@ -113,9 +113,9 @@ cdef class DiscreteGreenOperator2D(AbstractStructuredOperator2D):
 
         cdef int shape0, shape1
         if transform is not None:
-            if transform.shape != shape:
+            if transform.global_ishape != shape:
                 raise ValueError('shape of transform must be {0} [was {1}]'
-                                 .format(shape, transform.shape))
+                                 .format(shape, transform.global_ishape))
             self.dft_x = array((transform.oshape0, transform.oshape1,
                                 green.isize), sizeof(double), 'd')
             if green.osize == green.isize:
@@ -123,7 +123,7 @@ cdef class DiscreteGreenOperator2D(AbstractStructuredOperator2D):
             else:
                 self.dft_y = array((transform.oshape0, transform.oshape1,
                                     green.osize), sizeof(double), 'd')
-            self.global_shape0 = transform.shape[0]
+            self.global_shape0 = transform.global_ishape[0]
             self.offset0 = transform.offset0
             shape0 = transform.ishape0
             shape1 = transform.ishape1
@@ -237,9 +237,9 @@ cdef class DiscreteGreenOperator3D(AbstractStructuredOperator3D):
 
         cdef int shape0, shape1, shape2
         if transform is not None:
-            if transform.shape != shape:
+            if transform.global_ishape != shape:
                 raise ValueError('shape of transform must be {0} [was {1}]'
-                                 .format(shape, transform.shape))
+                                 .format(shape, transform.global_ishape))
             self.dft_x = array((transform.oshape0, transform.oshape1,
                                 transform.oshape2, green.isize),
                                sizeof(double), 'd')
@@ -249,7 +249,7 @@ cdef class DiscreteGreenOperator3D(AbstractStructuredOperator3D):
                 self.dft_y = array((transform.oshape0, transform.oshape1,
                                     transform.oshape2, green.osize),
                                    sizeof(double), 'd')
-            self.global_shape0 = transform.shape[0]
+            self.global_shape0 = transform.global_ishape[0]
             self.offset0 = transform.offset0
             shape0 = transform.ishape0
             shape1 = transform.ishape1

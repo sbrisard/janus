@@ -15,24 +15,23 @@ SHAPES_3D = list(itertools.product(SIZES, SIZES, SIZES))
 SHAPES = SHAPES_2D + SHAPES_3D
 PARAMS = list(itertools.product(SHAPES, [False, True]))
 
-@pytest.mark.parametrize('global_ishape, inverse', PARAMS)
-def test_transform(global_ishape, inverse):
+@pytest.mark.parametrize('shape, inverse', PARAMS)
+def test_transform(shape, inverse):
     comm = MPI.COMM_WORLD
     root = 0
 
-    pfft = janus.fft.parallel.create_real(global_ishape, comm)
+    pfft = janus.fft.parallel.create_real(shape, comm)
     counts_and_displs = comm.gather(sendobj=(pfft.isize, pfft.idispl,
                                              pfft.osize, pfft.odispl),
                                     root=root)
-    global_oshape = pfft.global_oshape
     if comm.rank == root:
         icounts, idispls, ocounts, odispls = zip(*counts_and_displs)
         if inverse:
-            xshape, xcounts, xdispls = global_oshape, ocounts, odispls
-            yshape, ycounts, ydispls = global_ishape, icounts, idispls
+            xshape, xcounts, xdispls = pfft.global_oshape, ocounts, odispls
+            yshape, ycounts, ydispls = pfft.global_ishape, icounts, idispls
         else:
-            xshape, xcounts, xdispls = global_ishape, icounts, idispls
-            yshape, ycounts, ydispls = global_oshape, ocounts, odispls
+            xshape, xcounts, xdispls = pfft.global_ishape, icounts, idispls
+            yshape, ycounts, ydispls = pfft.global_oshape, ocounts, odispls
         np.random.seed(20150312)
         x = 2. * np.random.rand(*xshape) - 1.
         y = np.empty(yshape, dtype=np.float64)
@@ -52,7 +51,7 @@ def test_transform(global_ishape, inverse):
     comm.Gatherv(yloc, [y, ycounts, ydispls, MPI.DOUBLE], root)
 
     if comm.rank == root:
-        sfft = janus.fft.serial.create_real(global_ishape)
+        sfft = janus.fft.serial.create_real(shape)
         yref = sfft.c2r(x) if inverse else sfft.r2c(x)
         yref = np.asarray(yref)
         norm_err = np.sqrt(np.sum((y - yref)**2))
