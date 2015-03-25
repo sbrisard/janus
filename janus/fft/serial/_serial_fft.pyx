@@ -7,6 +7,16 @@ cdef int SIZEOF_COMPLEX = 2 * sizeof(double)
 cdef str INVALID_REAL_ARRAY_SHAPE = 'shape of real array must be {0} [was ({1}, {2})]'
 cdef str INVALID_COMPLEX_ARRAY_SHAPE = 'shape of complex array must be {0} [was ({1}, {2})]'
 
+FFTW_ESTIMATE = _FFTW_ESTIMATE
+FFTW_MEASURE = _FFTW_MEASURE
+FFTW_PATIENT = _FFTW_PATIENT
+FFTW_EXHAUSTIVE = _FFTW_EXHAUSTIVE
+FFTW_WISDOM_ONLY = _FFTW_WISDOM_ONLY
+FFTW_DESTROY_INPUT = _FFTW_DESTROY_INPUT
+FFTW_PRESERVE_INPUT = _FFTW_PRESERVE_INPUT
+FFTW_UNALIGNED = _FFTW_UNALIGNED
+FFTW_CONSERVE_MEMORY = _FFTW_CONSERVE_MEMORY
+
 def create_real(shape):
     if len(shape) == 2:
         return create_real_2D(shape[0], shape[1])
@@ -22,10 +32,10 @@ cdef create_real_2D(ptrdiff_t n0, ptrdiff_t n1):
     fft.buffer = fftw_alloc_real(2 * n0 * (n1 / 2 + 1))
     fft.plan_r2c = fftw_plan_dft_r2c_2d(n0, n1,
                                         fft.buffer, <fftw_complex *> fft.buffer,
-                                        FFTW_ESTIMATE)
+                                        _FFTW_ESTIMATE)
     fft.plan_c2r = fftw_plan_dft_c2r_2d(n0, n1,
                                         <fftw_complex *> fft.buffer, fft.buffer,
-                                        FFTW_ESTIMATE)
+                                        _FFTW_ESTIMATE)
     return fft
 
 cdef create_real_3D(ptrdiff_t n0, ptrdiff_t n1, ptrdiff_t n2):
@@ -34,10 +44,10 @@ cdef create_real_3D(ptrdiff_t n0, ptrdiff_t n1, ptrdiff_t n2):
     fft.buffer = fftw_alloc_real(fft.oshape0 * fft.oshape1 * fft.oshape2)
     fft.plan_r2c = fftw_plan_dft_r2c_3d(n0, n1, n2,
                                         fft.buffer, <fftw_complex *> fft.buffer,
-                                        FFTW_ESTIMATE)
+                                        _FFTW_ESTIMATE)
     fft.plan_c2r = fftw_plan_dft_c2r_3d(n0, n1, n2,
                                         <fftw_complex *> fft.buffer, fft.buffer,
-                                        FFTW_ESTIMATE)
+                                        _FFTW_ESTIMATE)
     return fft
 
 cdef class _RealFFT2D:
