@@ -12,15 +12,15 @@ cdef extern from "fftw3.h":
     #
     # Functions related to plans
     #
+    cdef int FFTW_ESTIMATE
     cdef int FFTW_MEASURE
+    cdef int FFTW_PATIENT
+    cdef int FFTW_EXHAUSTIVE
+    cdef int FFTW_WISDOM_ONLY
     cdef int FFTW_DESTROY_INPUT
+    cdef int FFTW_PRESERVE_INPUT
     cdef int FFTW_UNALIGNED
     cdef int FFTW_CONSERVE_MEMORY
-    cdef int FFTW_EXHAUSTIVE
-    cdef int FFTW_PRESERVE_INPUT
-    cdef int FFTW_PATIENT
-    cdef int FFTW_ESTIMATE
-    cdef int FFTW_WISDOM_ONLY
 
     ctypedef struct _fftw_plan:
        pass
