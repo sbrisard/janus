@@ -10,7 +10,7 @@ Before the main methods and functions of the :mod:`janus.fft` module are introdu
 
 .. TODO Confirm above point on performance hit.
 
-Although not essential, it might be useful to have a look to the FFTW `manual <http://www.fftw.org/fftw3_doc/>`_. For the time being, only two and three dimensional real-to-complex transforms are implemented.
+Although not essential, it might be useful to have a look to the `FFTW manual <http://www.fftw.org/fftw3_doc/>`_. For the time being, only two and three dimensional real-to-complex transforms are implemented.
 
 Serial computations
 ===================
@@ -20,7 +20,7 @@ The following piece of code creates an object ``transform`` which can perform re
 >>> import janus.fft.serial
 >>> transform = janus.fft.serial.create_real((32, 64))
 
-The attributes of the returned object are
+The function :func:`janus.fft.serial.create_real` can be passed planner flags (see `Planner Flags <http://www.fftw.org/fftw3_doc/Planner-Flags.html#Planner-Flags>`_ in the FFTW manual). The attributes of the returned object are
 
   - ``transform.shape`` contains the *global* shape of the input array,
   - ``transform.rshape`` contains the *local* shape of the input (real) array. For serial transforms, local and global shapes coincide,
@@ -33,7 +33,7 @@ The attributes of the returned object are
 >>> transform.cshape
 (32, 66)
 
-It should be noted that complex-valued tables are implemented according to the FFTW library: even (resp. odd) values of the fast index correspond to the real (resp. imaginary) part of the complex number (see also the FFTW `manual <http://www.fftw.org/fftw3_doc/Multi_002dDimensional-DFTs-of-Real-Data.html#Multi_002dDimensional-DFTs-of-Real-Data>`_ ).
+It should be noted that complex-valued tables are stored according to the FFTW library: even (resp. odd) values of the fast index correspond to the real (resp. imaginary) part of the complex number (see also `Multi-Dimensional DFTs of Real Data <http://www.fftw.org/fftw3_doc/Multi_002dDimensional-DFTs-of-Real-Data.html#Multi_002dDimensional-DFTs-of-Real-Data>`_ in the FFTW manual).
 
 Direct (real-to-complex) transforms are computed through the method ``transform.r2c()``, which takes as input a ``MemoryView`` of shape ``transform.rshape``, and returns a ``MemoryView`` of shape ``transform.cshape``.
 
@@ -89,7 +89,7 @@ and ``transform.c2r()``
 Parallel computations
 =====================
 
-The module ``janus.fft.parallel`` is a wrapper around the ``fftw3-mpi`` library (refer to the FFTW `manual <http://www.fftw.org/fftw3_doc/Distributed_002dmemory-FFTW-with-MPI.html#Distributed_002dmemory-FFTW-with-MPI>`_ for the inner workings of this library). This module must be used along with the `mpi4py <https://bitbucket.org/mpi4py/mpi4py>`_ module to handle MPI communications.
+The module ``janus.fft.parallel`` is a wrapper around the ``fftw3-mpi`` library (refer to `Distributed-memory FFTW with MPI <http://www.fftw.org/fftw3_doc/Distributed_002dmemory-FFTW-with-MPI.html#Distributed_002dmemory-FFTW-with-MPI>`_ in the FFTW manual for the inner workings of this library). This module must be used along with the `mpi4py <https://bitbucket.org/mpi4py/mpi4py>`_ module to handle MPI communications.
 
 The Python API is very similar to the API for serial transforms. However, computing a parallel FFT is slightly more involved than computing a serial FFT, because the data must be distributed across the processes. The computation must go through the following steps
 
