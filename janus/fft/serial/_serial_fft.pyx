@@ -17,37 +17,33 @@ FFTW_PRESERVE_INPUT = _FFTW_PRESERVE_INPUT
 FFTW_UNALIGNED = _FFTW_UNALIGNED
 FFTW_CONSERVE_MEMORY = _FFTW_CONSERVE_MEMORY
 
-def create_real(shape):
+def create_real(shape, flags=FFTW_ESTIMATE):
     if len(shape) == 2:
-        return create_real_2D(shape[0], shape[1])
+        return create_real_2D(shape[0], shape[1], flags)
     elif len(shape) == 3:
-        return create_real_3D(shape[0], shape[1], shape[2])
+        return create_real_3D(shape[0], shape[1], shape[2], flags)
     else:
         msg = 'length of shape can be 2 or 3 (was {0})'
         raise ValueError(msg.format(len(shape)))
 
-cdef create_real_2D(ptrdiff_t n0, ptrdiff_t n1):
+cdef create_real_2D(ptrdiff_t n0, ptrdiff_t n1, unsigned flags):
 
     cdef _RealFFT2D fft = _RealFFT2D(n0, n1, n0, 0)
     fft.buffer = fftw_alloc_real(2 * n0 * (n1 / 2 + 1))
-    fft.plan_r2c = fftw_plan_dft_r2c_2d(n0, n1,
-                                        fft.buffer, <fftw_complex *> fft.buffer,
-                                        _FFTW_ESTIMATE)
-    fft.plan_c2r = fftw_plan_dft_c2r_2d(n0, n1,
-                                        <fftw_complex *> fft.buffer, fft.buffer,
-                                        _FFTW_ESTIMATE)
+    fft.plan_r2c = fftw_plan_dft_r2c_2d(n0, n1, fft.buffer,
+                                        <fftw_complex *> fft.buffer, flags)
+    fft.plan_c2r = fftw_plan_dft_c2r_2d(n0, n1, <fftw_complex *> fft.buffer,
+                                        fft.buffer, flags)
     return fft
 
-cdef create_real_3D(ptrdiff_t n0, ptrdiff_t n1, ptrdiff_t n2):
+cdef create_real_3D(ptrdiff_t n0, ptrdiff_t n1, ptrdiff_t n2, unsigned flags):
 
     cdef _RealFFT3D fft = _RealFFT3D(n0, n1, n2, n0, 0)
     fft.buffer = fftw_alloc_real(fft.oshape0 * fft.oshape1 * fft.oshape2)
-    fft.plan_r2c = fftw_plan_dft_r2c_3d(n0, n1, n2,
-                                        fft.buffer, <fftw_complex *> fft.buffer,
-                                        _FFTW_ESTIMATE)
-    fft.plan_c2r = fftw_plan_dft_c2r_3d(n0, n1, n2,
-                                        <fftw_complex *> fft.buffer, fft.buffer,
-                                        _FFTW_ESTIMATE)
+    fft.plan_r2c = fftw_plan_dft_r2c_3d(n0, n1, n2, fft.buffer,
+                                        <fftw_complex *> fft.buffer, flags)
+    fft.plan_c2r = fftw_plan_dft_c2r_3d(n0, n1, n2, <fftw_complex *> fft.buffer,
+                                        fft.buffer, flags)
     return fft
 
 cdef class _RealFFT2D:
