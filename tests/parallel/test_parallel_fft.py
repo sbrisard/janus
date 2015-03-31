@@ -20,7 +20,7 @@ def test_transform(shape, inverse):
     comm = MPI.COMM_WORLD
     root = 0
 
-    pfft = janus.fft.parallel.create_real(shape, comm)
+    pfft = janus.fft.parallel.create_real(shape)
     counts_and_displs = comm.gather(sendobj=(pfft.isize, pfft.idispl,
                                              pfft.osize, pfft.odispl),
                                     root=root)
