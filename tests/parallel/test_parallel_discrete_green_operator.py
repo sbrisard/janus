@@ -8,6 +8,7 @@ import janus.material.elastic.linear.isotropic as material
 from mpi4py import MPI
 from numpy.testing import assert_allclose
 
+from janus.fft import FFTW_ESTIMATE
 from janus.green import truncated
 from janus.green import filtered
 
@@ -43,7 +44,7 @@ class AbstractTestParallelDiscreteGreenOperator:
         n = comm.bcast(n, root)
 
         # Create local FFT object, and send local grid-size to root process
-        transform = fft.create_real(n, comm)
+        transform = fft.create_real(n, comm, flags=FFTW_ESTIMATE)
         n_locs = comm.gather((transform.ishape[0], transform.offset0), root)
 
         green = self.greend(material.create(0.75, 0.3, len(n))

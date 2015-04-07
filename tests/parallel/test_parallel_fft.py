@@ -20,7 +20,7 @@ def test_transform(shape, inverse):
     comm = MPI.COMM_WORLD
     root = 0
 
-    pfft = janus.fft.parallel.create_real(shape)
+    pfft = janus.fft.parallel.create_real(shape, flags=janus.fft.FFTW_ESTIMATE)
     counts_and_displs = comm.gather(sendobj=(pfft.isize, pfft.idispl,
                                              pfft.osize, pfft.odispl),
                                     root=root)
@@ -56,4 +56,4 @@ def test_transform(shape, inverse):
         yref = np.asarray(yref)
         norm_err = np.sqrt(np.sum((y - yref)**2))
         norm_ref = np.sqrt(np.sum(yref**2))
-        assert norm_err <= ULP * norm_ref
+        assert norm_err <= 2 * ULP * norm_ref
