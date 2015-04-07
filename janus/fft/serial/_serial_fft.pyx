@@ -17,7 +17,7 @@ FFTW_PRESERVE_INPUT = _FFTW_PRESERVE_INPUT
 FFTW_UNALIGNED = _FFTW_UNALIGNED
 FFTW_CONSERVE_MEMORY = _FFTW_CONSERVE_MEMORY
 
-def create_real(shape, flags=FFTW_ESTIMATE):
+def create_real(shape, flags=FFTW_MEASURE):
     if len(shape) == 2:
         return create_real_2D(shape[0], shape[1], flags)
     elif len(shape) == 3:

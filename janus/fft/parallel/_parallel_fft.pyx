@@ -4,12 +4,12 @@ from janus.fft.serial._serial_fft cimport _RealFFT3D
 
 from mpi4py import MPI
 
-from janus.fft.serial._serial_fft import FFTW_ESTIMATE
+from janus.fft.serial._serial_fft import FFTW_MEASURE
 
 cpdef init():
     fftw_mpi_init()
 
-def create_real(shape, comm=MPI.COMM_WORLD, flags=FFTW_ESTIMATE):
+def create_real(shape, comm=MPI.COMM_WORLD, flags=FFTW_MEASURE):
     if len(shape) == 2:
         return create_real_2D(shape[0], shape[1], comm, flags)
     elif len(shape) == 3:
