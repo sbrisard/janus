@@ -18,6 +18,12 @@ FFTW_UNALIGNED = _FFTW_UNALIGNED
 FFTW_CONSERVE_MEMORY = _FFTW_CONSERVE_MEMORY
 
 def create_real(shape, flags=FFTW_MEASURE):
+    """Return a new FFT object to compute real-to-complex transforms.
+
+    Args:
+        shape (tuple): the global shape of the input data.
+        flags (int): "or" combination of :ref:`planner-flags`.
+    """
     if len(shape) == 2:
         return create_real_2D(shape[0], shape[1], flags)
     elif len(shape) == 3:
