@@ -130,9 +130,10 @@ This code snippet outputs the following messages
 
 .. code-block:: none
 
-    shape  = (32, 64)
-    rshape = (16, 64)
-    cshape = (16, 66)
+    global_ishape  = (32, 64)
+    global_oshape  = (32, 66)
+    ishape = (16, 64)
+    oshape = (16, 66)
 
 The ``transform.shape`` attribute refers to the *global* (logical) shape of the transform. Since the data is distributed across all processes, the *local* size in memory of the input and output data differ from ``transform.shape``. Accordingly, the ``transform.rshape`` (resp. ``transform.cshape``) attribute refers to the local shape of the real, input (resp. complex, output) data, for the current process. As expected with FFTW, it is observed that the data is distributed with respect to the first dimension. Indeed, the global, first dimension is 64, and the above example is run with 2 processes; therefore, the local first dimension is ``64 / 2 = 32``.
 
@@ -160,7 +161,7 @@ and the root process finally gathers the results
   :start-after: Gather
   :end-before: Validate
 
-The initialization of ``y`` is a bit clumsy at the present time. To check that the computation is correct, the same transform is finally computed locally by the root process
+To check that the computation is correct, the same transform is finally computed locally by the root process
 
 .. literalinclude:: parallel_fft_tutorial.py
   :start-after: Validate

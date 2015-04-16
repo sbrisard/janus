@@ -13,7 +13,8 @@ if __name__ == '__main__':
     # Create transform objects
     transform = janus.fft.parallel.create_real(shape, comm)
     if comm.rank == root:
-        print('shape  = {}'.format(transform.shape))
+        print('global_ishape  = {}'.format(transform.global_ishape))
+        print('global_oshape  = {}'.format(transform.global_oshape))
         print('ishape = {}'.format(transform.ishape))
         print('oshape = {}'.format(transform.oshape))
     # Prepare communications
@@ -33,9 +34,7 @@ if __name__ == '__main__':
     y_loc = transform.r2c(x_loc)
     # Gather output data
     if comm.rank == root:
-        # TODO See Issue #7
-        y = np.empty((transform.shape[0],) + transform.oshape[1:],
-                     dtype=np.float64)
+        y = np.empty(transform.global_oshape, dtype=np.float64)
     else:
         y = None
     comm.Gatherv(y_loc, [y, ocounts, odispls, MPI.DOUBLE], root)
@@ -44,4 +43,4 @@ if __name__ == '__main__':
         serial_transform = janus.fft.serial.create_real(shape)
         y_ref = np.asarray(serial_transform.r2c(x))
         err = np.sum((y-y_ref)**2) / np.sum(y_ref**2)
-        assert err == 0.0
+        assert err <= np.finfo(np.float64).eps
