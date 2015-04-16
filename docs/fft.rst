@@ -89,7 +89,7 @@ and ``transform.c2r()``
 Parallel computations
 =====================
 
-The module ``janus.fft.parallel`` is a wrapper around the ``fftw3-mpi`` library (refer to `Distributed-memory FFTW with MPI <http://www.fftw.org/fftw3_doc/Distributed_002dmemory-FFTW-with-MPI.html#Distributed_002dmemory-FFTW-with-MPI>`_ in the FFTW manual for the inner workings of this library). This module must be used along with the `mpi4py <https://bitbucket.org/mpi4py/mpi4py>`_ module to handle MPI communications.
+The module :mod:`janus.fft.parallel` is a wrapper around the ``fftw3-mpi`` library (refer to `Distributed-memory FFTW with MPI <http://www.fftw.org/fftw3_doc/Distributed_002dmemory-FFTW-with-MPI.html#Distributed_002dmemory-FFTW-with-MPI>`_ in the FFTW manual for the inner workings of this library). This module must be used along with the `mpi4py <https://bitbucket.org/mpi4py/mpi4py>`_ module to handle MPI communications.
 
 The Python API is very similar to the API for serial transforms. However, computing a parallel FFT is slightly more involved than computing a serial FFT, because the data must be distributed across the processes. The computation must go through the following steps
 
@@ -134,15 +134,15 @@ This code snippet outputs the following messages
     rshape = (16, 64)
     cshape = (16, 66)
 
-The `transform.shape` attribute refers to the *global* (logical) shape of the transform. Since the data is distributed across all processes, the *local* size in memory of the input and output data differ from `transform.shape`. Accordingly, the `transform.rshape` (resp. `transform.cshape`) attribute refers to the local shape of the real, input (resp. complex, output) data, for the current process. As expected with FFTW, it is observed that the data is distributed with respect to the first dimension. Indeed, the global, first dimension is 64, and the above example is run with 2 processes; therefore, the local first dimension is ``64 / 2 = 32``.
+The ``transform.shape`` attribute refers to the *global* (logical) shape of the transform. Since the data is distributed across all processes, the *local* size in memory of the input and output data differ from ``transform.shape``. Accordingly, the ``transform.rshape`` (resp. ``transform.cshape``) attribute refers to the local shape of the real, input (resp. complex, output) data, for the current process. As expected with FFTW, it is observed that the data is distributed with respect to the first dimension. Indeed, the global, first dimension is 64, and the above example is run with 2 processes; therefore, the local first dimension is ``64 / 2 = 32``.
 
-In order to figure out how to scatter the input data, the root process then gathers all local sizes and displacements, and the parameters to be passed to `mpi4py.MPI.Scatterv()` and `mpi4py.MPI.Gatherv()` are prepared
+In order to figure out how to scatter the input data, the root process then gathers all local sizes and displacements, and the parameters to be passed to ``mpi4py.MPI.Scatterv()`` and ``mpi4py.MPI.Gatherv()`` are prepared
 
 .. literalinclude:: parallel_fft_tutorial.py
   :start-after: Prepare
   :end-before: Scatter
 
-Then the input data `x` is scattered across all processes
+Then the input data ``x`` is scattered across all processes
 
 .. literalinclude:: parallel_fft_tutorial.py
   :start-after: Scatter
