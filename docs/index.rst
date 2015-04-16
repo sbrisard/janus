@@ -8,7 +8,7 @@ User's guide
    introduction
    operators
    materials
-   fft
+   fft_tutorial
    api
 
 Indices and tables
