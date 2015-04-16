@@ -10,6 +10,13 @@ cpdef init():
     fftw_mpi_init()
 
 def create_real(shape, comm=MPI.COMM_WORLD, flags=FFTW_MEASURE):
+    """Return a new FFT object to compute real-to-complex transforms.
+
+    Args:
+        shape (tuple): the global shape of the input data.
+        comm (mpi4py.MPI.Comm): the MPI communicator.
+        flags (int): "or" combination of :ref:`planner-flags`.
+    """
     if len(shape) == 2:
         return create_real_2D(shape[0], shape[1], comm, flags)
     elif len(shape) == 3:
