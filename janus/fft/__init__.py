@@ -1,4 +1,7 @@
 """
+This module is a Python wrapper around the FFTW library. The core of the
+wrapper is located in the two submodules :mod:`janus.fft.serial` and
+:mod:`janus.fft.parallel`, which should be imported explicitely.
 
 .. _planner-flags:
 
