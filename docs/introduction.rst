@@ -1,25 +1,33 @@
+.. -*- coding: utf-8 -*-
+
 ************
 Introduction
 ************
 
-Janus is a Python library which allows the discretization of large variational problems where the bilinear form is the sum of a *local* bilinear form and a *convolution* bilinear form. After discretization, the variational problem reduces to a linear system, where the matrix is the sum of a block-diagonal matrix and a block-circulant matrix. Since these matrices are too large to be stored, they are implemented in Janus as matrix-free linear-operators (see :doc:`Operators<./operators>`). Block-circulant operators are diagonal in Fourier space, and therefore computed through FFT.
+Janus is a Python library dedicated to the discretization of the Lippmann--Schwinger equation with periodic boundary conditions. The matrix of the resulting linear system is the sum of a block-diagonal matrix and a block-circulant matrix. Following the ideas initially introduced by Moulinec and Suquet [MS98]_ matrix-vector products can then be computed efficiently by means of the `Fast Fourier Transform <http://en.wikipedia.org/wiki/Fast_Fourier_transform>`_. A matrix-free strategy is then adopted to solve the linear system iteratively, e.g. (non-exhaustive list)
 
-.. TODO Provide more details and references once a general interface for block-circulant operators is defined.
+  - fixed-point iterations [MS98]_,
+  - accelerated schemes [EM99]_,
+  - augmented Lagrangians [MMS01]_,
+  - Krylov subspace linear sovers [BD10]_,
+  - polarization-based schemes [MB12]_,
 
-To be more precise, we consider here *periodic* functions :math:`u`, :math:`v` defined over the unit cell :math:`\Omega=(0,L_1)\times\cdots\times(0,L_d)\subset\mathbb R^d`. :math:`\mathbb V` denotes a space of such functions (with specified regularity). The variational problem to be solved reads
+see also [MS14]_ for a comparison of some of these iterative schemes.
 
-.. math:: \text{Find }u\in\mathbb V\text{ such that }\mathcal a(u, v) = \mathcal L(v)\text{ for all }v\in\mathbb V,
+The library provides tools to define the linear operator associated to the discretized Lippmann--Schwinger equation, and to compute the necessary matrix-vector products. Third-party iterative linear solvers (`Scipy <http://docs.scipy.org/doc/scipy-0.15.1/reference/sparse.linalg.html#solving-linear-problems>`_, `petsc4py <https://bitbucket.org/petsc/petsc4py>`_) can then be invoked to compute the solution.
 
-where :math:`\mathcal L` is a linear form, and :math:`\mathcal A` is a bilinear form with the following decomposition
+The library is designed with performance in mind. It is fully parallelized (using MPI and `mpi4py <https://bitbucket.org/mpi4py/mpi4py>`_), and the critical parts of the code are written in `Cython <http://cython.org/>`_.
 
-.. math:: \mathcal A(u, v) = \mathcal D(u, v) + \mathcal C(u, v),
+.. rubric :: References
 
-with
+.. [BD10] S. Brisard and L. Dormieux. FFT-based methods for the mechanics of composites: A general variational framework. *Computational Materials Science*, 49(3):663--671, 2010.
 
-.. math:: \mathcal D(u, v) = \int_{x\in\mathcal U}u(x)^TD(x)v(x)dx
+.. [EM99] D. J. Eyre and G. W. Milton. A fast numerical scheme for computing the response of composites using grid refinement. *European Physical Journal-Applied Physics*, 6(1):41--47, 1999.
 
-(:math:`D(x)` is a matrix) and
+.. [MB12] V. Monchiet and G. Bonnet. A polarization-based FFT iterative scheme for computing the effective properties of elastic composites with arbitrary contrast. *International Journal for Numerical Methods in Engineering*, 89(11):1419--1436, 2012.
 
-.. math:: \mathcal C(u, v) = \int_{x,y\in\Omega}u(x)^TC(x-y)v(y)dxdy
+.. [MMS01] J.C. Michel, H. Moulinec, and P. Suquet. A computational scheme for linear and non-linear composites with arbitrary phase contrast. *International Journal for Numerical Methods in Engineering*, 52(1--2):139--160, 2001.
 
-A prototypical example of such problems is the Lippmann--Schwinger equation in linear elasticity.
+.. [MS98] H. Moulinec and P. Suquet. A numerical method for computing the overall response of nonlinear composites with complex microstructure. *Computer Methods in Applied Mechanics and Engineering*, 157(1-2):69--94, 1998.
+
+.. [MS14] H. Moulinec and F. Silva. Comparison of three accelerated fft-based schemes for computing the mechanical response of composite materials. *International Journal for Numerical Methods in Engineering*, 97(13):960--985, 2014.
