@@ -4,12 +4,25 @@
 Janus
 #####
 
-Janus is a Python library which facilitates the implementation of large linear systems where the matrix is the sum of a block-diagonal matrix and a block-circulant matrix. Such systems typically arise from the discretization of variational problems where the bilinear form is the sum of a *local* bilinear form and a *convolution* bilinear form. The Lippmann--Schwinger equation in linear elasticity is an example of such variational problem.
+Introduction
+============
 
-The matrices involved in such problems are too large to be stored and a matrix-free strategy must be adopted. Janus provides a general framework to implement block-diagonal and block-circulant operators (and many more). It interfaces with FFTW to compute matrix-vector products involving block-circulant operators (which are diagonal in Fourier space).
+Janus is a Python library dedicated to the discretization of the Lippmann–Schwinger equation with periodic boundary conditions. The matrix of the resulting linear system is the sum of a block-diagonal matrix and a block-circulant matrix. Following the ideas initially introduced by Moulinec and Suquet (1998) matrix-vector products can then be computed efficiently by means of the Fast Fourier Transform. A matrix-free strategy is then adopted to solve the linear system iteratively, e.g. (non-exhaustive list)
 
-History of changes
-==================
+- fixed-point iterations (Moulinec & Suquet, 1998),
+- accelerated schemes (Eyre & Milton, 1999),
+- augmented Lagrangians (Michel, Moulinec & Suquet, 2001),
+- Krylov subspace linear sovers (Brisard & Dormieux, 2010),
+- polarization-based schemes (Monchiet & Bonnet, 2012),
+
+see also [MS14] for a comparison of some of these iterative schemes.
+
+The library provides tools to define the linear operator associated to the discretized Lippmann–Schwinger equation, and to compute the necessary matrix-vector products. Third-party iterative linear solvers (Scipy, petsc4py) can then be invoked to compute the solution.
+
+The library is designed with performance in mind. It is fully parallelized (using MPI and mpi4py), and the critical parts of the code are written in Cython.
+
+History of major changes
+========================
 
 2015-02-23 — Reconciliation of the APIs of FFT objects and operators
 --------------------------------------------------------------------
