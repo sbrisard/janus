@@ -936,7 +936,7 @@ cdef class FilteredGreenOperator3D(DiscreteGreenOperator3D):
     @cdivision(True)
     @wraparound(False)
     cdef void c_apply(self, double[:, :, :, :] x, double[:, :, :, :] y):
-        cdef int[:] b = array((2,), sizeof(int), 'i')
+        cdef int[:] b = array((3,), sizeof(int), 'i')
         cdef int i
 
         # Compute DFT of x
