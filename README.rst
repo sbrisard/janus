@@ -19,7 +19,7 @@ see also Moulinec & Silva (2014) for a comparison of some of these iterative sch
 
 The library provides tools to define the linear operator associated to the discretized Lippmann–Schwinger equation, and to compute the necessary matrix-vector products. Third-party iterative linear solvers ([Scipy](http://docs.scipy.org/doc/scipy-0.15.1/reference/sparse.linalg.html#solving-linear-problems), [petsc4py](https://bitbucket.org/petsc/petsc4py)) can then be invoked to compute the solution.
 
-The library is designed with performance in mind. It is fully parallelized (using MPI and mpi4py), and the critical parts of the code are written in Cython.
+The library is designed with performance in mind. It is fully parallelized (using MPI and [mpi4py](https://bitbucket.org/mpi4py/mpi4py)), and the critical parts of the code are written in [Cython](http://cython.org/).
 
 History of major changes
 ========================
