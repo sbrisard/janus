@@ -12,6 +12,7 @@ User's guide
    fft_tutorial
    api
    todo
+   license
 
 Indices and tables
 ==================
