@@ -36,6 +36,8 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.mathjax',
               'sphinx.ext.viewcode']
 
+todo_include_todos = True
+
 import sphinx
 if sphinx.__version__ < '1.3':
     extensions.append('sphinxcontrib.napoleon')
