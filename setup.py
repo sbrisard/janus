@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import distutils.command.clean
 import os
+import re
 import sys
 import setuptools
 
@@ -10,10 +12,12 @@ from argparse import ArgumentParser
 from configparser import ConfigParser
 from configparser import NoOptionError
 
-from distutils.core import setup
+from distutils.core import setup, Command
 from distutils.extension import Extension
 from distutils.sysconfig import get_config_var
 from distutils.util import get_platform
+from distutils.dir_util import remove_tree
+from distutils import log
 
 from Cython.Build import cythonize
 
@@ -25,6 +29,48 @@ AUTHOR_EMAIL = 'sebastien.brisard@ifsttar.fr'
 URL = 'https://bitbucket.org/sbrisard/janus/'
 DOWNLOAD_URL = 'https://bitbucket.org/sbrisard/janus/'
 LICENSE = 'BSD-3'
+
+class clean(distutils.command.clean.clean):
+    description = (distutils.command.clean.clean.description +
+                   ', including *.c, *.pyc, *.pyd, *.pyo and *.so files')
+
+    def find_directories_to_remove(self, root):
+        directories = []
+        for dirpath, dirnames, filenames in os.walk(root):
+            for dirname in dirnames:
+                if dirname == '__pycache__':
+                    directories.append(os.path.join(dirpath, dirname))
+        return directories
+
+    def find_files_to_remove(self, root):
+        p = re.compile('.+\.((c)|(so)|(pyc)|(pyd)|(pyo))$')
+        files = []
+        for dirpath, dirnames, filenames in os.walk(root):
+            if not dirpath.endswith('__pycache__'):
+                for filename in filenames:
+                    if p.match(filename):
+                        files.append(os.path.join(dirpath, filename))
+        return files
+
+    def remove_directories(self, directories):
+        for d in directories:
+            remove_tree(d, dry_run=self.dry_run)
+
+    def remove_files(self, files):
+        for f in files:
+            log.info('removing '+f)
+            if not self.dry_run:
+                os.remove(f)
+
+    def run(self):
+        out = super().run()
+
+        root = os.path.join('.', 'janus')
+        directories = self.find_directories_to_remove(root)
+        files = self.find_files_to_remove(root)
+        self.remove_directories(directories)
+        self.remove_files(files)
+        return out
 
 include_dirs = [numpy.get_include()]
 library_dirs = []
@@ -111,4 +157,5 @@ setup(name=NAME,
       license=LICENSE,
       packages=packages,
       ext_modules=cythonize(extensions,
-                            compiler_directives={'embedsignature': True}))
+                            compiler_directives={'embedsignature': True}),
+      cmdclass={'clean': clean})
