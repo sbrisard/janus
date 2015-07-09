@@ -58,7 +58,9 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Janus'
-copyright = '2013, S. Brisard'
+
+with open('../LICENSE.txt', 'r') as f:
+    copyright = next(f).lstrip('Copyright (c)').strip()
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
