@@ -18,40 +18,24 @@ Janus requires Python 3k. The serial version depends on `FFTW`_ (version 3) only
 Configuration
 =============
 
-Edit the file ``janus.cfg`` and add a new section (or modify an existing section) as follows::
+Edit the section ``[build_ext]`` of the file ``setup.cfg``. You must provide the following values::
 
-  [myconfig]
-  fftw3 = fftw3
-  fftw3_mpi = fftw3_mpi
-  fftw3-include = /opt/fftw-3.3.4/include
-  fftw3-library = /opt/fftw-3.3.4/lib
-  with-mpi = yes
-  mpicc = /usr/bin/mpicc
+  [build_ext]
+  include_dirs = ...
+  library_dirs = ...
+  libraries = ...
 
-.. data:: fftw3
-
-   The name of the FFTW library (to be passed to the compiler as a ``-l`` flag).
-
-.. data:: fftw3_mpi
-
-   The name of the parallel (MPI) version of the FFTW library (to be passed to the compiler as a ``-l`` flag).
-
-.. data:: fftw3-include
+.. data:: include_dirs
 
    The path to the FFTW headers.
 
-.. data:: fftw3-library
+.. data:: library_dirs
 
    The path to the FFTW shared library.
 
-.. data:: with-mpi
+.. data:: libraries
 
-   Whether or not the parallel version of the code should be compiled (``yes/no``). Requires `mpi4py`_.
-
-.. data:: mpicc
-
-   The path to the MPI-enabled C compiler.
-
+   The name of the FFTW libraries (comma separated), including the MPI-enabled version if necessary.
 
 Compilation and installation under Unix-like systems (Linux, OSX)
 =================================================================
@@ -59,17 +43,13 @@ Compilation and installation under Unix-like systems (Linux, OSX)
 Set the following values::
 
   [myconfig]
-  fftw3 = fftw3
-  fftw3_mpi = fftw3_mpi
-  fftw3-include = /path/to/headers
-  fftw3-library = /path/to/binaries
-  with-mpi = yes
-  mpicc = /path/to/MPI-enabled/compiler
+  include_dirs = /path/to/headers
+  library_dirs = /path/to/binaries
+  libraries = fftw3, fftw3_mpi
 
 Then, issue the standard commands in a console::
 
-  python setup.py build_ext --config=myconfig
-  python setup.py install --user --config=myconfig
+  python setup.py install --user
 
 Compilation and installation under Windows
 ==========================================
@@ -81,11 +61,10 @@ Compilation with the Windows SDK 7.1
 
 Set the following values::
 
-  [myconfig]
-  fftw3 = libfftw3-3
-  fftw3-include = C:\\PATH\\TO\\HEADERS
-  fftw3-library = C:\\PATH\\TO\\BINARIES
-  with-mpi = no
+  [build_ext]
+  include_dirs = C:\PATH\TO\HEADERS
+  library_dirs = C:\PATH\TO\BINARIES
+  libraries = libfftw3-3
 
 Then open the *Windows SDK 7.1 Command Prompt*, and issue the following command::
 
@@ -94,19 +73,17 @@ Then open the *Windows SDK 7.1 Command Prompt*, and issue the following command:
 
 Change to the root directory of the Janus project, and issue the standard commands::
 
-  python setup.py build_ext --config=myconfig
-  python setup.py install --config=myconfig
+  python setup.py install --user
 
 Compilation with MinGW/MSYS
 ---------------------------
 
 Set the following values::
 
-  [myconfig]
-  fftw3 = fftw3-3
-  fftw3-include = C:\\PATH\\TO\\HEADERS
-  fftw3-library = C:\\PATH\\TO\\BINARIES
-  with-mpi = no
+  [build_ext]
+  include_dirs = C:\PATH\TO\HEADERS
+  library_dirs = C:\PATH\TO\BINARIES
+  libraries = fftw3-3
 
 .. todo:: Complete installation procedure with MinGW.
 
