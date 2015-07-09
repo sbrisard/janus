@@ -15,6 +15,8 @@ Prerequisites
 
 Janus requires Python 3k. The serial version depends on `FFTW`_ (version 3) only, while the parallel (MPI-based) version also requires `mpi4py`_.
 
+.. todo:: The present version of ``setup.py`` tries to install the parallel version of the code if it detects that ``mpi4py`` is installed. In other words, if ``mpi4py`` is installed, the MPI-enabled version of ``FFTW`` *must* be installed.
+
 Configuration
 =============
 
