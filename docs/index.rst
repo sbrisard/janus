@@ -6,10 +6,12 @@ User's guide
    :maxdepth: 2
 
    introduction
+   installation
    operators
    materials
    fft_tutorial
    api
+   todo
 
 Indices and tables
 ==================
