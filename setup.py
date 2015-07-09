@@ -17,6 +17,15 @@ from distutils.util import get_platform
 
 from Cython.Build import cythonize
 
+NAME = 'Janus'
+DESCRIPTION = ''
+LONG_DESCRIPTION = ''
+AUTHOR = 'S. Brisard'
+AUTHOR_EMAIL = 'sebastien.brisard@ifsttar.fr'
+URL = 'https://bitbucket.org/sbrisard/janus/'
+DOWNLOAD_URL = 'https://bitbucket.org/sbrisard/janus/'
+LICENSE = 'BSD-3'
+
 include_dirs = [numpy.get_include()]
 library_dirs = []
 
@@ -91,11 +100,15 @@ packages = ['janus',
 if with_mpi:
     packages.append('janus.fft.parallel')
 
-setup(name = 'Janus',
-      version = '0.1',
-      description = 'Galerkin approximation of the Lippmann--Schwinger equation',
-      author = 'Sébastien Brisard',
-      author_email = 'sebastien.brisard@ifsttar.fr',
+setup(name=NAME,
+      version='0.1',
+      description=DESCRIPTION,
+      long_description=LONG_DESCRIPTION,
+      author=AUTHOR,
+      author_email=AUTHOR_EMAIL,
+      url=URL,
+      download_url=DOWNLOAD_URL,
+      license=LICENSE,
       packages=packages,
-      ext_modules = cythonize(extensions,
-                              compiler_directives={'embedsignature': True}))
+      ext_modules=cythonize(extensions,
+                            compiler_directives={'embedsignature': True}))
