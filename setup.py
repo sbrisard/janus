@@ -70,100 +70,66 @@ class clean(distutils.command.clean.clean):
         self.remove_files(files)
         return out
 
-incdirs = []
-libdirs = []
+def extensions_and_packages():
+    extensions = [Extension('janus.utils.checkarray',
+                            sources=['janus/utils/checkarray.pyx']),
+                  Extension('janus.operators',
+                            sources=['janus/operators.pyx']),
+                  Extension('janus.material.elastic.linear.isotropic',
+                            sources=['janus/material/elastic/linear/'
+                                     'isotropic.pyx']),
+                  Extension('janus.green',
+                            sources=['janus/green.pyx'],),
+                  # TODO This module also depends on fftw.pxd
+                  Extension('janus.fft.serial._serial_fft',
+                            sources=['janus/fft/serial/_serial_fft.pyx'])]
+    packages = ['janus', 'janus.fft', 'janus.fft.serial', 'janus.utils']
+    return extensions, packages
 
-parser = ArgumentParser(add_help=False)
-parser.add_argument('--config')
-args, unknown = parser.parse_known_args()
-sys.argv = [sys.argv[0]] + unknown
-config = args.config
+def extensions_and_packages_with_mpi():
+    try:
+        import mpi4py
 
-parser = ConfigParser()
-parser.read('janus.cfg')
-if config is not None:
-    fftw3 = parser.get(config, 'fftw3')
-    incdirs.append(parser.get(config, 'fftw3-include'))
-    libdirs.append(parser.get(config, 'fftw3-library'))
-    with_mpi = parser.getboolean(config, 'with-mpi')
-    if with_mpi:
-        fftw3_mpi = parser.get(config, 'fftw3_mpi')
-        mpicc = parser.get(config, 'mpicc')
-else:
-    fftw3 = 'fftw3'
-    fftw3_mpi = 'fftw3_mpi'
-    with_mpi = True
-    mpicc = '/usr/bin/mpicc'
+        from subprocess import check_output
 
-extensions = []
-mpicc = ''
-with_mpi = True
+        mpicc = mpi4py.get_config()['mpicc']
+        def mpicc_showme(arg):
+            out = check_output([mpicc, '--showme:'+arg])
+            return out.decode('ascii').split()
 
-extensions.append(Extension('janus.utils.checkarray',
-                            sources=['janus/utils/checkarray.pyx']))
+        incdirs = mpicc_showme('incdirs')
+        incdirs.append(mpi4py.get_include())
+        print(mpicc_showme('incdirs').append(mpi4py.get_include()))
 
-extensions.append(Extension('janus.operators',
-                            sources=['janus/operators.pyx']))
+        # TODO This module also depends on fftw_mpi.pxd
+        extensions = [Extension('janus.fft.parallel._parallel_fft',
+                                sources=['janus/fft/parallel/'
+                                         '_parallel_fft.pyx'],
+                                include_dirs=incdirs,
+                                library_dirs=mpicc_showme('libdirs'),
+                                extra_compile_args=mpicc_showme('compile'),
+                                extra_link_args=mpicc_showme('link'))]
+        packages = ['janus.fft.parallel']
+        return extensions, packages
+    except ImportError:
+        return [], []
 
-extensions.append(Extension('janus.material.elastic.linear.isotropic',
-                            sources=['janus/material/elastic/linear/isotropic.pyx']))
+if __name__ == '__main__':
+    extensions, packages = extensions_and_packages()
+    extensions_mpi, packages_mpi = extensions_and_packages_with_mpi()
 
-extensions.append(Extension('janus.green',
-                            sources=['janus/green.pyx'],))
-
-# TODO This module also depends on fftw.pxd
-extensions.append(Extension('janus.fft.serial._serial_fft',
-                            sources=['janus/fft/serial/_serial_fft.pyx'],
-                            libraries=[fftw3],
-                            library_dirs=libdirs,
-                            include_dirs=incdirs))
-
-try:
-    import mpi4py
-
-    from subprocess import check_output
-
-    mpicc = mpi4py.get_config()['mpicc']
-    incdirs.append(mpi4py.get_include())
-
-    showme_compile = check_output([mpicc, '--showme:compile']).decode('ascii')
-    showme_link = check_output([mpicc, '--showme:link']).decode('ascii')
-    showme_incdirs = check_output([mpicc, '--showme:incdirs']).decode('ascii')
-    showme_libdirs = check_output([mpicc, '--showme:libdirs']).decode('ascii')
-
-    incdirs += showme_incdirs.split()
-    libdirs += showme_libdirs.split()
-
-    # TODO This module also depends on fftw_mpi.pxd
-    ext = Extension('janus.fft.parallel._parallel_fft',
-                    sources=['janus/fft/parallel/_parallel_fft.pyx'],
-                    libraries=[fftw3, fftw3_mpi],
-                    library_dirs=libdirs,
-                    include_dirs=incdirs,
-                    extra_compile_args=showme_compile.split(),
-                    extra_link_args=showme_link.split())
-    extensions.append(ext)
-except ImportError:
-    with_mpi = False
-
-packages = ['janus',
-            'janus.fft',
-            'janus.fft.serial',
-            'janus.utils']
-
-if with_mpi:
-    packages.append('janus.fft.parallel')
-
-setup(name=NAME,
-      version='0.1',
-      description=DESCRIPTION,
-      long_description=LONG_DESCRIPTION,
-      author=AUTHOR,
-      author_email=AUTHOR_EMAIL,
-      url=URL,
-      download_url=DOWNLOAD_URL,
-      license=LICENSE,
-      packages=packages,
-      ext_modules=cythonize(extensions,
-                            compiler_directives={'embedsignature': True}),
-      cmdclass={'clean': clean})
+    extensions += extensions_mpi
+    packages += packages_mpi
+    setup(name=NAME,
+          version='0.1',
+          description=DESCRIPTION,
+          long_description=LONG_DESCRIPTION,
+          author=AUTHOR,
+          author_email=AUTHOR_EMAIL,
+          url=URL,
+          download_url=DOWNLOAD_URL,
+          license=LICENSE,
+          packages=packages,
+          ext_modules=cythonize(extensions,
+                                compiler_directives={'embedsignature': True}),
+          cmdclass={'clean': clean})
