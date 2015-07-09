@@ -104,7 +104,7 @@ Set the following values::
   fftw3-library = C:\\PATH\\TO\\BINARIES
   with-mpi = no
 
-.. todo:: complete installation procedure
+.. todo:: Complete installation procedure with MinGW.
 
 Test your installation
 =====================
