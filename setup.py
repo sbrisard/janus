@@ -98,6 +98,8 @@ else:
     mpicc = '/usr/bin/mpicc'
 
 extensions = []
+mpicc = ''
+with_mpi = True
 
 extensions.append(Extension('janus.utils.checkarray',
                             sources=['janus/utils/checkarray.pyx']))
@@ -120,23 +122,33 @@ extensions.append(Extension('janus.fft.serial._serial_fft',
                             library_dirs=library_dirs,
                             include_dirs=include_dirs))
 
-if with_mpi:
-    import subprocess
-
+try:
     import mpi4py
+
+    from subprocess import check_output
+
+    mpicc = mpi4py.get_config()['mpicc']
     include_dirs.append(mpi4py.get_include())
 
-    showme_compile = subprocess.check_output([mpicc, '--showme:compile']).decode('ascii')
-    showme_link = subprocess.check_output([mpicc, '--showme:link']).decode('ascii')
+    showme_compile = check_output([mpicc, '--showme:compile']).decode('ascii')
+    showme_link = check_output([mpicc, '--showme:link']).decode('ascii')
+    showme_incdirs = check_output([mpicc, '--showme:incdirs']).decode('ascii')
+    showme_libdirs = check_output([mpicc, '--showme:libdirs']).decode('ascii')
+
+    include_dirs += showme_incdirs.split()
+    library_dirs += showme_libdirs.split()
 
     # TODO This module also depends on fftw_mpi.pxd
-    extensions.append(Extension('janus.fft.parallel._parallel_fft',
-                                sources=['janus/fft/parallel/_parallel_fft.pyx'],
-                                libraries=[fftw3, fftw3_mpi],
-                                library_dirs=library_dirs,
-                                include_dirs=include_dirs,
-                                extra_compile_args=showme_compile.split(),
-                                extra_link_args=showme_link.split()))
+    ext = Extension('janus.fft.parallel._parallel_fft',
+                    sources=['janus/fft/parallel/_parallel_fft.pyx'],
+                    libraries=[fftw3, fftw3_mpi],
+                    library_dirs=library_dirs,
+                    include_dirs=include_dirs,
+                    extra_compile_args=showme_compile.split(),
+                    extra_link_args=showme_link.split())
+    extensions.append(ext)
+except ImportError:
+    with_mpi = False
 
 packages = ['janus',
             'janus.fft',
