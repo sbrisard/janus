@@ -109,9 +109,7 @@ extensions.append(Extension('janus.material.elastic.linear.isotropic',
                             sources=['janus/material/elastic/linear/isotropic.pyx']))
 
 extensions.append(Extension('janus.green',
-                            sources=['janus/green.pyx'],
-                            include_dirs=incdirs,
-                            library_dirs=libdirs))
+                            sources=['janus/green.pyx'],))
 
 # TODO This module also depends on fftw.pxd
 extensions.append(Extension('janus.fft.serial._serial_fft',
