@@ -6,8 +6,6 @@ import re
 import sys
 import setuptools
 
-import numpy
-
 from argparse import ArgumentParser
 from configparser import ConfigParser
 from configparser import NoOptionError
@@ -72,7 +70,7 @@ class clean(distutils.command.clean.clean):
         self.remove_files(files)
         return out
 
-include_dirs = [numpy.get_include()]
+include_dirs = []
 library_dirs = []
 
 parser = ArgumentParser(add_help=False)
