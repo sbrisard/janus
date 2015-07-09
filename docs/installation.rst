@@ -10,6 +10,10 @@ The sources can be retrieved from
 
 .. todo:: Update when moved to Github
 
+Prerequisites
+=============
+
+Janus requires Python 3k. The serial version depends on `FFTW`_ (version 3) only, while the parallel (MPI-based) version also requires `mpi4py`_.
 
 Configuration
 =============
@@ -26,19 +30,19 @@ Edit the file ``janus.cfg`` and add a new section (or modify an existing section
 
 .. data:: fftw3
 
-   The name of the FFTW3 library (to be passed to the compiler as a ``-l`` flag).
+   The name of the FFTW library (to be passed to the compiler as a ``-l`` flag).
 
 .. data:: fftw3_mpi
 
-   The name of the parallel (MPI) version of the FFTW3 library (to be passed to the compiler as a ``-l`` flag).
+   The name of the parallel (MPI) version of the FFTW library (to be passed to the compiler as a ``-l`` flag).
 
 .. data:: fftw3-include
 
-   The path to the FFTW3 headers.
+   The path to the FFTW headers.
 
 .. data:: fftw3-library
 
-   The path to the FFTW3 shared library.
+   The path to the FFTW shared library.
 
 .. data:: with-mpi
 
@@ -107,7 +111,7 @@ Set the following values::
 .. todo:: Complete installation procedure with MinGW.
 
 Test your installation
-=====================
+======================
 
 Testing the installation of Janus requires `pytest`_. To run all serial tests, issue the following command at the root of the project::
 
@@ -121,6 +125,7 @@ where the total number of processes can be adjusted (an odd number should prefer
 
 .. todo:: How to print only messages from root process with pytest?
 
+.. _FFTW: http://www.fftw.org/
 .. _mpi4py: https://bitbucket.org/mpi4py/mpi4py/
 .. _precompiled binaries of FFTW for Windows: http://www.fftw.org/install/windows.html
 .. _pytest: http://pytest.org/
