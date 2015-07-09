@@ -11,3 +11,4 @@ dist
 .ipynb_checkpoints
 TAGS
 Janus.egg-info
+setup.cfg
