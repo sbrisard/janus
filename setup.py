@@ -70,8 +70,8 @@ class clean(distutils.command.clean.clean):
         self.remove_files(files)
         return out
 
-include_dirs = []
-library_dirs = []
+incdirs = []
+libdirs = []
 
 parser = ArgumentParser(add_help=False)
 parser.add_argument('--config')
@@ -83,8 +83,8 @@ parser = ConfigParser()
 parser.read('janus.cfg')
 if config is not None:
     fftw3 = parser.get(config, 'fftw3')
-    include_dirs.append(parser.get(config, 'fftw3-include'))
-    library_dirs.append(parser.get(config, 'fftw3-library'))
+    incdirs.append(parser.get(config, 'fftw3-include'))
+    libdirs.append(parser.get(config, 'fftw3-library'))
     with_mpi = parser.getboolean(config, 'with-mpi')
     if with_mpi:
         fftw3_mpi = parser.get(config, 'fftw3_mpi')
@@ -110,15 +110,15 @@ extensions.append(Extension('janus.material.elastic.linear.isotropic',
 
 extensions.append(Extension('janus.green',
                             sources=['janus/green.pyx'],
-                            include_dirs=include_dirs,
-                            library_dirs=library_dirs))
+                            include_dirs=incdirs,
+                            library_dirs=libdirs))
 
 # TODO This module also depends on fftw.pxd
 extensions.append(Extension('janus.fft.serial._serial_fft',
                             sources=['janus/fft/serial/_serial_fft.pyx'],
                             libraries=[fftw3],
-                            library_dirs=library_dirs,
-                            include_dirs=include_dirs))
+                            library_dirs=libdirs,
+                            include_dirs=incdirs))
 
 try:
     import mpi4py
@@ -126,22 +126,22 @@ try:
     from subprocess import check_output
 
     mpicc = mpi4py.get_config()['mpicc']
-    include_dirs.append(mpi4py.get_include())
+    incdirs.append(mpi4py.get_include())
 
     showme_compile = check_output([mpicc, '--showme:compile']).decode('ascii')
     showme_link = check_output([mpicc, '--showme:link']).decode('ascii')
     showme_incdirs = check_output([mpicc, '--showme:incdirs']).decode('ascii')
     showme_libdirs = check_output([mpicc, '--showme:libdirs']).decode('ascii')
 
-    include_dirs += showme_incdirs.split()
-    library_dirs += showme_libdirs.split()
+    incdirs += showme_incdirs.split()
+    libdirs += showme_libdirs.split()
 
     # TODO This module also depends on fftw_mpi.pxd
     ext = Extension('janus.fft.parallel._parallel_fft',
                     sources=['janus/fft/parallel/_parallel_fft.pyx'],
                     libraries=[fftw3, fftw3_mpi],
-                    library_dirs=library_dirs,
-                    include_dirs=include_dirs,
+                    library_dirs=libdirs,
+                    include_dirs=incdirs,
                     extra_compile_args=showme_compile.split(),
                     extra_link_args=showme_link.split())
     extensions.append(ext)
