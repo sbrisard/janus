@@ -44,7 +44,7 @@ Compilation and installation under Unix-like systems (Linux, OSX)
 
 Set the following values::
 
-  [myconfig]
+  [build_ext]
   include_dirs = /path/to/headers
   library_dirs = /path/to/binaries
   libraries = fftw3, fftw3_mpi
