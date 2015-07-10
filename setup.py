@@ -86,29 +86,30 @@ def extensions_and_packages():
     packages = ['janus', 'janus.fft', 'janus.fft.serial', 'janus.utils']
     return extensions, packages
 
+def mpicc_args():
+    import mpi4py
+    from subprocess import check_output
+    mpicc = mpi4py.get_config()['mpicc']
+
+    def mpicc_showme(arg):
+        out = check_output([mpicc, '--showme:'+arg])
+        return out.decode('ascii').split()
+
+    incdirs = mpicc_showme('incdirs')
+    incdirs.append(mpi4py.get_include())
+    return {'include_dirs' : incdirs,
+            'library_dirs' : mpicc_showme('libdirs'),
+            'extra_compile_args' : mpicc_showme('compile'),
+            'extra_link_args' : mpicc_showme('link')}
+
 def extensions_and_packages_with_mpi():
     try:
         import mpi4py
-
-        from subprocess import check_output
-
-        mpicc = mpi4py.get_config()['mpicc']
-        def mpicc_showme(arg):
-            out = check_output([mpicc, '--showme:'+arg])
-            return out.decode('ascii').split()
-
-        incdirs = mpicc_showme('incdirs')
-        incdirs.append(mpi4py.get_include())
-        print(mpicc_showme('incdirs').append(mpi4py.get_include()))
-
         # TODO This module also depends on fftw_mpi.pxd
         extensions = [Extension('janus.fft.parallel._parallel_fft',
                                 sources=['janus/fft/parallel/'
                                          '_parallel_fft.pyx'],
-                                include_dirs=incdirs,
-                                library_dirs=mpicc_showme('libdirs'),
-                                extra_compile_args=mpicc_showme('compile'),
-                                extra_link_args=mpicc_showme('link'))]
+                                **mpicc_args())]
         packages = ['janus.fft.parallel']
         return extensions, packages
     except ImportError:
