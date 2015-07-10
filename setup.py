@@ -86,21 +86,52 @@ def extensions_and_packages():
     packages = ['janus', 'janus.fft', 'janus.fft.serial', 'janus.utils']
     return extensions, packages
 
-def mpicc_args():
+def mpicc_showme():
+    """Use ``mpicc --showme`` to retrieve the mpicc arguments.
+
+    Works with openmpi, not mpich.
+    Returns a dictionary that can be passed to Extension().
+    """
+
     import mpi4py
     from subprocess import check_output
     mpicc = mpi4py.get_config()['mpicc']
 
-    def mpicc_showme(arg):
+    def call_mpicc_showme(arg):
         out = check_output([mpicc, '--showme:'+arg])
         return out.decode('ascii').split()
 
-    incdirs = mpicc_showme('incdirs')
+    incdirs = call_mpicc_showme('incdirs')
     incdirs.append(mpi4py.get_include())
     return {'include_dirs' : incdirs,
-            'library_dirs' : mpicc_showme('libdirs'),
-            'extra_compile_args' : mpicc_showme('compile'),
-            'extra_link_args' : mpicc_showme('link')}
+            'library_dirs' : call_mpicc_showme('libdirs'),
+            'extra_compile_args' : call_mpicc_showme('compile'),
+            'extra_link_args' : call_mpicc_showme('link')}
+
+def mpicc_show():
+    """Use ``mpicc --show`` to retrieve the mpicc arguments.
+
+    Works with both openmpi and mpich.
+    Returns a dictionary that can be passed to Extension().
+    """
+    import mpi4py
+    import subprocess
+    mpicc = mpi4py.get_config()['mpicc']
+    mpicc_show = subprocess.check_output([mpicc, '-show']).decode().strip()
+    # Strip command line from first part, which is the name of the compiler
+    mpicc_show = re.sub('\S+\s', '', mpicc_show, count=1)
+
+    incdirs = [m.group(1) for m in re.finditer('-I(\S*)', mpicc_show)]
+    libdirs = [m.group(1) for m in re.finditer('-L(\S*)', mpicc_show)]
+    ldflags = [m.group(0) for m in re.finditer('-l(\S*)', mpicc_show)]
+    cflags = re.sub('-(I|L|l)(\S*)', '', mpicc_show)
+    cflags = re.sub('\s+', ' ', cflags)
+    cflags = [cflags.strip()]
+    ldflags += cflags
+    return {'include_dirs' : incdirs,
+            'library_dirs' : libdirs,
+            'extra_compile_args' : cflags,
+            'extra_link_args' : ldflags}
 
 def extensions_and_packages_with_mpi():
     try:
@@ -109,7 +140,7 @@ def extensions_and_packages_with_mpi():
         extensions = [Extension('janus.fft.parallel._parallel_fft',
                                 sources=['janus/fft/parallel/'
                                          '_parallel_fft.pyx'],
-                                **mpicc_args())]
+                                **mpicc_show())]
         packages = ['janus.fft.parallel']
         return extensions, packages
     except ImportError:
