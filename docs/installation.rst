@@ -6,9 +6,7 @@ Installation
 
 For the moment, no precompiled binaries are available, and Janus must be compiled from sources, using ``setuptools``.
 
-The sources can be retrieved from
-
-.. todo:: Update when moved to Github
+The sources can be retrieved from Github, https://github.com/sbrisard/janus.git.
 
 Prerequisites
 =============
