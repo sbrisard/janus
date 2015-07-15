@@ -14,6 +14,27 @@
 
 import sys, os
 
+
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+
+# From http://docs.readthedocs.org/en/latest/faq.html#i-get-import-errors-\
+# on-libraries-that-depend-on-c-modules
+if on_rtd:
+    from unittest.mock import MagicMock
+
+    class Mock(MagicMock):
+        @classmethod
+        def __getattr__(cls, name):
+            return Mock()
+
+    sys.modules['janus.utils.checkarray'] = Mock()
+    sys.modules['janus.operators'] = Mock()
+    sys.modules['janus.material.elastic.linear.isotropic'] = Mock()
+    sys.modules['janus.green'] = Mock()
+    sys.modules['janus.fft.serial'] = Mock()
+    sys.modules['janus.fft.parallel'] = Mock()
+
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -112,7 +133,10 @@ pygments_style = 'sphinx'
 # a list of builtin themes.
 import sphinx_rtd_theme
 
-html_theme = 'sphinx_rtd_theme'
+if on_rtd:
+    html_theme = 'default'
+else:
+    html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
