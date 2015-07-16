@@ -3,6 +3,7 @@
 import distutils.command.clean
 import os
 import re
+import setuptools
 
 from distutils import log
 from distutils.core import setup
@@ -132,7 +133,7 @@ def mpicc_show():
 
 def extensions_and_packages_with_mpi():
     try:
-        import mpi4py
+        # import mpi4py
         # TODO This module also depends on fftw_mpi.pxd
         extensions = [Extension('janus.fft.parallel._parallel_fft',
                                 sources=['janus/fft/parallel/'
