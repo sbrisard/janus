@@ -3,19 +3,11 @@
 import distutils.command.clean
 import os
 import re
-import sys
-import setuptools
 
-from argparse import ArgumentParser
-from configparser import ConfigParser
-from configparser import NoOptionError
-
-from distutils.core import setup, Command
-from distutils.extension import Extension
-from distutils.sysconfig import get_config_var
-from distutils.util import get_platform
-from distutils.dir_util import remove_tree
 from distutils import log
+from distutils.core import setup
+from distutils.dir_util import remove_tree
+from distutils.extension import Extension
 
 from Cython.Build import cythonize
 
