@@ -28,6 +28,7 @@ URL = 'https://bitbucket.org/sbrisard/janus/'
 DOWNLOAD_URL = 'https://bitbucket.org/sbrisard/janus/'
 LICENSE = 'BSD-3'
 
+
 class clean(distutils.command.clean.clean):
     description = (distutils.command.clean.clean.description +
                    ', including *.c, *.pyc, *.pyd, *.pyo and *.so files')
@@ -70,6 +71,7 @@ class clean(distutils.command.clean.clean):
         self.remove_files(files)
         return out
 
+
 def extensions_and_packages():
     extensions = [Extension('janus.utils.checkarray',
                             sources=['janus/utils/checkarray.pyx']),
@@ -85,6 +87,7 @@ def extensions_and_packages():
                             sources=['janus/fft/serial/_serial_fft.pyx'])]
     packages = ['janus', 'janus.fft', 'janus.fft.serial', 'janus.utils']
     return extensions, packages
+
 
 def mpicc_showme():
     """Use ``mpicc --showme`` to retrieve the mpicc arguments.
@@ -103,10 +106,11 @@ def mpicc_showme():
 
     incdirs = call_mpicc_showme('incdirs')
     incdirs.append(mpi4py.get_include())
-    return {'include_dirs' : incdirs,
-            'library_dirs' : call_mpicc_showme('libdirs'),
-            'extra_compile_args' : call_mpicc_showme('compile'),
-            'extra_link_args' : call_mpicc_showme('link')}
+    return {'include_dirs': incdirs,
+            'library_dirs': call_mpicc_showme('libdirs'),
+            'extra_compile_args': call_mpicc_showme('compile'),
+            'extra_link_args': call_mpicc_showme('link')}
+
 
 def mpicc_show():
     """Use ``mpicc --show`` to retrieve the mpicc arguments.
@@ -128,10 +132,11 @@ def mpicc_show():
     cflags = re.sub('\s+', ' ', cflags)
     cflags = [cflags.strip()]
     ldflags += cflags
-    return {'include_dirs' : incdirs,
-            'library_dirs' : libdirs,
-            'extra_compile_args' : cflags,
-            'extra_link_args' : ldflags}
+    return {'include_dirs': incdirs,
+            'library_dirs': libdirs,
+            'extra_compile_args': cflags,
+            'extra_link_args': ldflags}
+
 
 def extensions_and_packages_with_mpi():
     try:
