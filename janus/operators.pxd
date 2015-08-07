@@ -1,5 +1,9 @@
 cdef class AbstractOperator:
-    cdef readonly int isize, osize
+    cdef readonly int isize
+    """The size of the input (`int`, read-only)."""
+
+    cdef readonly int osize
+    """The size of the output (`int`, read-only)."""
 
     cdef void c_apply(self, double[:] x, double[:] y)
 

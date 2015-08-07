@@ -113,12 +113,8 @@ cdef class AbstractOperator:
 
     """General operator.
 
-    Concrete instances of this class map arrays of size isize to
-    arrays of size osize.
-
-    Attributes:
-        isize: the size of the input (int, read-only)
-        osize: the size of the output (int, read-only)
+    Concrete instances of this class map arrays of size `isize` to
+    arrays of size `osize`.
 
     """
 
@@ -126,17 +122,17 @@ cdef class AbstractOperator:
         pass
 
     def init_sizes(self, int isize, int osize):
-        """Initialize the values of the isize and osize attributes.
+        """Initialize the values of :attr:`isize` and :attr:`osize`.
 
         This method is provided as a convenience to users who want to
         create pure Python implementations of this class. It should be
         called only *once* at the initialization of the instance, as it
-        can potentially modify the `isize` and `osize` attributes (which
-        are otherwise read-only).
+        can potentially modify the :attr:`isize` and :attr:`osize`
+        attributes (which are otherwise read-only).
 
         Args:
-            isize: the size of the input (int)
-            osize: the size of the output (int)
+            isize (int): The size of the input.
+            osize (int): The size of the output.
 
         """
         if isize <= 0:
@@ -152,16 +148,13 @@ cdef class AbstractOperator:
     def apply(self, double[:] x, double[:] y=None):
         """Return the result of applying this operator to x.
 
-        If y is None, then a new memoryview is created and returned.
-        Otherwise, the image of x is stored in y, and a view of y is
-        returned.
+        If `y` is `None`, then a new memoryview is created and
+        returned. Otherwise, the image of `x` is stored in `y`, and a
+        view of `y` is returned.
 
         Args:
-            x: the input vector (1D memoryview of float)
-            y: the output vector (1D memoryview of float, optional)
-
-        Returns:
-            The image of x as a 1D memoryview of float.
+            x (float[:]): The input vector.
+            y (float[:]): The output vector (optional).
 
         """
         check_shape_1d(x, self.isize)
