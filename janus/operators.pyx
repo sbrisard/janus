@@ -50,16 +50,12 @@ from janus.utils.checkarray cimport create_or_check_shape_4d
 
 
 def isotropic_4(sph, dev, dim):
-    """Create a fourth rank, isotropic tensor.
+    """Create a new instance of :class:`FourthRankIsotropicTensor`.
 
     Args:
-        sph: the spherical projection of the returned tensor (float)
-        dev: the deviatoric projection of the returned tensor (float)
-        dim: the dimension of the physical space on which the returned
-             tensor operates (int)
-
-    Returns:
-        A new instance of FourthRankIsotropicTensor.
+        sph (float): The spherical projection.
+        dev (float): The deviatoric projection.
+        dim (int): The dimension of the physical space.
 
     """
     if dim == 2:
@@ -73,15 +69,11 @@ def isotropic_4(sph, dev, dim):
 def block_diagonal_operator(loc):
     """Create a block-diagonal operator.
 
-    The returned instance keeps a *shallow* copy of loc.
+    The array of local operators `loc` is a two- or three- dimensional
+    memoryview of :class:`AbstractOperator`.
 
-    Args:
-        loc: the array of local operators (2D memoryview of
-             AbstractOperator)
-
-    Returns:
-        A new instance of BlockDiagonalOperator2D or
-        BlockDiagonalOperator3D.
+    The returned instance of :class:`BlockDiagonalOperator2D` or
+    :class:`BlockDiagonalOperator3D` keeps a *shallow* copy of `loc`.
 
     """
     dim = len(loc.shape)
