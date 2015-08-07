@@ -89,14 +89,14 @@ def block_diagonal_operator(loc):
 def block_diagonal_linear_operator(a):
     """Create a block-diagonal, linear operator.
 
-    The returned instance keeps a *shallow* copy of `a`.
+    The array of local matrices `a` is a 4D or 5D  memoryview of
+    `float`.
 
-    Args:
-        a: the array of local matrices (4D or 5D memoryview of float)
-
-    Returns:
-        A new instance of BlockDiagonalLinearOperator2D or
-        BlockDiagonalLinearOperator3D.
+    The returned instance of :class:`BlockDiagonalLinearOperator2D`
+    (if `a` is of type `float[:, :, :, :]`)
+    or :class:`BlockDiagonalLinearOperator3D`
+    (if `a` is of type `float[:, :, :, :, :]`) keeps a *shallow* copy
+    of `a`.
 
     """
     dim = len(a.shape) - 2
