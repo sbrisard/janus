@@ -34,16 +34,53 @@ cdef class FourthRankIsotropicTensor3D(FourthRankIsotropicTensor):
 
 cdef class AbstractStructuredOperator2D:
     cdef readonly int dim
-    cdef readonly int shape0, shape1, ishape2, oshape2
-    cdef readonly tuple ishape, oshape
+    """The dimension of the structured grid (`int`, 2)."""
+
+    cdef readonly int shape0
+    """The first dimension of the input and output (`int`)."""
+
+    cdef readonly int shape1
+    """The second dimension of the input and output (`int`)."""
+
+    cdef readonly int ishape2
+    """The third dimension of the input (`int`)."""
+
+    cdef readonly int oshape2
+    """The third dimension of the output (`int`)."""
+
+    cdef readonly tuple ishape
+    """The shape of the input (tuple)."""
+
+    cdef readonly tuple oshape
+    """The shape of the output (tuple)."""
 
     cdef void c_apply(self, double[:, :, :] x, double[:, :, :] y)
 
 
 cdef class AbstractStructuredOperator3D:
     cdef readonly int dim
-    cdef readonly int shape0, shape1, shape2, ishape3, oshape3
-    cdef readonly tuple ishape, oshape
+    """The dimension of the structured grid (`int`, 3)."""
+
+    cdef readonly int shape0
+    """The first dimension of the input and output (`int`)."""
+
+    cdef readonly int shape1
+    """The second dimension of the input and output (`int`)."""
+
+    cdef readonly int shape2
+    """The third dimension of the input and output (`int`)."""
+
+    cdef readonly int ishape3
+    """The fourth dimension of the input (`int`)."""
+
+    cdef readonly int oshape3
+    """The fourth dimension of the output (`int`)."""
+
+    cdef readonly tuple ishape
+    """The shape of the input (tuple)."""
+
+    cdef readonly tuple oshape
+    """The shape of the output (tuple)."""
 
     cdef void c_apply(self, double[:, :, :, :] x, double[:, :, :, :] y)
 

@@ -349,24 +349,21 @@ cdef class AbstractStructuredOperator2D:
 
     """Operator applied to vectorial data structured in a 2D grid.
 
-    Structured operators map real vectors of dimension isize to real
-    vectors of dimension osize. Input and output vectors are
+    Structured operators map real vectors of dimension `isize` to real
+    vectors of dimension `osize`. Input and output vectors are
     structured in 2D grids, each grid-cell being a vector itself.
-    Therefore, the input (resp. output) is a memoryview of float of
-    shape (shape0, shape1, ishape2) [resp. (shape0, shape1, oshape2)],
-    with
+    Therefore, the input is a `float[:, :, :]` of shape::
 
-        isize = shape0 * shape1 * ishape2
-        osize = shape0 * shape1 * oshape2
+        (shape0, shape1, ishape2),
 
-    Attributes:
-        dim: the dimension of the structured grid (int, 2)
-        shape0: the first dimension of the input and output (int)
-        shape1: the second dimension of the input and output (int)
-        ishape2: the third dimension of the input (int)
-        oshape2: the third dimension of the output (int)
-        ishape: the shape of the input, (shape0, shape1, ishape2)
-        oshape: the shape of the output, (shape0, shape1, oshape2)
+    while the output is a `float[:, :, :]` of shape::
+
+        (shape0, shape1, oshape2).
+
+    Furthermore::
+
+        isize = shape0 * shape1 * ishape2,
+        osize = shape0 * shape1 * oshape2.
 
     """
 
@@ -374,7 +371,7 @@ cdef class AbstractStructuredOperator2D:
         self.dim = 2
 
     def init_shapes(self, int shape0, int shape1, int ishape2, int oshape2):
-        """Initialize the values of the *shape** attributes.
+        """Initialize the values of :attr:`ishape` and :attr:`oshape`.
 
         This method is provided as a convenience to users who want to
         create pure Python implementations of this class. It should be
@@ -382,11 +379,9 @@ cdef class AbstractStructuredOperator2D:
         can potentially modify these attributes (which are otherwise
         read-only).
 
-        Args:
-            shape0: the first dimension of the input and output (int)
-            shape1: the second dimension of the input and output (int)
-            ishape2: the third dimension of the input (int)
-            oshape2: the third dimension of the output (int)
+        See :attr:`shape0`, :attr:`shape1`, :attr:`ishape2` and
+        :attr:`oshape2` for the meaning of the arguments of this
+        function.
 
         """
         if shape0 <= 0:
@@ -408,21 +403,18 @@ cdef class AbstractStructuredOperator2D:
         pass
 
     def apply(self, double[:, :, :] x, double[:, :, :] y=None):
-        """Return the result of applying this operator to x.
+        """Return the result of applying this operator to `x`.
 
-        If y is None, then a new memoryview is created and returned.
-        Otherwise, the image of x is stored in y, and a view of y is
-        returned.
+        If `y` is `None`, then a new memoryview is created and returned.
+        Otherwise, the image of `x` is stored in `y`, and a view of `y`
+        is returned.
 
         The default implementation calls the (Cython) method
-        c_apply().
+        `c_apply()`.
 
         Args:
-            x: the input vector (3D memoryview of float)
-            y: the output vector (3D memoryview of float)
-
-        Returns:
-        The image of x, as a 3D memoryview of float.
+            x (float[:, :, :]): The input vector.
+            y (float[:, :, :]): The output vector.
 
         """
         check_shape_3d(x, self.shape0, self.shape1, self.ishape2)
@@ -436,27 +428,21 @@ cdef class AbstractStructuredOperator3D:
 
     """Operator applied to vectorial data structured in a 3D grid.
 
-    Structured operators map real vectors of dimension isize to real
-    vectors of dimension osize. Input and output vectors are
+    Structured operators map real vectors of dimension `isize` to real
+    vectors of dimension `osize`. Input and output vectors are
     structured in 3D grids, each grid-cell being a vector itself.
-    Therefore, the input (resp. output) is a memoryview of float of
-    shape (shape0, shape1, shape2, ishape3)
-    [resp. (shape0, shape1, shape2, oshape3)], with
+    Therefore, the input is a `float[:, :, :, :]` of shape::
 
-        isize = shape0 * shape1 * shape2 * ishape3
-        osize = shape0 * shape1 * shape2 * oshape3
+        (shape0, shape1, shape2, ishape3),
 
-    Attributes:
-        dim: the dimension of the structured grid, 3
-        shape0: the first dimension of the input and output (int)
-        shape1: the second dimension of the input and output (int)
-        shape2: the third dimension of the input and output (int)
-        ishape3: the fourth dimension of the input (int)
-        oshape3: the fourth dimension of the output (int)
-        ishape: the shape of the input,
-                (shape0, shape1, shape2, ishape3)
-        oshape: the shape of the output,
-                (shape0, shape1, shape2, oshape3)
+    while the output is a `float[:, :, :, :]` of shape::
+
+        (shape0, shape1, shape2, oshape3).
+
+    Furthermore::
+
+        isize = shape0 * shape1 * shape2 * ishape3,
+        osize = shape0 * shape1 * shape2 * oshape3.
 
     """
 
@@ -465,7 +451,7 @@ cdef class AbstractStructuredOperator3D:
 
     def init_shapes(self, int shape0, int shape1, int shape2,
                     int ishape3, int oshape3):
-        """Initialize the values of the *shape* attributes.
+        """Initialize the values of :attr:`ishape` and :attr:`oshape`.
 
         This method is provided as a convenience to users who want to
         create pure Python implementations of this class. It should be
@@ -473,12 +459,9 @@ cdef class AbstractStructuredOperator3D:
         can potentially modify these attributes (which are otherwise
         read-only).
 
-        Args:
-            shape0: the first dimension of the input and output
-            shape1: the second dimension of the input and output
-            shape2: the third dimension of the input and output
-            ishape3: the fourth dimension of the input
-            oshape3: the fourth dimension of the output
+        See :attr:`shape0`, :attr:`shape1`, :attr:`shape2`,
+        :attr:`ishape3` and :attr:`oshape3` for the meaning of the
+        arguments of this function.
 
         """
         if shape0 <= 0:
@@ -503,20 +486,18 @@ cdef class AbstractStructuredOperator3D:
         pass
 
     def apply(self, double[:, :, :, :] x, double[:, :, :, :] y=None):
-        """Return the result of applying this operator to x.
+        """Return the result of applying this operator to `x`.
 
-        If y is None, then a new memoryview is created and returned.
-        Otherwise, the image of x is stored in y, and a view of y is
-        returned.
+        If `y` is `None`, then a new memoryview is created and returned.
+        Otherwise, the image of `x` is stored in `y`, and a view of `y`
+        is returned.
 
-        The default implementation calls the (Cython) method c_apply().
+        The default implementation calls the (Cython) method
+        `c_apply()`.
 
         Args:
-            x: the input vector (4D memoryview of float)
-            y: the output vector (4D memoryview of float)
-
-        Returns:
-            The image of x as a 4D memoryview of float.
+            x (float[:, :, :, :]): The input vector.
+            y (float[:, :, :, :]): The output vector.
 
         """
         check_shape_4d(x,
