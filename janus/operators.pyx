@@ -220,9 +220,9 @@ cdef class FourthRankIsotropicTensor(AbstractLinearOperator):
         I_ijkl = (δ_ik * δ_jl + δ_il * δ_jk) / 2.
 
     Args:
-        sph: see :attr:`sph`
-        dev: see :attr:`dev`
-        dim: see :attr:`dim`
+        sph: See :attr:`sph`.
+        dev: See :attr:`dev`.
+        dim: See :attr:`dim`.
 
     """
 
