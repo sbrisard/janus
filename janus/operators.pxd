@@ -14,7 +14,14 @@ cdef class AbstractLinearOperator(AbstractOperator):
 
 cdef class FourthRankIsotropicTensor(AbstractLinearOperator):
     cdef readonly int dim
-    cdef readonly double sph, dev
+    """The dimension of the physical space (`int`, read-only)."""
+
+    cdef readonly double sph
+    """The spherical projection of the tensor (`float`, read-only)."""
+
+    cdef readonly double dev
+    """The deviatoric projection of the tensor (`float`, read-only)."""
+
     cdef double tr
 
 

@@ -167,8 +167,8 @@ cdef class AbstractLinearOperator(AbstractOperator):
 
     """Specialization of class AbstractOperator to linear operators.
 
-    This abstract class defines the method to_memoryview which returns
-    the matrix of this linear operator as a memoryview.
+    This abstract class defines the method :meth:`to_memoryview`, which
+    returns the matrix of this linear operator as a memoryview.
 
     """
 
@@ -178,15 +178,12 @@ cdef class AbstractLinearOperator(AbstractOperator):
     def to_memoryview(self, double[:, :] out=None):
         """Return the matrix of this operator as a memoryview.
 
-        If out is None, a new memoryview is allocated and returned.
-        Otherwise, the matrix is stored in out, and a view of out is
+        If `out` is `None`, a new memoryview is allocated and returned.
+        Otherwise, the matrix is stored in `out`, and a view of out is
         returned.
 
         Args:
-            out: the output array (2D memoryview of float)
-
-        Returns
-            The matrix of this operator as a 2D memoryview of float.
+            out (float[:, :]): The output array.
 
         """
         out = create_or_check_shape_2d(out, self.osize, self.isize)
@@ -201,37 +198,31 @@ cdef class FourthRankIsotropicTensor(AbstractLinearOperator):
 
     Such a tensor is defined by its spherical and deviatoric
     projections. **Warning:** this class should *not* be instantiated
-    directly, as the object returned by __cinit__ would not be in a
-    legal state. Use the function isotropic_4 instead.
+    directly, as the object returned by ``__cinit__`` would not be in a
+    legal state. Use the function :func:`isotropic_4` instead.
 
-    Any fourth rank, isotropic tensor T is a linear combination of
-    the spherical projection tensor J and the deviatoric projection
-    tensor K
+    Any fourth rank, isotropic tensor `T` is a linear combination of
+    the spherical projection tensor `J` and the deviatoric projection
+    tensor `K`::
 
         T = sph * J + dev * K.
 
-    sph and dev are the two coefficients which are passed to the
-    initializer of this class. The components of J are
+    `sph` and `dev` are the two coefficients which are passed to the
+    initializer of this class. The components of `J` are::
 
         J_ijkl = δ_ij * δ_kl / d,
 
-    where δ_ij denotes the Kronecker symbol, and d is the dimension of
-    the space on which the tensor operates. The components of K are
-    found from the identity K = I - J, where I is the fourth-rank
-    identity tensor
+    where `δ_ij` denotes the Kronecker symbol, and `d` is the dimension
+    of the physical space on which the tensor operates. The components
+    of `K` are found from the identity `K = I - J`, where `I` is the
+    fourth-rank identity tensor::
 
         I_ijkl = (δ_ik * δ_jl + δ_il * δ_jk) / 2.
 
-    Attributes
-        sph: the spherical projection of the tensor (float, readonly)
-        dev: the deviatoric projection of the tensor (float, readonly)
-        dim: the dimension of the physical space on which the tensor
-             operates (dim, readonly)
-
     Args:
-        sph: see attribute with same name
-        dev: see attribute with same name
-        dim: see attribute with same name
+        sph: see :attr:`sph`
+        dev: see :attr:`dev`
+        dim: see :attr:`dim`
 
     """
 
@@ -252,7 +243,7 @@ cdef class FourthRankIsotropicTensor(AbstractLinearOperator):
 cdef class FourthRankIsotropicTensor2D(FourthRankIsotropicTensor):
 
     """
-    Specialization of class FourthRankIsotropicTensor to 2D.
+    Specialization of :class:`FourthRankIsotropicTensor` to 2D.
 
     The present implementation allows for in-place operations.
 
@@ -289,7 +280,7 @@ cdef class FourthRankIsotropicTensor2D(FourthRankIsotropicTensor):
 cdef class FourthRankIsotropicTensor3D(FourthRankIsotropicTensor):
 
     """
-    Specialization of class FourthRankIsotropicTensor to 3D.
+    Specialization of :class:`FourthRankIsotropicTensor` to 3D.
 
     The present implementation allows for in-place operations.
 
