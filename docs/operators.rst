@@ -90,4 +90,3 @@ API of module :mod:`janus.operators`
 .. automodule:: janus.operators
    :members:
    :undoc-members:
-   :show-inheritance:
