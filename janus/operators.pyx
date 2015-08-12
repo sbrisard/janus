@@ -619,8 +619,8 @@ cdef class BlockDiagonalLinearOperator2D(AbstractStructuredOperator2D):
     Instances of this class keep a *shallow* copy of the array of
     local matrices passed to the initializer.
 
-    Attributes:
-        a: the array of local matrices (4D memoryview of float)
+    Args:
+        a (float[:, :, :, :]): The array of local matrices.
 
     """
 
@@ -669,25 +669,22 @@ cdef class BlockDiagonalLinearOperator2D(AbstractStructuredOperator2D):
                     y_loc[i2] = yy
 
     def apply_transpose(self, double[:, :, :] x, double[:, :, :] y=None):
-        """Return the result of applying the transpose of this operator to x.
+        """Return the result of applying the transposed operator to `x`.
 
-        The output is defined as follows
+        The output is defined as follows::
 
             y[i0, i1, i2] = sum(a[i0, i1, j2, i2] * x[i0, i1, j2], j2)
 
-        If y is None, then a new memoryview is created and returned.
-        Otherwise, the image of x is stored in y, and a view of y is
-        returned.
+        If `y` is `None`, then a new memoryview is created and returned.
+        Otherwise, the image of `x` is stored in `y`, and a view of `y`
+        is returned.
 
         The default implementation calls the (Cython) method
-        c_apply_transpose().
+        `c_apply_transpose()`.
 
         Args:
-            x: the input vector (3D memoryview of float)
-            y: the output vector (3D memoryview of float)
-
-        Returns:
-            The image of x as a 3D memoryview of float
+            x (float[:, :, :]): The input vector.
+            y (float[:, :, :]): The output vector.
 
         """
         check_shape_3d(x, self.shape0, self.shape1, self.oshape2)
@@ -699,13 +696,13 @@ cdef class BlockDiagonalLinearOperator2D(AbstractStructuredOperator2D):
 
 cdef class BlockDiagonalLinearOperator3D(AbstractStructuredOperator3D):
 
-    """Block-diagonal linear operator with 2D layout of the data.
+    """Block-diagonal linear operator with 3D layout of the data.
 
     Instances of this class keep a *shallow* copy of the array of
     local matrices passed to the initializer.
 
-    Attributes:
-        a: the array of local matrices (5D memoryview of float)
+    Args:
+        a (float[:, :, :, :, :]): The array of local matrices.
 
     """
 
@@ -758,26 +755,23 @@ cdef class BlockDiagonalLinearOperator3D(AbstractStructuredOperator3D):
                         y_loc[i3] = yy
 
     def apply_transpose(self, double[:, :, :, :] x, double[:, :, :, :] y=None):
-        """Return the result of applying the transpose of this operator to x.
+        """Return the result of applying the transposed operator to `x`.
 
-        The output is defined as follows
+        The output is defined as follows::
 
             y[i0, i1, i2, i3] = sum(a[i0, i1, i2, j3, i3] *
                                     x[i0, i1, i2, j3], j3)
 
-        If y is None, then a new memoryview is created and returned.
-        Otherwise, the image of x is stored in y, and a view of y is
-        returned.
+        If `y` is `None`, then a new memoryview is created and returned.
+        Otherwise, the image of `x` is stored in `y`, and a view of `y`
+        is returned.
 
         The default implementation calls the (Cython) method
-        c_apply_transpose().
+        `c_apply_transpose()`.
 
         Args:
-            x: the input vector (4D memoryview of float)
-            y: the output vector (4D memoryview of float)
-
-        Returns:
-            The image of x as a 4D memoryview of float.
+            x (float[:, :, :, :]): The input vector.
+            y (float[:, :, :, :]): The output vector.
 
         """
         check_shape_4d(x,
