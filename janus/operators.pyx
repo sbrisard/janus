@@ -653,6 +653,7 @@ cdef class BlockDiagonalLinearOperator2D(AbstractStructuredOperator2D):
     @wraparound(False)
     cdef void c_apply_transpose(self, double[:, :, :] x, double[:, :, :] y):
         cdef int i0, i1, i2, j2
+        cdef double yy
         cdef double[:, :] a_loc
         cdef double[:] x_loc
         cdef double[:] y_loc
@@ -738,6 +739,7 @@ cdef class BlockDiagonalLinearOperator3D(AbstractStructuredOperator3D):
     cdef void c_apply_transpose(self, double[:, :, :, :] x,
                                 double[:, :, :, :] y):
         cdef int i0, i1, i2, i3, j3
+        cdef double yy
         cdef double[:, :] a_loc
         cdef double[:] x_loc
         cdef double[:] y_loc
