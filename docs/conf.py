@@ -234,18 +234,10 @@ with open('preamble.tex', 'r') as f:
         latex_elements['preamble'] += line
         pngmath_latex_preamble += line
 
-# -- Options for manual page output --------------------------------------------
-
-# One entry per manual page. List of tuples
-# (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'janus', 'Documentation of the Janus Library',
      ['S. Brisard'], 1)
 ]
-
-# If true, show URL addresses after external links.
-#man_show_urls = False
-
 
 texinfo_documents = [
   ('index', 'janus', 'Documentation of the Janus Library',
