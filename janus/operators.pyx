@@ -514,15 +514,14 @@ cdef class BlockDiagonalOperator2D(AbstractStructuredOperator2D):
 
     """Block-diagonal operator with 2D layout of the (vectorial) data.
 
-    If the local operators loc allow for in-place operations, then
+    If the local operators `loc` allow for in-place operations, then
     the block-diagonal operator also allows for in-place operations.
 
     Instances of this class keep a *shallow* copy of the array of
     local operators passed to the initializer.
 
     Args:
-        loc: the array of local operators (2D memoryview of
-        AbstractOperator)
+        loc (AbstractOperator[:, :]): The array of local operators.
 
     """
 
@@ -565,15 +564,14 @@ cdef class BlockDiagonalOperator3D(AbstractStructuredOperator3D):
 
     """Block-diagonal operator with 3D layout of the (vectorial) data.
 
-    If the local operators loc allow for in-place operations, then
+    If the local operators `loc` allow for in-place operations, then
     the block-diagonal operator also allows for in-place operations.
 
     Instances of this class keep a *shallow* copy of the array of
     local operators passed to the initializer.
 
     Args:
-        loc: the array of local operators (3D memoryview of
-             AbstractOperator)
+        loc (AbstractOperator[:, :, :]): The array of local operators.
 
     """
 
