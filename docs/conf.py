@@ -54,7 +54,6 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.todo',
               'sphinx.ext.coverage',
               'sphinx.ext.pngmath',
-              'sphinx.ext.mathjax',
               'sphinx.ext.viewcode']
 
 todo_include_todos = True
@@ -213,45 +212,27 @@ htmlhelp_basename = 'janusdoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
-
-latex_elements = {
-# The paper size ('letterpaper' or 'a4paper').
-#'papersize': 'letterpaper',
-
-# The font size ('10pt', '11pt' or '12pt').
-#'pointsize': '10pt',
-
-# Additional stuff for the LaTeX preamble.
-#'preamble': '',
-}
-
-# Grouping the document tree into LaTeX files. List of tuples
-# (source start file, target name, title, author, documentclass [howto/manual]).
+latex_elements = {}
 latex_documents = [
   ('index', 'janus.tex', 'Documentation of the Janus Library',
    'S. Brisard', 'manual'),
 ]
-
-# The name of an image file (relative to this directory) to place at the top of
-# the title page.
 latex_logo = './logo_janus.png'
 
-# For "manual" documents, if this is true, then toplevel headings are parts,
-# not chapters.
-#latex_use_parts = False
+try:
+    pngmath_latex_preamble  # check whether this is already defined
+except NameError:
+    pngmath_latex_preamble = ''
 
-# If true, show page references after internal links.
-#latex_show_pagerefs = False
+try:
+    latex_elements['preamble']
+except KeyError:
+    latex_elements['preamble'] = ''
 
-# If true, show URL addresses after external links.
-#latex_show_urls = False
-
-# Documents to append as an appendix to all manuals.
-#latex_appendices = []
-
-# If false, no module index is generated.
-#latex_domain_indices = True
-
+with open('preamble.tex', 'r') as f:
+    for line in f:
+        latex_elements['preamble'] += line
+        pngmath_latex_preamble += line
 
 # -- Options for manual page output --------------------------------------------
 
