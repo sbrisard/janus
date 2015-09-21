@@ -10,9 +10,11 @@ User's guide
    operators
    materials
    fft_tutorial
+   tutorials/square_basic/square_basic
    api
    todo
    license
+   bibliography
 
 Indices and tables
 ==================
