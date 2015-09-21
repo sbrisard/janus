@@ -1,5 +1,7 @@
 .. coding: utf-8-unix
 
+.. _materials:
+
 *********
 Materials
 *********
