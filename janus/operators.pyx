@@ -39,6 +39,7 @@ Classes defined in this module
 from cython cimport boundscheck
 from cython cimport cdivision
 from cython cimport wraparound
+from libc.math cimport cos, sin, M_SQRT2
 
 from janus.utils.checkarray cimport check_shape_1d
 from janus.utils.checkarray cimport check_shape_3d
@@ -344,6 +345,47 @@ cdef class FourthRankIsotropicTensor3D(FourthRankIsotropicTensor):
         out[5, 3] = 0.0
         out[5, 4] = 0.0
 
+
+cdef class FourthRankCubicTensor2D(AbstractLinearOperator):
+
+    @cdivision(True)
+    def __cinit__(self, double t1111, double t1122, double t1212,
+                  double theta):
+        cdef int sym = 3
+        self.init_sizes(sym, sym)
+        self.dim = 2
+        c = cos(4*theta)
+        s = sin(4*theta)
+        aux = t1111-t1122-2*t1212
+        self.t11 = 0.25*(3*t1111+  t1122+2*t1212+c*aux)
+        self.t12 = 0.25*(  t1111+3*t1122-2*t1212-c*aux)
+        self.t13 = 0.25*M_SQRT2*s*aux
+        self.t23 = -self.t13
+        self.t33 = 0.50*(t1111-t1122+2*t1212-c*aux)
+
+    @boundscheck(False)
+    @wraparound(False)
+    cdef inline void c_apply(self, double[:] x, double[:] y):
+        cdef double x0 = x[0]
+        cdef double x1 = x[1]
+        cdef double x2 = x[2]
+        y[0] = self.t11*x0 + self.t12*x1 + self.t13*x2
+        y[1] = self.t12*x0 + self.t11*x1 + self.t23*x2
+        y[2] = self.t13*x0 + self.t23*x1 + self.t33*x2
+
+    @boundscheck(False)
+    @cdivision(True)
+    @wraparound(False)
+    cdef void c_to_memoryview(self, double[:, :] out):
+        out[0, 0] = self.t11
+        out[0, 1] = self.t12
+        out[0, 2] = self.t13
+        out[1, 0] = self.t12
+        out[1, 1] = self.t11
+        out[1, 2] = self.t23
+        out[2, 0] = self.t13
+        out[2, 1] = self.t23
+        out[2, 2] = self.t33
 
 cdef class AbstractStructuredOperator2D:
 

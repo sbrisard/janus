@@ -13,6 +13,7 @@ from janus.operators import AbstractStructuredOperator2D
 from janus.operators import AbstractStructuredOperator3D
 from janus.operators import block_diagonal_operator
 from janus.operators import block_diagonal_linear_operator
+from janus.operators import FourthRankCubicTensor2D
 from janus.operators import isotropic_4
 
 ULP = np.finfo(np.float64).eps
@@ -182,6 +183,98 @@ class TestFourthRankIsotropicTensor2D(AbstractTestFourthRankIsotropicTensor):
 
 
 class TestFourthRankIsotropicTensor3D(AbstractTestFourthRankIsotropicTensor):
+    dim = 3
+
+
+class AbstractTestFourthRankCubicTensor(TestAbstractLinearOperator):
+    def sym(self):
+        return (self.dim * (self.dim + 1)) // 2
+
+    def operator(self):
+        return FourthRankCubicTensor2D(0, 0, 0, 0)
+
+    def valid_size(self):
+        sym = self.sym()
+        return (sym, sym)
+
+    def pytest_generate_tests(self, metafunc):
+        if (metafunc.function.__name__ == 'test_apply' or
+            metafunc.function.__name__ == 'test_to_memoryview'):
+            flags = [0, 1]
+            if metafunc.function.__name__ == 'test_apply':
+                flags.append(2)
+            coeffs = [(1., 0., 0.),
+                      (0., 1., 0.),
+                      (0., 0., 1.),
+                      (2.5, -3.5, 4.5)]
+            angles = [0, np.pi/6, np.pi/4, np.pi/3, np.pi/2]
+            params = [(t1111, t1122, t1212, angle, flag) for
+                      ((t1111, t1122, t1212), angle, flag) in
+                      itertools.product(coeffs, angles, flags)]
+            metafunc.parametrize('t1111, t1122, t1212, theta, flag', params)
+        else:
+            super().pytest_generate_tests(metafunc)
+
+    def to_array(self, t1111, t1122, t1212, theta):
+        sqrt2 = np.sqrt(2)
+        c = np.cos(theta)
+        s = np.sin(theta)
+        e1xe1 = np.array([c**2, s**2, sqrt2*c*s],
+                         dtype=np.float64).reshape((3, 1))
+        e2xe2 = np.array([s**2, c**2, -sqrt2*c*s],
+                         dtype=np.float64).reshape(3, 1)
+        e1xe2 = np.array([-c*s, c*s, 0.5*sqrt2*(c**2-s**2)],
+                         dtype=np.float64).reshape(3, 1)
+        t = (t1111*(e1xe1*e1xe1.T+e2xe2*e2xe2.T)+
+             t1122*(e1xe1*e2xe2.T+e2xe2*e1xe1.T)+
+             4*t1212*(e1xe2*e1xe2.T))
+        return t
+
+    def test_apply(self, t1111, t1122, t1212, theta, flag):
+        """flag allows the specification of various calling sequences:
+          - flag = 0: apply(x)
+          - flag = 1: apply(x, x)
+          - flag = 2: apply(x, y)
+        """
+        t = FourthRankCubicTensor2D(t1111, t1122, t1212, theta)
+
+        eye = np.eye(self.sym())
+        expected = self.to_array(t1111, t1122, t1212, theta)
+        actual = np.empty_like(eye)
+
+        for i in range(self.sym()):
+            x = eye[:, i]
+            if flag == 0:
+                base = None
+            elif flag == 1:
+                base = x
+            elif flag == 2:
+                base = nprnd.rand(*x.shape)
+            ret = t.apply(eye[:, i], base)
+            if flag != 0:
+                assert ret.base is base
+            actual[:, i] = ret
+
+        assert_allclose(expected, actual, 10*ULP, 10*ULP)
+
+    def test_to_memoryview(self, t1111, t1122, t1212, theta, flag):
+        t = FourthRankCubicTensor2D(t1111, t1122, t1212, theta)
+        expected = self.to_array(t1111, t1122, t1212, theta)
+        if flag == 0:
+            base = None
+        elif flag == 1:
+            base = nprnd.rand(t.osize, t.isize)
+        actual = t.to_memoryview(base)
+        if flag != 0:
+            assert actual.base is base
+        assert_allclose(expected, actual, 10*ULP, 10*ULP)
+
+
+class TestFourthRankCubicTensor2D(AbstractTestFourthRankCubicTensor):
+    dim = 2
+
+
+class TestFourthRankCubicTensor3D(AbstractTestFourthRankCubicTensor):
     dim = 3
 
 

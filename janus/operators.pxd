@@ -32,6 +32,25 @@ cdef class FourthRankIsotropicTensor2D(FourthRankIsotropicTensor):
 cdef class FourthRankIsotropicTensor3D(FourthRankIsotropicTensor):
     pass
 
+cdef class FourthRankCubicTensor2D(AbstractLinearOperator):
+    cdef readonly int dim
+    """The dimension of the physical space (`int`, read-only)."""
+
+    cdef readonly double t11
+    """The (1, 1) coefficient of the Mandel-Voigt matrix representation."""
+
+    cdef readonly double t12
+    """The (1, 2) coefficient of the Mandel-Voigt matrix representation."""
+
+    cdef readonly double t13
+    """The (1, 3) coefficient of the Mandel-Voigt matrix representation."""
+
+    cdef readonly double t23
+    """The (2, 3) coefficient of the Mandel-Voigt matrix representation."""
+
+    cdef readonly double t33
+    """The (3, 3) coefficient of the Mandel-Voigt matrix representation."""
+
 cdef class AbstractStructuredOperator2D:
     cdef readonly int dim
     """The dimension of the structured grid (`int`, 2)."""
