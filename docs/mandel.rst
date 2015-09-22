@@ -1,8 +1,10 @@
 .. -*- coding: utf-8-unix -*-
 
-******************
-On Mandel notation
-******************
+.. _Mandel_notation:
+
+***************
+Mandel notation
+***************
 
 Janus makes havy use of Mandel's representation of symmetric, second rank tensors as column vectors, and fourth rank tensors with minor symmetries as matrices. This representation is defined below. Furthermore, the properties of the matrix representation are summarized (see also `Wikipedia <https://en.wikipedia.org/wiki/Voigt_notation#Mandel_notation>`_).
 

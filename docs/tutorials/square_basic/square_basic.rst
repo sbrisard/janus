@@ -77,13 +77,11 @@ and (ii) the Green operator for strains
 
 For the implementation of the local operator defined by Eq. :eq:`local_operator`, it is first observed that :math:`\tens[4]\Stiffness_0`, :math:`\tens[4]\Stiffness_\mathrm{i}` and :math:`\tens[4]\Stiffness_\mathrm{m}` being isotropic materials, :math:`\tens[4]\Stiffness-\tens[4]\Stiffness_0` is an isotropic tensor at any point of the unit-cell. In other words, both :math:`\tens[4]\Stiffness_\text i-\tens[4]\Stiffness_0` and :math:`\tens[4]\Stiffness_\text m-\tens[4]\Stiffness_0` will be defined as :class:`FourthRankIsotropicTensor <janus.operators.FourthRankIsotropicTensor>`.
 
-Furthermore, this operator is *local*. In other words, the output value in cell ``(i0, i1)`` depends on the input value in the same cell only (the neighboring cells are ignored). More precisely, we assume that a uniform grid of shape ``(n, n)`` is used to discretized Eq. :eq:`basic_scheme`. Then the material properties are constant in each cell, and we define ``delta_C[i0, i1, :, :]`` the matrix representation of :math:`\tens[4]\Stiffness-\tens[4]\Stiffness_0`. Likewise, ``eps[i0, i1, :]`` is the vector representation of the strain tensor in cell ``(i0, i1)``. Then, the stress-polarization :math:`\left(\tens[4]\Stiffness-\tens[4]\Stiffness_0\right):\tens\strain` in cell ``(i0, i1)`` is given by the expression::
+Furthermore, this operator is *local*. In other words, the output value in cell ``(i0, i1)`` depends on the input value in the same cell only (the neighboring cells are ignored). More precisely, we assume that a uniform grid of shape ``(n, n)`` is used to discretized Eq. :eq:`basic_scheme`. Then the material properties are constant in each cell, and we define ``delta_C[i0, i1, :, :]`` the matrix representation of :math:`\tens[4]\Stiffness-\tens[4]\Stiffness_0` (see :ref:`Mandel_notation`). Likewise, ``eps[i0, i1, :]`` is the vector representation of the strain tensor in cell ``(i0, i1)``. Then, the stress-polarization :math:`\left(\tens[4]\Stiffness-\tens[4]\Stiffness_0\right):\tens\strain` in cell ``(i0, i1)`` is given by the expression::
 
     tau[i0, i1] = delta_C[i0, i1] @ eps[i0, i1],
 
 where ``@`` denotes the matrix multiplication operator. It results from the above relation that the lcoal operator defined by :eq:`local_operator` should be implemented as a :class:`BlockDiagonalOperator2D <janus.operators.BlockDiagonalOperator2D>`. As for the non-local operator, it is instanciated by a simple call to the ``green_operator`` method of the relevant material (see :ref:`materials`).
-
-.. todo:: refer to mandel-voigt notation
 
 We start with imports from the standard library, the SciPy stack and Janus itself:
 
