@@ -14,6 +14,7 @@ User's guide
    api
    todo
    license
+   mandel
    bibliography
 
 Indices and tables
