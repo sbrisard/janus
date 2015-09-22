@@ -40,7 +40,7 @@ In the present tutorial, we shall concentrate on the 1212 component of the effec
 
    \tens\Strain=\vec e_1\otimes\vec e_2+\vec e_2\otimes\vec e_1,
 
-and the volume average :math:`\volavg{\stress_{12}}` will be evaluated. To do so, the boundary value problem :eq:`corrector_problem` is transformed into an integral equation, known as the Lippmann--Schwinger equation [Kor73]_, [ZD73]_, [Kro74]_. This equation reads
+and the volume average :math:`\volavg{\stress_{12}}` will be evaluated. To do so, the boundary value problem :eq:`corrector_problem` is transformed into an integral equation, known as the Lippmann--Schwinger equation (:ref:`Korringa, 1973 <KORR1973>`; :ref:`Zeller & Dederichs, 1973 <ZELL1973>` ; :ref:`Kröner, 1974 <KRON1974>`) . This equation reads
 
 .. math::
    :label: Lippmann-Schwinger
@@ -49,7 +49,7 @@ and the volume average :math:`\volavg{\stress_{12}}` will be evaluated. To do so
 
 where :math:`\tens[4]\Stiffness_0` denotes the stiffness of the reference material, :math:`\tens[4]\GreenOperator_0` the related Green operator for strains, and :math:`\tens\strain` the local strain tensor. We will assume that the reference material is isotropic, with shear modulus :math:`\shearModulus_0` and Poisson ratio :math:`\PoissonRatio_0`.
 
-Following Moulinec and Suquet [MS98]_, the above Lippmann--Schwinger equation :eq:`Lippmann-Schwinger` is solved by means of fixed point iterations
+Following :ref:`Moulinec and Suquet (1998) <MOUL1998>`, the above Lippmann--Schwinger equation :eq:`Lippmann-Schwinger` is solved by means of fixed point iterations
 
 .. math::
    :label: basic_scheme
