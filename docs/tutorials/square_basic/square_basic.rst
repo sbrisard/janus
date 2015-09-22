@@ -4,7 +4,7 @@
 Square inclusion, basic scheme
 ******************************
 
-In this tutorial, we will compute the effective elastic properties of a simple 2D microstructure in plane strain. More precisely, we consider a periodic microstructure made of a square inclusion of size :math:`a`, embedded in a unit-cell of size :math:`L` (see Fig. ":ref:`fig_microstructure`").
+In this tutorial, we will compute the effective elastic properties of a simple 2D microstructure in plane strain. More precisely, we consider a periodic microstructure made of a square inclusion of size :math:`a`, embedded in a unit-cell of size :math:`L` (see :numref:`fig_microstructure`).
 
 .. _fig_microstructure:
 .. figure:: microstructure.*

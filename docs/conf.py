@@ -65,6 +65,8 @@ exclude_patterns = ['_build']
 
 pygments_style = 'sphinx'
 
+numfig = True
+
 import sphinx_rtd_theme
 
 if on_rtd:
