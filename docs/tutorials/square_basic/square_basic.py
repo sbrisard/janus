@@ -18,24 +18,27 @@ class Example:
         self.mat_i = mat_i
         self.mat_m = mat_m
         self.n = n
-        self.green = green.truncated(mat_0.green_operator(), shape, 1.,
-                                     transform)
         # ...
         # Step 2: creation of (C_i - C_0) and (C_m - C_0)
         # ...
-        aux_i = isotropic_4(dim*(mat_i.k-mat_0.k), 2*(mat_i.g-mat_0.g), dim)
-        aux_m = isotropic_4(dim*(mat_m.k-mat_0.k), 2*(mat_m.g-mat_0.g), dim)
+        delta_C_i = isotropic_4(dim*(mat_i.k-mat_0.k),
+                                2*(mat_i.g-mat_0.g), dim)
+        delta_C_m = isotropic_4(dim*(mat_m.k-mat_0.k),
+                                2*(mat_m.g-mat_0.g), dim)
         # ...
-        # Step 3: creation of local operator eps -> (C-C_0):eps
+        # Step 3: creation of local operator ε ↦ (C-C_0):ε
         # ...
-        ops = np.empty(transform.ishape, dtype=object)
-        ops[:, :] = aux_m
+        ops = np.empty(shape, dtype=object)
+        ops[:, :] = delta_C_m
         imax = int(np.ceil(n*a-0.5))
-        ops[:imax, :imax] = aux_i
-        # ...
-        # Step 4
-        # ...
+        ops[:imax, :imax] = delta_C_i
         self.eps_to_tau = operators.BlockDiagonalOperator2D(ops)
+        # ...
+        # Step 4: creation of non-local operator ε ↦ Γ_0[ε]
+        # ...
+        self.green = green.truncated(mat_0.green_operator(), shape, 1.,
+                                     transform)
+
         # End of __init__
 
 

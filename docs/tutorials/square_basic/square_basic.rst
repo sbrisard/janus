@@ -83,7 +83,7 @@ Furthermore, this operator is *local*. In other words, the output value in cell 
 
 where ``@`` denotes the matrix multiplication operator. It results from the above relation that the lcoal operator defined by :eq:`local_operator` should be implemented as a :class:`BlockDiagonalOperator2D <janus.operators.BlockDiagonalOperator2D>`. As for the non-local operator, it is instanciated by a simple call to the ``green_operator`` method of the relevant material (see :ref:`materials`).
 
-We start with imports from the standard library, the SciPy stack and Janus itself:
+The script starts with imports from the standard library, the SciPy stack and Janus itself:
 
 .. literalinclude:: square_basic.py
    :start-after: Step 0
@@ -95,19 +95,30 @@ The first few lines of the initializer are pretty standard
    :start-after: Step 1
    :end-before: Step 2
 
-We then define the local operators :math:`\tens[4]\Stiffness_\text i-\tens[4]\Stiffness_0` and :math:`\tens[4]\Stiffness_\text m-\tens[4]\Stiffness_0`, which will be used to create the operator :math:`\tens\strain\mapsto\left(\tens[4]\Stiffness-\tens[4]\Stiffness_0\right):\tens\strain` as a . It is first observed that the inclusion and matrix are made of isotropic materials,
+``mat_i`` (resp. ``mat_m``, ``mat_0``) are the material properties of the inclusion (resp. the matrix, the reference material); ``n`` is the size of the grid, ``a`` is the size of the inclusion, and ``dim`` is the dimension of the physical space. Note how the whole code is written so as to be dimension-independant.
+
+We then define the local operators :math:`\tens[4]\Stiffness_\text i-\tens[4]\Stiffness_0` and :math:`\tens[4]\Stiffness_\text m-\tens[4]\Stiffness_0` as :class:`FourthRankIsotropicTensor <janus.operators.FourthRankIsotropicTensor>`. It is recalled that the stiffness :math:`\tens[4]\Stiffness` of a material with bulk modulus :math:`\bulkModulus` and shear modulus :math:`\shearModulus` reads
+
+.. math::
+   \tens[4]\Stiffness = d\bulkModulus\tens[4]\sphericalProjector+2\shearModulus\tens[4]\deviatoricProjector,
+
+where :math:`d` denotes the dimension of the physical space and :math:`\tens[4]\sphericalProjector` (resp. :math:`\tens[4]\deviatoricProjector`) denote the spherical (resp. deviatoric) projector tensor. In other words, the spherical and deviatoric projections of :math:`\tens[4]\Stiffness` are :math:`d\bulkModulus` and :math:`2\shearModulus`, respectively. As a consequence, the spherical and deviatoric projections of :math:`\tens[4]\Stiffness-\tens[4]\Stiffness_0` are :math:`d\left(\bulkModulus-\bulkModulus_0\right)` and :math:`2\left(\shearModulus-\shearModulus_0\right)`, respectively. The following code is then easily understood
 
 .. literalinclude:: square_basic.py
    :start-after: Step 2
    :end-before: Step 3
 
-Block-diagonal operators are initialized from an array of local operators, called `ops` below
+
+Now, ``delta_C_i`` and ``delta_C_m`` are used to create the operator :math:`\tens\strain\mapsto\left(\tens[4]\Stiffness-\tens[4]\Stiffness_0\right):\tens\strain` as a :class:`BlockDiagonalOperator2D <janus.operators.BlockDiagonalOperator2D>`. Block-diagonal operators are initialized from an array of local operators, called ``ops`` below
+
+.. todo::
+   This code snippet is not dimension independent.
 
 .. literalinclude:: square_basic.py
    :start-after: Step 3
    :end-before: Step 4
 
-The upper-left quarter of the unit-cell is filled with `aux_i` (:math:`\tens[4]\Stiffness_\text i-\tens[4]\Stiffness_0`), while the remainder of the unit-cell receives `aux_m` (:math:`\tens[4]\Stiffness_\text m-\tens[4]\Stiffness_0`).
+The upper-left quarter of the unit-cell is filled with ``delta_C_i`` (:math:`\tens[4]\Stiffness_\text i-\tens[4]\Stiffness_0`), while the remainder of the unit-cell receives ``delta_C_m`` (:math:`\tens[4]\Stiffness_\text m-\tens[4]\Stiffness_0`).
 
 The complete program
 ====================
