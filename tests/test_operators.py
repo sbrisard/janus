@@ -2,7 +2,6 @@ import itertools
 import inspect
 
 import numpy as np
-import numpy.random as nprnd
 import pytest
 
 from numpy.testing import assert_allclose
@@ -207,7 +206,7 @@ class AbstractTestFourthRankIsotropicTensor(TestAbstractLinearOperator):
             elif flag == 1:
                 base = x
             elif flag == 2:
-                base = nprnd.rand(*x.shape)
+                base = np.random.rand(*x.shape)
             ret = t.apply(eye[:, i], base)
             if flag != 0:
                 assert ret.base is base
@@ -221,7 +220,7 @@ class AbstractTestFourthRankIsotropicTensor(TestAbstractLinearOperator):
         if flag == 0:
             base = None
         elif flag == 1:
-            base = nprnd.rand(t.osize, t.isize)
+            base = np.random.rand(t.osize, t.isize)
         actual = t.to_memoryview(base)
         if flag != 0:
             assert actual.base is base
@@ -299,7 +298,7 @@ class AbstractTestFourthRankCubicTensor(TestAbstractLinearOperator):
             elif flag == 1:
                 base = x
             elif flag == 2:
-                base = nprnd.rand(*x.shape)
+                base = np.random.rand(*x.shape)
             ret = t.apply(eye[:, i], base)
             if flag != 0:
                 assert ret.base is base
@@ -313,7 +312,7 @@ class AbstractTestFourthRankCubicTensor(TestAbstractLinearOperator):
         if flag == 0:
             base = None
         elif flag == 1:
-            base = nprnd.rand(t.osize, t.isize)
+            base = np.random.rand(t.osize, t.isize)
         actual = t.to_memoryview(base)
         if flag != 0:
             assert actual.base is base
@@ -419,8 +418,8 @@ class AbstractTestBlockDiagonalOperator(AbstractTestAbstractStructuredOperator):
         global_shape = self.valid_shape()[0:self.dim]
         loc = np.empty(global_shape, dtype=object)
         for index in itertools.product(*map(range, global_shape)):
-            loc[index] = isotropic_4(2. * nprnd.rand() - 1,
-                                     2. * nprnd.rand() - 1,
+            loc[index] = isotropic_4(2. * np.random.rand() - 1,
+                                     2. * np.random.rand() - 1,
                                      self.dim)
         return loc
 
@@ -435,7 +434,7 @@ class AbstractTestBlockDiagonalOperator(AbstractTestAbstractStructuredOperator):
             operator = block_diagonal_operator(loc)
             params = []
             for i in range(10):
-                x = nprnd.rand(*operator.ishape)
+                x = np.random.rand(*operator.ishape)
                 y_expected = np.empty(operator.oshape, dtype=np.float64)
                 for index in itertools.product(*map(range,
                                                     global_shape)):
@@ -468,7 +467,7 @@ class AbstractTestBlockDiagonalLinearOperator(AbstractTestAbstractStructuredOper
     def local_matrices(self):
         shape = self.valid_shape()
         shape = shape[:-2] + (shape[-1], shape[-2])
-        return 2. * nprnd.rand(*shape) - 1.
+        return 2. * np.random.rand(*shape) - 1.
 
     def operator(self):
         return block_diagonal_linear_operator(self.local_matrices())
@@ -481,7 +480,7 @@ class AbstractTestBlockDiagonalLinearOperator(AbstractTestAbstractStructuredOper
             operator = block_diagonal_linear_operator(a)
             params = []
             for i in range(10):
-                x = nprnd.rand(*operator.ishape)
+                x = np.random.rand(*operator.ishape)
                 y_expected = np.empty(operator.oshape, dtype=np.float64)
                 for index in itertools.product(*map(range,
                                                     global_shape)):
@@ -492,8 +491,8 @@ class AbstractTestBlockDiagonalLinearOperator(AbstractTestAbstractStructuredOper
             operator = self.operator()
             params = []
             for i in range(10):
-                x = nprnd.rand(*operator.ishape)
-                y = nprnd.rand(*operator.oshape)
+                x = np.random.rand(*operator.ishape)
+                y = np.random.rand(*operator.oshape)
                 params.append((operator, x, y))
             metafunc.parametrize(args, params)
         else:
