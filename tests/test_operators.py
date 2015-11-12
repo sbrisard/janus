@@ -14,6 +14,7 @@ from janus.operators import AbstractStructuredOperator3D
 from janus.operators import block_diagonal_operator
 from janus.operators import block_diagonal_linear_operator
 from janus.operators import FourthRankCubicTensor2D
+from janus.operators import LinearOperator
 from janus.operators import isotropic_4
 
 ULP = np.finfo(np.float64).eps
@@ -99,6 +100,55 @@ class TestAbstractLinearOperator(TestAbstractOperator):
     def test_to_memoryview_invalid_params(self, operator, isize, osize):
         with pytest.raises(ValueError):
             operator.to_memoryview(np.empty((osize, isize), dtype=np.float64))
+
+
+class TestLinearOperator(TestAbstractLinearOperator):
+    def pytest_generate_tests(self, metafunc):
+        np.random.seed(20151112)
+        if metafunc.function.__name__ == 'test_apply':
+            a = np.random.rand(2, 3)
+            x = np.random.rand(a.shape[1])
+            params = [(a, x, 0), (a, x, 1)]
+            metafunc.parametrize('a, x, flag', params)
+        elif metafunc.function.__name__ == 'test_apply_transpose':
+            a = np.random.rand(2, 3)
+            x = np.random.rand(a.shape[0])
+            params = [(a, x, 0), (a, x, 1)]
+            metafunc.parametrize('a, x, flag', params)
+        elif metafunc.function.__name__ == 'test_to_memoryview':
+            a = np.random.rand(2, 3)
+            metafunc.parametrize('expected, flag', [(a, 0), (a, 1)])
+        else:
+            super().pytest_generate_tests(metafunc)
+
+    def test_apply(self, a, x, flag):
+        expected = np.dot(a, x)
+        op = LinearOperator(a)
+        if flag == 0:
+            y = None
+        elif flag == 1:
+            y = np.random.rand(op.osize)
+        actual = op.apply(x)
+        assert_allclose(expected, actual, 1*ULP, 0*ULP)
+
+    def test_apply_transpose(self, a, x, flag):
+        expected = np.dot(x, a)
+        op = LinearOperator(a)
+        if flag == 0:
+            y = None
+        elif flag == 1:
+            y = np.random.rand(op.isize)
+        actual = LinearOperator(a).apply_transpose(x)
+        assert_allclose(expected, actual, 1*ULP, 0*ULP)
+
+    def test_to_memoryview(self, expected, flag):
+        op = LinearOperator(expected)
+        if flag == 0:
+            out = None
+        elif flag == 1:
+            out = np.random.rand(op.osize, op.isize)
+        actual = op.to_memoryview(out)
+        assert_allclose(expected, actual, 1*ULP, 0*ULP)
 
 
 class AbstractTestFourthRankIsotropicTensor(TestAbstractLinearOperator):

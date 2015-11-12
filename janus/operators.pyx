@@ -192,6 +192,68 @@ cdef class AbstractLinearOperator(AbstractOperator):
         return out
 
 
+cdef class LinearOperator(AbstractLinearOperator):
+
+    """Matrix-based :class:`AbstractLinearOperator`.
+
+    Instances of this class keep a *shallow* copy of the matrix that was
+    passed to the initializer.
+
+    Parameters:
+        a (float[:, :]): The matrix of the linear operator.
+
+    """
+
+    def __cinit__(self, double[:, :] a):
+        self.init_sizes(a.shape[1], a.shape[0])
+        self.a = a
+
+    @boundscheck(False)
+    @wraparound(False)
+    cdef void c_apply(self, double[:] x, double[:] y):
+        cdef int i, j
+        for i in range(self.osize):
+            y[i] = 0.0
+            for j in range(self.isize):
+                y[i] += self.a[i, j]*x[j]
+
+    @boundscheck(False)
+    @wraparound(False)
+    cdef void c_apply_transpose(self, double[:] x, double[:] y):
+        cdef int i, j
+        for j in range(self.isize):
+            y[j] = 0.0
+            for i in range(self.osize):
+                y[j] += self.a[i, j]*x[i]
+
+    def apply_transpose(self, double[:] x, double[:] y=None):
+        """Return the result of applying the transposed operator to `x`.
+
+        If `y` is `None`, then a new memoryview is created and returned.
+        Otherwise, the image of `x` is stored in `y`, and a view of `y`
+        is returned.
+
+        The default implementation calls the (Cython) method
+        `c_apply_transpose()`.
+
+        Args:
+            x (float[:]): The input vector.
+            y (float[:]): The output vector.
+
+        """
+        check_shape_1d(x, self.osize)
+        y = create_or_check_shape_1d(y, self.isize)
+        self.c_apply_transpose(x, y)
+        return y
+
+    @boundscheck(False)
+    @wraparound(False)
+    cdef void c_to_memoryview(self, double[:, :] out):
+        for i in range(self.osize):
+            for j in range(self.isize):
+                out[i, j] = self.a[i, j]
+
+
 cdef class FourthRankIsotropicTensor(AbstractLinearOperator):
 
     """

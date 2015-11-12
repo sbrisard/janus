@@ -12,6 +12,11 @@ cdef class AbstractLinearOperator(AbstractOperator):
     cdef void c_to_memoryview(self, double[:, :] out)
 
 
+cdef class LinearOperator(AbstractLinearOperator):
+    cdef double[:, :] a
+
+    cdef void c_apply_transpose(self, double[:] x, double[:] y)
+
 cdef class FourthRankIsotropicTensor(AbstractLinearOperator):
     cdef readonly int dim
     """The dimension of the physical space (`int`, read-only)."""
