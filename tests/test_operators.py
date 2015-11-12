@@ -274,6 +274,8 @@ class TestFourthRankCubicTensor2D(AbstractTestFourthRankCubicTensor):
     dim = 2
 
 
+@pytest.mark.skipif(True,
+                    reason="3D, fourth-rank cubic tensors not yet implemented")
 class TestFourthRankCubicTensor3D(AbstractTestFourthRankCubicTensor):
     dim = 3
 
