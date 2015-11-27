@@ -432,12 +432,12 @@ cdef class TruncatedGreenOperator2D(DiscreteGreenOperator2D):
     @boundscheck(False)
     @wraparound(False)
     cdef void c_set_frequency(self, int[:] b):
-        cdef b0 = b[0]
+        cdef int b0 = b[0]
         if 2 * b0 > self.global_shape0:
             self.k[0] = self.s0 * (b0 - self.global_shape0)
         else:
             self.k[0] = self.s0 * b0
-        cdef b1 = b[1]
+        cdef int b1 = b[1]
         if 2 * b1 > self.shape1:
             self.k[1] = self.s1 * (b1 - self.shape1)
         else:
@@ -505,17 +505,17 @@ cdef class TruncatedGreenOperator3D(DiscreteGreenOperator3D):
     @boundscheck(False)
     @wraparound(False)
     cdef void c_set_frequency(self, int[:] b):
-        cdef b0 = b[0]
+        cdef int b0 = b[0]
         if 2 * b0 > self.global_shape0:
             self.k[0] = self.s0 * (b0 - self.global_shape0)
         else:
             self.k[0] = self.s0 * b0
-        cdef b1 = b[1]
+        cdef int b1 = b[1]
         if 2 * b1 > self.shape1:
             self.k[1] = self.s1 * (b1 - self.shape1)
         else:
             self.k[1] = self.s1 * b1
-        cdef b2 = b[2]
+        cdef int b2 = b[2]
         if 2 * b2 > self.shape2:
             self.k[2] = self.s2 * (b2 - self.shape2)
         else:
@@ -983,12 +983,12 @@ cdef class FiniteDifferences2D(DiscreteGreenOperator2D):
     @boundscheck(False)
     @wraparound(False)
     cdef void c_set_frequency(self, int[:] b):
-        cdef b0 = b[0]
+        cdef int b0 = b[0]
         if 2 * b0 > self.global_shape0:
             self.k[0] = self.s0 * (b0 - self.global_shape0)
         else:
             self.k[0] = self.s0 * b0
-        cdef b1 = b[1]
+        cdef int b1 = b[1]
         if 2 * b1 > self.shape1:
             self.k[1] = self.s1 * (b1 - self.shape1)
         else:
@@ -1012,12 +1012,12 @@ cdef class FiniteDifferences3D(DiscreteGreenOperator3D):
     @boundscheck(False)
     @wraparound(False)
     cdef void c_set_frequency(self, int[:] b):
-        cdef b0 = b[0]
+        cdef int b0 = b[0]
         if 2 * b0 > self.global_shape0:
             self.k[0] = self.s0 * (b0 - self.global_shape0)
         else:
             self.k[0] = self.s0 * b0
-        cdef b1 = b[1]
+        cdef int b1 = b[1]
         if 2 * b1 > self.shape1:
             self.k[1] = self.s1 * (b1 - self.shape1)
         else:
