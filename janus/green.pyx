@@ -179,6 +179,43 @@ cdef class DiscreteGreenOperator2D(AbstractStructuredOperator2D):
         self.c_apply_by_freq(tau, eta)
         return eta
 
+    @boundscheck(False)
+    @cdivision(True)
+    @wraparound(False)
+    cdef void c_apply(self, double[:, :, :] x, double[:, :, :] y):
+        cdef int[:] b = array((2,), sizeof(int), 'i')
+        cdef int i
+
+        # Compute DFT of x
+        for i in range(self.ishape2):
+            self.transform.r2c(x[:, :, i], self.dft_x[:, :, i])
+
+        # Apply Green operator frequency-wise
+        cdef int n0 = self.dft_x.shape[0]
+        cdef int n1 = self.dft_x.shape[1] / 2
+        cdef int i0, i1, b0, b1
+
+        for i0 in range(n0):
+            b[0] = i0 + self.offset0
+            i1 = 0
+            for b1 in range(n1):
+                b[1] = b1
+                self.c_set_frequency(b)
+
+                # Apply Green operator to real part
+                self.c_apply_by_freq(self.dft_x[i0, i1, :],
+                                     self.dft_y[i0, i1, :])
+                i1 += 1
+                # Apply Green operator to imaginary part
+                self.c_apply_by_freq(self.dft_x[i0, i1, :],
+                                     self.dft_y[i0, i1, :])
+                i1 += 1
+
+        # Compute inverse DFT of y
+        for i in range(self.oshape2):
+            self.transform.c2r(self.dft_y[:, :, i], y[:, :, i])
+
+
 cdef class DiscreteGreenOperator3D(AbstractStructuredOperator3D):
 
     """
@@ -312,6 +349,45 @@ cdef class DiscreteGreenOperator3D(AbstractStructuredOperator3D):
         eta = create_or_check_shape_1d(eta, self.oshape3)
         self.c_apply_by_freq(tau, eta)
         return eta
+
+    @boundscheck(False)
+    @cdivision(True)
+    @wraparound(False)
+    cdef void c_apply(self, double[:, :, :, :] x, double[:, :, :, :] y):
+        cdef int[:] b = array((3,), sizeof(int), 'i')
+        cdef int i
+
+        # Compute DFT of x
+        for i in range(self.ishape3):
+            self.transform.r2c(x[:, :, :, i], self.dft_x[:, :, :, i])
+
+        # Apply Green operator frequency-wise
+        cdef int n0 = self.dft_x.shape[0]
+        cdef int n1 = self.dft_x.shape[1]
+        cdef int n2 = self.dft_x.shape[2] / 2
+        cdef int i0, i1, i2, b2
+
+        for i0 in range(n0):
+            b[0] = i0 + self.offset0
+            for i1 in range(n1):
+                b[1] = i1
+                i2 = 0
+                for b2 in range(n2):
+                    b[2] = b2
+                    self.c_set_frequency(b)
+
+                    # Apply Green operator to real part
+                    self.c_apply_by_freq(self.dft_x[i0, i1, i2, :],
+                                         self.dft_y[i0, i1, i2, :])
+                    i2 += 1
+                    # Apply Green operator to imaginary part
+                    self.c_apply_by_freq(self.dft_x[i0, i1, i2, :],
+                                         self.dft_y[i0, i1, i2, :])
+                    i2 += 1
+
+        # Compute inverse DFT of y
+        for i in range(self.oshape3):
+            self.transform.c2r(self.dft_y[:, :, :, i], y[:, :, :, i])
 
 
 cdef class TruncatedGreenOperator2D(DiscreteGreenOperator2D):
@@ -617,42 +693,6 @@ cdef class FilteredGreenOperator2D(DiscreteGreenOperator2D):
         y[1] = self.g01 * x0 + self.g11 * x1 + self.g12 * x2
         y[2] = self.g02 * x0 + self.g12 * x1 + self.g22 * x2
 
-    @boundscheck(False)
-    @cdivision(True)
-    @wraparound(False)
-    cdef void c_apply(self, double[:, :, :] x, double[:, :, :] y):
-        cdef int[:] b = array((2,), sizeof(int), 'i')
-        cdef int i
-
-        # Compute DFT of x
-        for i in range(self.ishape2):
-            self.transform.r2c(x[:, :, i], self.dft_x[:, :, i])
-
-        # Apply Green operator frequency-wise
-        cdef int n0 = self.dft_x.shape[0]
-        cdef int n1 = self.dft_x.shape[1] / 2
-        cdef int i0, i1, b0, b1
-
-        for i0 in range(n0):
-            b[0] = i0 + self.offset0
-            i1 = 0
-            for b1 in range(n1):
-                b[1] = b1
-                self.c_set_frequency(b)
-
-                # Apply Green operator to real part
-                self.c_apply_by_freq(self.dft_x[i0, i1, :],
-                                     self.dft_y[i0, i1, :])
-                i1 += 1
-                # Apply Green operator to imaginary part
-                self.c_apply_by_freq(self.dft_x[i0, i1, :],
-                                     self.dft_y[i0, i1, :])
-                i1 += 1
-
-        # Compute inverse DFT of y
-        for i in range(self.oshape2):
-            self.transform.c2r(self.dft_y[:, :, i], y[:, :, i])
-
 
 cdef class FilteredGreenOperator3D(DiscreteGreenOperator3D):
     cdef double g00, g01, g02, g03, g04, g05
@@ -931,42 +971,3 @@ cdef class FilteredGreenOperator3D(DiscreteGreenOperator3D):
                 self.g34 * x3 + self.g44 * x4 + self.g45 * x5)
         y[5] = (self.g05 * x0 + self.g15 * x1 + self.g25 * x2 +
                 self.g35 * x3 + self.g45 * x4 + self.g55 * x5)
-
-    @boundscheck(False)
-    @cdivision(True)
-    @wraparound(False)
-    cdef void c_apply(self, double[:, :, :, :] x, double[:, :, :, :] y):
-        cdef int[:] b = array((3,), sizeof(int), 'i')
-        cdef int i
-
-        # Compute DFT of x
-        for i in range(self.ishape3):
-            self.transform.r2c(x[:, :, :, i], self.dft_x[:, :, :, i])
-
-        # Apply Green operator frequency-wise
-        cdef int n0 = self.dft_x.shape[0]
-        cdef int n1 = self.dft_x.shape[1]
-        cdef int n2 = self.dft_x.shape[2] / 2
-        cdef int i0, i1, i2, b2
-
-        for i0 in range(n0):
-            b[0] = i0 + self.offset0
-            for i1 in range(n1):
-                b[1] = i1
-                i2 = 0
-                for b2 in range(n2):
-                    b[2] = b2
-                    self.c_set_frequency(b)
-
-                    # Apply Green operator to real part
-                    self.c_apply_by_freq(self.dft_x[i0, i1, i2, :],
-                                         self.dft_y[i0, i1, i2, :])
-                    i2 += 1
-                    # Apply Green operator to imaginary part
-                    self.c_apply_by_freq(self.dft_x[i0, i1, i2, :],
-                                         self.dft_y[i0, i1, i2, :])
-                    i2 += 1
-
-        # Compute inverse DFT of y
-        for i in range(self.oshape3):
-            self.transform.c2r(self.dft_y[:, :, :, i], y[:, :, :, i])
