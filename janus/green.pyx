@@ -971,3 +971,61 @@ cdef class FilteredGreenOperator3D(DiscreteGreenOperator3D):
                 self.g34 * x3 + self.g44 * x4 + self.g45 * x5)
         y[5] = (self.g05 * x0 + self.g15 * x1 + self.g25 * x2 +
                 self.g35 * x3 + self.g45 * x4 + self.g55 * x5)
+
+
+cdef class FiniteDifferences2D(DiscreteGreenOperator2D):
+    cdef double[:] k
+
+    def __cinit__(self, AbstractGreenOperator green, shape, double h,
+                  transform=None):
+        self.k = array(shape=(2,), itemsize=sizeof(double), format='d')
+
+    @boundscheck(False)
+    @wraparound(False)
+    cdef void c_set_frequency(self, int[:] b):
+        cdef b0 = b[0]
+        if 2 * b0 > self.global_shape0:
+            self.k[0] = self.s0 * (b0 - self.global_shape0)
+        else:
+            self.k[0] = self.s0 * b0
+        cdef b1 = b[1]
+        if 2 * b1 > self.shape1:
+            self.k[1] = self.s1 * (b1 - self.shape1)
+        else:
+            self.k[1] = self.s1 * b1
+        self.green.set_frequency(self.k)
+
+    cdef void c_to_memoryview(self, double[:, :] out):
+        self.green.c_to_memoryview(out)
+
+    cdef void c_apply_by_freq(self, double[:] tau, double[:] eta):
+        self.green.c_apply(tau, eta)
+
+
+cdef class FiniteDifferences3D(DiscreteGreenOperator3D):
+    cdef double[:] k
+
+    def __cinit__(self, AbstractGreenOperator green, shape, double h,
+                  transform=None):
+        self.k = array(shape=(3,), itemsize=sizeof(double), format='d')
+
+    @boundscheck(False)
+    @wraparound(False)
+    cdef void c_set_frequency(self, int[:] b):
+        cdef b0 = b[0]
+        if 2 * b0 > self.global_shape0:
+            self.k[0] = self.s0 * (b0 - self.global_shape0)
+        else:
+            self.k[0] = self.s0 * b0
+        cdef b1 = b[1]
+        if 2 * b1 > self.shape1:
+            self.k[1] = self.s1 * (b1 - self.shape1)
+        else:
+            self.k[1] = self.s1 * b1
+        self.green.set_frequency(self.k)
+
+    cdef void c_to_memoryview(self, double[:, :] out):
+        self.green.c_to_memoryview(out)
+
+    cdef void c_apply_by_freq(self, double[:] tau, double[:] eta):
+        self.green.c_apply(tau, eta)
