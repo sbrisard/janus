@@ -4,7 +4,7 @@ from cython cimport sizeof
 from cython cimport wraparound
 from cython.view cimport array
 from libc.math cimport M_PI
-from libc.math cimport cos
+from libc.math cimport cos, sin
 
 from janus.fft.serial._serial_fft cimport _RealFFT2D
 from janus.fft.serial._serial_fft cimport _RealFFT3D
@@ -983,16 +983,10 @@ cdef class FiniteDifferences2D(DiscreteGreenOperator2D):
     @boundscheck(False)
     @wraparound(False)
     cdef void c_set_frequency(self, int[:] b):
-        cdef int b0 = b[0]
-        if 2 * b0 > self.global_shape0:
-            self.k[0] = self.s0 * (b0 - self.global_shape0)
-        else:
-            self.k[0] = self.s0 * b0
-        cdef int b1 = b[1]
-        if 2 * b1 > self.shape1:
-            self.k[1] = self.s1 * (b1 - self.shape1)
-        else:
-            self.k[1] = self.s1 * b1
+        cdef double phi0 = 0.5*self.s0*self.h*b[0]
+        cdef double phi1 = 0.5*self.s1*self.h*b[1]
+        self.k[0] = sin(phi0)*cos(phi1)
+        self.k[1] = cos(phi0)*sin(phi1)
         self.green.set_frequency(self.k)
 
     cdef void c_to_memoryview(self, double[:, :] out):
@@ -1012,16 +1006,18 @@ cdef class FiniteDifferences3D(DiscreteGreenOperator3D):
     @boundscheck(False)
     @wraparound(False)
     cdef void c_set_frequency(self, int[:] b):
-        cdef int b0 = b[0]
-        if 2 * b0 > self.global_shape0:
-            self.k[0] = self.s0 * (b0 - self.global_shape0)
-        else:
-            self.k[0] = self.s0 * b0
-        cdef int b1 = b[1]
-        if 2 * b1 > self.shape1:
-            self.k[1] = self.s1 * (b1 - self.shape1)
-        else:
-            self.k[1] = self.s1 * b1
+        cdef double phi0 = 0.5*self.s0*self.h*b[0]
+        cdef c0 = cos(phi0)
+        cdef s0 = sin(phi0)
+        cdef double phi1 = 0.5*self.s1*self.h*b[1]
+        cdef c1 = cos(phi1)
+        cdef s1 = sin(phi1)
+        cdef double phi2 = 0.5*self.s2*self.h*b[2]
+        cdef c2 = cos(phi2)
+        cdef s2 = sin(phi2)
+        self.k[0] = s0*c1*c2
+        self.k[1] = c0*s1*c2
+        self.k[2] = c0*c1*s2
         self.green.set_frequency(self.k)
 
     cdef void c_to_memoryview(self, double[:, :] out):
@@ -1029,3 +1025,12 @@ cdef class FiniteDifferences3D(DiscreteGreenOperator3D):
 
     cdef void c_apply_by_freq(self, double[:] tau, double[:] eta):
         self.green.c_apply(tau, eta)
+
+
+def willot2015(green, n, h, transform=None):
+    if green.dim == 2:
+        return FiniteDifferences2D(green, n, h, transform)
+    elif green.dim == 3:
+        return FiniteDifferences3D(green, n, h, transform)
+    else:
+        raise ValueError('dim must be 2 or 3 (was {0})'.format(green.dim))
