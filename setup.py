@@ -9,6 +9,7 @@ from distutils import log
 from distutils.core import setup
 from distutils.dir_util import remove_tree
 from distutils.extension import Extension
+from distutils.util import split_quoted
 
 from Cython.Build import cythonize
 
@@ -99,6 +100,7 @@ def mpicc_showme():
 
     incdirs = call_mpicc_showme('incdirs')
     incdirs.append(mpi4py.get_include())
+
     return {'include_dirs': incdirs,
             'library_dirs': call_mpicc_showme('libdirs'),
             'extra_compile_args': call_mpicc_showme('compile'),
@@ -118,13 +120,23 @@ def mpicc_show():
     # Strip command line from first part, which is the name of the compiler
     mpicc_show = re.sub('\S+\s', '', mpicc_show, count=1)
 
-    incdirs = [m.group(1) for m in re.finditer('-I(\S*)', mpicc_show)]
-    libdirs = [m.group(1) for m in re.finditer('-L(\S*)', mpicc_show)]
-    ldflags = [m.group(0) for m in re.finditer('-l(\S*)', mpicc_show)]
-    cflags = re.sub('-(I|L|l)(\S*)', '', mpicc_show)
-    cflags = re.sub('\s+', ' ', cflags)
-    cflags = [cflags.strip()]
+    def my_filter(regex, iterable):
+        matching = []
+        non_matching = []
+        for item in iterable:
+            if re.match(regex, item):
+                matching.append(item)
+            else:
+                non_matching.append(item)
+        return matching, non_matching
+
+    cflags = split_quoted(mpicc_show)
+    incdirs, cflags = my_filter('^-I', cflags)
+    libdirs, cflags = my_filter('^-L', cflags)
+    ldflags, cflags = my_filter('^-W?l', cflags)
     ldflags += cflags
+    incdirs.append(mpi4py.get_include())
+
     return {'include_dirs': incdirs,
             'library_dirs': libdirs,
             'extra_compile_args': cflags,
