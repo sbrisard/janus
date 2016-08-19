@@ -8,6 +8,7 @@
 __pycache__
 build
 dist
+.cache
 .ipynb_checkpoints
 TAGS
 Janus.egg-info
