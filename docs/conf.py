@@ -79,7 +79,9 @@ html_logo = './logo_janus-200x200.png'
 html_static_path = ['_static']
 htmlhelp_basename = 'janusdoc'
 
-latex_elements = {'preamble': ''}
+latex_elements = {'preamble': '',
+                  'inputenc': '',
+                  'fontenc': ''}
 latex_documents = [
   ('index', 'janus.tex', 'Documentation of the Janus Library',
    'S. Brisard', 'manual'),
