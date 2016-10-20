@@ -81,7 +81,8 @@ htmlhelp_basename = 'janusdoc'
 
 latex_elements = {'preamble': '',
                   'inputenc': '',
-                  'fontenc': ''}
+                  'fontenc': '',
+                  'utf8extra': ''}
 latex_documents = [
   ('index', 'janus.tex', 'Documentation of the Janus Library',
    'S. Brisard', 'manual'),
