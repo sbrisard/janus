@@ -72,12 +72,12 @@ More precisely, the Mandel representation of the second rank tensor :math:`\tens
 .. math::
    [\tens\sigma]=[\tens[4]C:\tens\varepsilon]=C_{ijkl}\varepsilon_{kl}=[\tens C]\cdot[\tens\varepsilon].
 
-Likewise, if :math:`\tens[4]\Compliance` is another fourth rank tensor with minor symmetries, then
+Likewise, if :math:`\tens[4]S` is another fourth rank tensor with minor symmetries, then
 
 .. math::
-   [\tens[4]C:\tens[4]\Compliance]=[\tens[4]C]\cdot[\tens[4]\Compliance],
+   [\tens[4]C:\tens[4]S]=[\tens[4]C]\cdot[\tens[4]S],
 
-where it is recalled that the (i, j, k, l) component of :math:`\tens C:\tens\Compliance` is :math:`C_{ijmn}\Compliance_{mnkl}`. It results from the above formula that the Mandel representation of the inverse of a fourth rank tensor is the inverse of the Mandel representation of this tensor
+where it is recalled that the (i, j, k, l) component of :math:`\tens C:\tens S` is :math:`C_{ijmn}S_{mnkl}`. It results from the above formula that the Mandel representation of the inverse of a fourth rank tensor is the inverse of the Mandel representation of this tensor
 
 .. math::
    [\tens[4]C^{-1}]=[\tens[4]C]^{-1}.
