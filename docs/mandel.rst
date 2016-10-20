@@ -37,9 +37,9 @@ where the cross-component :math:`\varepsilon_{ij}` (:math:`i\neq j`) appears at 
    :nowrap:
 
    \begin{align*}
-   \tens\stress:\tens\varepsilon&=\stress_{ij}\varepsilon_{ij},\\
-   &=\stress_{11}\varepsilon_{11}+\stress_{22}\varepsilon_{22}+\stress_{33}\varepsilon_{33}+2\stress_{23}\varepsilon_{23}+2\stress_{31}\varepsilon_{31}+2\stress_{12}\varepsilon_{12},\\
-   &=[\tens\stress]^\T\cdot[\tens\varepsilon].
+   \tens\sigma:\tens\varepsilon&=\sigma_{ij}\varepsilon_{ij},\\
+   &=\sigma_{11}\varepsilon_{11}+\sigma_{22}\varepsilon_{22}+\sigma_{33}\varepsilon_{33}+2\sigma_{23}\varepsilon_{23}+2\sigma_{31}\varepsilon_{31}+2\sigma_{12}\varepsilon_{12},\\
+   &=[\tens\sigma]^\T\cdot[\tens\varepsilon].
    \end{align*}
 
 Fourth rank tensors with minor symmetries
@@ -67,10 +67,10 @@ Its Mandel representation :math:`[\tens[4]\Stiffness]` (as a square matrix) is d
 
 where the numbering of the cross-components :math:`\Stiffness_{ijkl}` with :math:`i\neq j` or :math:`k\neq l` is consistent with the numbering of cross-components of second rank tensors. Again, the :math:`\sqrt 2` and 2 prefactors ensure that matrix-matrix and matrix-vector products coincide with the double contraction of tensors.
 
-More precisely, the Mandel representation of the second rank tensor :math:`\tens\stress=\tens[4]\Stiffness:\tens\varepsilon` is the column vector
+More precisely, the Mandel representation of the second rank tensor :math:`\tens\sigma=\tens[4]\Stiffness:\tens\varepsilon` is the column vector
 
 .. math::
-   [\tens\stress]=[\tens[4]\Stiffness:\tens\varepsilon]=\Stiffness_{ijkl}\varepsilon_{kl}=[\tens\Stiffness]\cdot[\tens\varepsilon].
+   [\tens\sigma]=[\tens[4]\Stiffness:\tens\varepsilon]=\Stiffness_{ijkl}\varepsilon_{kl}=[\tens\Stiffness]\cdot[\tens\varepsilon].
 
 Likewise, if :math:`\tens[4]\Compliance` is another fourth rank tensor with minor symmetries, then
 
