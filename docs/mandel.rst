@@ -16,30 +16,30 @@ In this section, the notation is introduced for tensors of the three dimensional
 Second rank, symmetric tensors
 ------------------------------
 
-Let :math:`\tens\strain` be a second rank, symmetric tensor
+Let :math:`\tens\varepsilon` be a second rank, symmetric tensor
 
 .. math::
 
-   \strain_{ij}=\strain_{ji}.
+   \varepsilon_{ij}=\varepsilon_{ji}.
 
-Its Mandel representation :math:`[\tens\strain]` (as a column-vector) is defined as follows
+Its Mandel representation :math:`[\tens\varepsilon]` (as a column-vector) is defined as follows
 
 .. math::
 
-   [\tens\strain] = [
-       \strain_{11}, \strain_{22}, \strain_{33},
-       \sqrt2\strain_{23}, \sqrt2\strain_{31}, \sqrt2\strain_{12}
+   [\tens\varepsilon] = [
+       \varepsilon_{11}, \varepsilon_{22}, \varepsilon_{33},
+       \sqrt2\varepsilon_{23}, \sqrt2\varepsilon_{31}, \sqrt2\varepsilon_{12}
    ]^\T,
 
-where the cross-component :math:`\strain_{ij}` (:math:`i\neq j`) appears at the :math:`3+k`-th line, with :math:`k\neq i\neq j`. The :math:`\sqrt 2` prefactors ensure that the standard scalar product of column vectors coincides with the double contraction of tensors. Indeed
+where the cross-component :math:`\varepsilon_{ij}` (:math:`i\neq j`) appears at the :math:`3+k`-th line, with :math:`k\neq i\neq j`. The :math:`\sqrt 2` prefactors ensure that the standard scalar product of column vectors coincides with the double contraction of tensors. Indeed
 
 .. math::
    :nowrap:
 
    \begin{align*}
-   \tens\stress:\tens\strain&=\stress_{ij}\strain_{ij},\\
-   &=\stress_{11}\strain_{11}+\stress_{22}\strain_{22}+\stress_{33}\strain_{33}+2\stress_{23}\strain_{23}+2\stress_{31}\strain_{31}+2\stress_{12}\strain_{12},\\
-   &=[\tens\stress]^\T\cdot[\tens\strain].
+   \tens\stress:\tens\varepsilon&=\stress_{ij}\varepsilon_{ij},\\
+   &=\stress_{11}\varepsilon_{11}+\stress_{22}\varepsilon_{22}+\stress_{33}\varepsilon_{33}+2\stress_{23}\varepsilon_{23}+2\stress_{31}\varepsilon_{31}+2\stress_{12}\varepsilon_{12},\\
+   &=[\tens\stress]^\T\cdot[\tens\varepsilon].
    \end{align*}
 
 Fourth rank tensors with minor symmetries
@@ -67,10 +67,10 @@ Its Mandel representation :math:`[\tens[4]\Stiffness]` (as a square matrix) is d
 
 where the numbering of the cross-components :math:`\Stiffness_{ijkl}` with :math:`i\neq j` or :math:`k\neq l` is consistent with the numbering of cross-components of second rank tensors. Again, the :math:`\sqrt 2` and 2 prefactors ensure that matrix-matrix and matrix-vector products coincide with the double contraction of tensors.
 
-More precisely, the Mandel representation of the second rank tensor :math:`\tens\stress=\tens[4]\Stiffness:\tens\strain` is the column vector
+More precisely, the Mandel representation of the second rank tensor :math:`\tens\stress=\tens[4]\Stiffness:\tens\varepsilon` is the column vector
 
 .. math::
-   [\tens\stress]=[\tens[4]\Stiffness:\tens\strain]=\Stiffness_{ijkl}\strain_{kl}=[\tens\Stiffness]\cdot[\tens\strain].
+   [\tens\stress]=[\tens[4]\Stiffness:\tens\varepsilon]=\Stiffness_{ijkl}\varepsilon_{kl}=[\tens\Stiffness]\cdot[\tens\varepsilon].
 
 Likewise, if :math:`\tens[4]\Compliance` is another fourth rank tensor with minor symmetries, then
 
@@ -95,11 +95,11 @@ The above formulas are readily extended to two dimensions, so that we only recal
 Second rank, symmetric tensors
 ------------------------------
 
-The Mandel representation :math:`[\tens\strain]` (as a column-vector) of any second rank, symmetric tensor :math:`\tens\strain` is defined as follows
+The Mandel representation :math:`[\tens\varepsilon]` (as a column-vector) of any second rank, symmetric tensor :math:`\tens\varepsilon` is defined as follows
 
 .. math::
 
-   [\tens\strain] = [\strain_{11}, \strain_{22}, \sqrt2\strain_{12}]^\T.
+   [\tens\varepsilon] = [\varepsilon_{11}, \varepsilon_{22}, \sqrt2\varepsilon_{12}]^\T.
 
 Fourth rank tensors with minor symmetries
 -----------------------------------------
