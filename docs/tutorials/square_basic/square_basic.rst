@@ -15,7 +15,7 @@ In this tutorial, we will compute the effective elastic properties of a simple 2
 
    The periodic microstructure under consideration.
 
-   :math:`\shearModulus_\mathrm i` (resp. :math:`\shearModulus_\mathrm m`) denotes the shear modulus of the inclusion (resp. the matrix); :math:`\PoissonRatio_\mathrm i` (resp. :math:`\PoissonRatio_\mathrm m`) denotes the Poisson ratio of the inclusion (resp. the matrix).
+   :math:`\mu_\mathrm i` (resp. :math:`\mu_\mathrm m`) denotes the shear modulus of the inclusion (resp. the matrix); :math:`\PoissonRatio_\mathrm i` (resp. :math:`\PoissonRatio_\mathrm m`) denotes the Poisson ratio of the inclusion (resp. the matrix).
 
 The effective properties of this periodic microstructure are derived from the solution to the so-called *corrector* problem
 
@@ -54,7 +54,7 @@ and the volume average :math:`\volavg{\stress_{12}}` will be evaluated. To do so
 
    \tens\strain+\tens[4]\GreenOperator_0[\left(\tens[4]\Stiffness-\tens[4]\Stiffness_0\right):\tens\strain]=\tens\Strain,
 
-where :math:`\tens[4]\Stiffness_0` denotes the stiffness of the reference material, :math:`\tens[4]\GreenOperator_0` the related Green operator for strains, and :math:`\tens\strain` the local strain tensor. We will assume that the reference material is isotropic, with shear modulus :math:`\shearModulus_0` and Poisson ratio :math:`\PoissonRatio_0`.
+where :math:`\tens[4]\Stiffness_0` denotes the stiffness of the reference material, :math:`\tens[4]\GreenOperator_0` the related Green operator for strains, and :math:`\tens\strain` the local strain tensor. We will assume that the reference material is isotropic, with shear modulus :math:`\mu_0` and Poisson ratio :math:`\PoissonRatio_0`.
 
 Following :ref:`Moulinec and Suquet (1998) <MOUL1998>`, the above Lippmann--Schwinger equation :eq:`Lippmann-Schwinger` is solved by means of fixed point iterations
 
@@ -112,12 +112,12 @@ We then define a class ``Example``, which represents the microsctructure describ
 .. note::
    As much as possible, keep your code dimension-independent. This means that the spatial dimension (2 or 3) should not be hard-coded. Rather, you should make it a rule to always parameterize the spatial dimension (use a variable ``dim``), even if you do not really intend to change this dimension. Janus object sometimes have different implementations depending on the spatial dimension. For example, the abstract class :class:`FourthRankIsotropicTensor <janus.operators.FourthRankIsotropicTensor>` has two concrete daughter classes :class:`FourthRankIsotropicTensor2D <janus.operators.FourthRankIsotropicTensor2D>` and :class:`FourthRankIsotropicTensor3D <janus.operators.FourthRankIsotropicTensor3D>`. However, both can be instantiated through the unique function :func:`isotropic_4 <janus.operators.isotropic_4>`, where the spatial dimension can be specified.
 
-We then define the local operators :math:`\tens[4]\Stiffness_\text i-\tens[4]\Stiffness_0` and :math:`\tens[4]\Stiffness_\text m-\tens[4]\Stiffness_0` as :class:`FourthRankIsotropicTensor <janus.operators.FourthRankIsotropicTensor>`. It is recalled that the stiffness :math:`\tens[4]\Stiffness` of a material with bulk modulus :math:`\bulkModulus` and shear modulus :math:`\shearModulus` reads
+We then define the local operators :math:`\tens[4]\Stiffness_\text i-\tens[4]\Stiffness_0` and :math:`\tens[4]\Stiffness_\text m-\tens[4]\Stiffness_0` as :class:`FourthRankIsotropicTensor <janus.operators.FourthRankIsotropicTensor>`. It is recalled that the stiffness :math:`\tens[4]\Stiffness` of a material with bulk modulus :math:`\bulkModulus` and shear modulus :math:`\mu` reads
 
 .. math::
-   \tens[4]\Stiffness = d\bulkModulus\tens[4]\sphericalProjector+2\shearModulus\tens[4]\deviatoricProjector,
+   \tens[4]\Stiffness = d\bulkModulus\tens[4]\sphericalProjector+2\mu\tens[4]\deviatoricProjector,
 
-where :math:`d` denotes the dimension of the physical space and :math:`\tens[4]\sphericalProjector` (resp. :math:`\tens[4]\deviatoricProjector`) denote the spherical (resp. deviatoric) projector tensor. In other words, the spherical and deviatoric projections of :math:`\tens[4]\Stiffness` are :math:`d\bulkModulus` and :math:`2\shearModulus`, respectively. As a consequence, the spherical and deviatoric projections of :math:`\tens[4]\Stiffness-\tens[4]\Stiffness_0` are :math:`d\left(\bulkModulus-\bulkModulus_0\right)` and :math:`2\left(\shearModulus-\shearModulus_0\right)`, respectively. This leads to the following definitions
+where :math:`d` denotes the dimension of the physical space and :math:`\tens[4]\sphericalProjector` (resp. :math:`\tens[4]\deviatoricProjector`) denote the spherical (resp. deviatoric) projector tensor. In other words, the spherical and deviatoric projections of :math:`\tens[4]\Stiffness` are :math:`d\bulkModulus` and :math:`2\mu`, respectively. As a consequence, the spherical and deviatoric projections of :math:`\tens[4]\Stiffness-\tens[4]\Stiffness_0` are :math:`d\left(\bulkModulus-\bulkModulus_0\right)` and :math:`2\left(\mu-\mu_0\right)`, respectively. This leads to the following definitions
 
 .. literalinclude:: square_basic.py
    :start-after: Begin: create (C_i - C_0) and (C_m - C_0)
@@ -220,7 +220,7 @@ Then, from the specific macroscopic strain :math:`\tens\Strain` that we consider
 
 .. math::
 
-   \Stiffness_{1212}^\eff=\Stiffness_{0, 1212}+\frac{\volavg{\stressPolarization}_{12}}{2\Strain_{12}}=\Stiffness_{0, 1212}+\frac{[\volavg{\tens\stressPolarization}]_{-1}}{2[\tens\Strain]_{-1}}=\shearModulus_0+\frac{[\volavg{\tens\stressPolarization}]_{-1}}{2[\tens\Strain]_{-1}}
+   \Stiffness_{1212}^\eff=\Stiffness_{0, 1212}+\frac{\volavg{\stressPolarization}_{12}}{2\Strain_{12}}=\Stiffness_{0, 1212}+\frac{[\volavg{\tens\stressPolarization}]_{-1}}{2[\tens\Strain]_{-1}}=\mu_0+\frac{[\volavg{\tens\stressPolarization}]_{-1}}{2[\tens\Strain]_{-1}}
 
 where brackets refer to the :ref:`Mandel_notation`, and the -1 index denotes the last component of the column-vector (which, in Mandel's notation, refers to the 12 component of second-rank symmetric tensors, both in two and three dimensions). We get the following approximation
 
