@@ -112,12 +112,12 @@ We then define a class ``Example``, which represents the microsctructure describ
 .. note::
    As much as possible, keep your code dimension-independent. This means that the spatial dimension (2 or 3) should not be hard-coded. Rather, you should make it a rule to always parameterize the spatial dimension (use a variable ``dim``), even if you do not really intend to change this dimension. Janus object sometimes have different implementations depending on the spatial dimension. For example, the abstract class :class:`FourthRankIsotropicTensor <janus.operators.FourthRankIsotropicTensor>` has two concrete daughter classes :class:`FourthRankIsotropicTensor2D <janus.operators.FourthRankIsotropicTensor2D>` and :class:`FourthRankIsotropicTensor3D <janus.operators.FourthRankIsotropicTensor3D>`. However, both can be instantiated through the unique function :func:`isotropic_4 <janus.operators.isotropic_4>`, where the spatial dimension can be specified.
 
-We then define the local operators :math:`\tens[4]C_\text i-\tens[4]C_0` and :math:`\tens[4]C_\text m-\tens[4]C_0` as :class:`FourthRankIsotropicTensor <janus.operators.FourthRankIsotropicTensor>`. It is recalled that the stiffness :math:`\tens[4]C` of a material with bulk modulus :math:`\bulkModulus` and shear modulus :math:`\mu` reads
+We then define the local operators :math:`\tens[4]C_\text i-\tens[4]C_0` and :math:`\tens[4]C_\text m-\tens[4]C_0` as :class:`FourthRankIsotropicTensor <janus.operators.FourthRankIsotropicTensor>`. It is recalled that the stiffness :math:`\tens[4]C` of a material with bulk modulus :math:`\kappa` and shear modulus :math:`\mu` reads
 
 .. math::
-   \tens[4]C = d\bulkModulus\tens[4]\sphericalProjector+2\mu\tens[4]\deviatoricProjector,
+   \tens[4]C = d\kappa\tens[4]\sphericalProjector+2\mu\tens[4]\deviatoricProjector,
 
-where :math:`d` denotes the dimension of the physical space and :math:`\tens[4]\sphericalProjector` (resp. :math:`\tens[4]\deviatoricProjector`) denote the spherical (resp. deviatoric) projector tensor. In other words, the spherical and deviatoric projections of :math:`\tens[4]C` are :math:`d\bulkModulus` and :math:`2\mu`, respectively. As a consequence, the spherical and deviatoric projections of :math:`\tens[4]C-\tens[4]C_0` are :math:`d\left(\bulkModulus-\bulkModulus_0\right)` and :math:`2\left(\mu-\mu_0\right)`, respectively. This leads to the following definitions
+where :math:`d` denotes the dimension of the physical space and :math:`\tens[4]\sphericalProjector` (resp. :math:`\tens[4]\deviatoricProjector`) denote the spherical (resp. deviatoric) projector tensor. In other words, the spherical and deviatoric projections of :math:`\tens[4]C` are :math:`d\kappa` and :math:`2\mu`, respectively. As a consequence, the spherical and deviatoric projections of :math:`\tens[4]C-\tens[4]C_0` are :math:`d\left(\kappa-\kappa_0\right)` and :math:`2\left(\mu-\mu_0\right)`, respectively. This leads to the following definitions
 
 .. literalinclude:: square_basic.py
    :start-after: Begin: create (C_i - C_0) and (C_m - C_0)
