@@ -16,20 +16,20 @@ In this section, the notation is introduced for tensors of the three dimensional
 Second rank, symmetric tensors
 ------------------------------
 
-Let :math:`\tens\varepsilon` be a second rank, symmetric tensor
+Let :math:`\boldsymbol\varepsilon` be a second rank, symmetric tensor
 
 .. math::
 
    \varepsilon_{ij}=\varepsilon_{ji}.
 
-Its Mandel representation :math:`[\tens\varepsilon]` (as a column-vector) is defined as follows
+Its Mandel representation :math:`[\boldsymbol\varepsilon]` (as a column-vector) is defined as follows
 
 .. math::
 
-   [\tens\varepsilon] = [
+   [\boldsymbol\varepsilon] = [
        \varepsilon_{11}, \varepsilon_{22}, \varepsilon_{33},
        \sqrt2\varepsilon_{23}, \sqrt2\varepsilon_{31}, \sqrt2\varepsilon_{12}
-   ]^\T,
+   ]^\mathrm{T},
 
 where the cross-component :math:`\varepsilon_{ij}` (:math:`i\neq j`) appears at the :math:`3+k`-th line, with :math:`k\neq i\neq j`. The :math:`\sqrt 2` prefactors ensure that the standard scalar product of column vectors coincides with the double contraction of tensors. Indeed
 
@@ -37,25 +37,25 @@ where the cross-component :math:`\varepsilon_{ij}` (:math:`i\neq j`) appears at 
    :nowrap:
 
    \begin{align*}
-   \tens\sigma:\tens\varepsilon&=\sigma_{ij}\varepsilon_{ij},\\
+   \boldsymbol\sigma:\boldsymbol\varepsilon&=\sigma_{ij}\varepsilon_{ij},\\
    &=\sigma_{11}\varepsilon_{11}+\sigma_{22}\varepsilon_{22}+\sigma_{33}\varepsilon_{33}+2\sigma_{23}\varepsilon_{23}+2\sigma_{31}\varepsilon_{31}+2\sigma_{12}\varepsilon_{12},\\
-   &=[\tens\sigma]^\T\cdot[\tens\varepsilon].
+   &=[\boldsymbol\sigma]^\mathrm{T}\cdot[\boldsymbol\varepsilon].
    \end{align*}
 
 Fourth rank tensors with minor symmetries
 -----------------------------------------
 
-Let :math:`\tens[4]C` be a fourth rank tensor with minor symmetries
+Let :math:`\mathbf C` be a fourth rank tensor with minor symmetries
 
 .. math::
 
    C_{ijkl}=C_{jikl}=C_{ijlk}.
 
-Its Mandel representation :math:`[\tens[4]C]` (as a square matrix) is defined as follows
+Its Mandel representation :math:`[\mathbf C]` (as a square matrix) is defined as follows
 
 .. math::
 
-   [\tens[4]C] =
+   [\mathbf C] =
    \begin{bmatrix}
        C_{1111} & C_{1122} & C_{1133} & \sqrt{2}C_{1123} & \sqrt{2}C_{1131} & \sqrt{2}C_{1112}\\
        C_{2211} & C_{2222} & C_{2233} & \sqrt{2}C_{2223} & \sqrt{2}C_{2231} & \sqrt{2}C_{2212}\\
@@ -67,25 +67,25 @@ Its Mandel representation :math:`[\tens[4]C]` (as a square matrix) is defined as
 
 where the numbering of the cross-components :math:`C_{ijkl}` with :math:`i\neq j` or :math:`k\neq l` is consistent with the numbering of cross-components of second rank tensors. Again, the :math:`\sqrt 2` and 2 prefactors ensure that matrix-matrix and matrix-vector products coincide with the double contraction of tensors.
 
-More precisely, the Mandel representation of the second rank tensor :math:`\tens\sigma=\tens[4]C:\tens\varepsilon` is the column vector
+More precisely, the Mandel representation of the second rank tensor :math:`\boldsymbol\sigma=\mathbf C:\boldsymbol\varepsilon` is the column vector
 
 .. math::
-   [\tens\sigma]=[\tens[4]C:\tens\varepsilon]=C_{ijkl}\varepsilon_{kl}=[\tens C]\cdot[\tens\varepsilon].
+   [\boldsymbol\sigma]=[\mathbf C:\boldsymbol\varepsilon]=C_{ijkl}\varepsilon_{kl}=[\mathbf C]\cdot[\boldsymbol\varepsilon].
 
-Likewise, if :math:`\tens[4]S` is another fourth rank tensor with minor symmetries, then
-
-.. math::
-   [\tens[4]C:\tens[4]S]=[\tens[4]C]\cdot[\tens[4]S],
-
-where it is recalled that the (i, j, k, l) component of :math:`\tens C:\tens S` is :math:`C_{ijmn}S_{mnkl}`. It results from the above formula that the Mandel representation of the inverse of a fourth rank tensor is the inverse of the Mandel representation of this tensor
+Likewise, if :math:`\mathbf S` is another fourth rank tensor with minor symmetries, then
 
 .. math::
-   [\tens[4]C^{-1}]=[\tens[4]C]^{-1}.
+   [\mathbf C:\mathbf S]=[\mathbf C]\cdot[\mathbf S],
+
+where it is recalled that the (i, j, k, l) component of :math:`\mathbf C:\mathbf S` is :math:`C_{ijmn}S_{mnkl}`. It results from the above formula that the Mandel representation of the inverse of a fourth rank tensor is the inverse of the Mandel representation of this tensor
+
+.. math::
+   [\mathbf C^{-1}]=[\mathbf C]^{-1}.
 
 Finally, it is readily verified that the Mandel representation of the transpose is the transpose of the Mandel representation
 
 .. math::
-   [\tens[4]C^\T]=[\tens[4]C]^\T.
+   [\mathbf C^\mathrm{T}]=[\mathbf C]^\mathrm{T}.
 
 Mandel notation in 2D
 =====================
@@ -95,20 +95,20 @@ The above formulas are readily extended to two dimensions, so that we only recal
 Second rank, symmetric tensors
 ------------------------------
 
-The Mandel representation :math:`[\tens\varepsilon]` (as a column-vector) of any second rank, symmetric tensor :math:`\tens\varepsilon` is defined as follows
+The Mandel representation :math:`[\boldsymbol\varepsilon]` (as a column-vector) of any second rank, symmetric tensor :math:`\boldsymbol\varepsilon` is defined as follows
 
 .. math::
 
-   [\tens\varepsilon] = [\varepsilon_{11}, \varepsilon_{22}, \sqrt2\varepsilon_{12}]^\T.
+   [\boldsymbol\varepsilon] = [\varepsilon_{11}, \varepsilon_{22}, \sqrt2\varepsilon_{12}]^\mathrm{T}.
 
 Fourth rank tensors with minor symmetries
 -----------------------------------------
 
-The Mandel representation :math:`[\tens[4]C]` (as a square matrix) of any fourth rank tensor :math:`\tens[4]C` with minor symmetries is defined as follows
+The Mandel representation :math:`[\mathbf C]` (as a square matrix) of any fourth rank tensor :math:`\mathbf C` with minor symmetries is defined as follows
 
 .. math::
 
-   [\tens[4]C] =
+   [\mathbf C] =
    \begin{bmatrix}
        C_{1111} & C_{1122} & \sqrt{2}C_{1112}\\
        C_{2211} & C_{2222} & \sqrt{2}C_{2212}\\
