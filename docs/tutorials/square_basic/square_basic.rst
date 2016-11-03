@@ -52,16 +52,16 @@ and the volume average :math:`\volavg{\sigma_{12}}` will be evaluated. To do so,
 .. math::
    :label: Lippmann-Schwinger
 
-   \tens\varepsilon+\tens[4]\GreenOperator_0[\left(\tens[4]C-\tens[4]C_0\right):\tens\varepsilon]=\tens E,
+   \tens\varepsilon+\tens[4]\Gamma_0[\left(\tens[4]C-\tens[4]C_0\right):\tens\varepsilon]=\tens E,
 
-where :math:`\tens[4]C_0` denotes the stiffness of the reference material, :math:`\tens[4]\GreenOperator_0` the related Green operator for strains, and :math:`\tens\varepsilon` the local strain tensor. We will assume that the reference material is isotropic, with shear modulus :math:`\mu_0` and Poisson ratio :math:`\nu_0`.
+where :math:`\tens[4]C_0` denotes the stiffness of the reference material, :math:`\tens[4]\Gamma_0` the related Green operator for strains, and :math:`\tens\varepsilon` the local strain tensor. We will assume that the reference material is isotropic, with shear modulus :math:`\mu_0` and Poisson ratio :math:`\nu_0`.
 
 Following :ref:`Moulinec and Suquet (1998) <MOUL1998>`, the above Lippmann--Schwinger equation :eq:`Lippmann-Schwinger` is solved by means of fixed point iterations
 
 .. math::
    :label: basic_scheme
 
-   \tens\varepsilon^{k+1}=\tens E-\tens[4]\GreenOperator_0[\left(\tens[4]C-\tens[4]C_0\right):\tens\varepsilon^k].
+   \tens\varepsilon^{k+1}=\tens E-\tens[4]\Gamma_0[\left(\tens[4]C-\tens[4]C_0\right):\tens\varepsilon^k].
 
 Finally, the above iterative scheme is discretized over a regular grid, leading to the basic uniform grid, periodic Lippmann--Schwinger solver.
 
@@ -71,7 +71,7 @@ Implementation of the Lippmann--Schwinger operator
 We will call the operator
 
 .. math::
-   \tens\varepsilon\mapsto\tens E-\tens[4]\GreenOperator_0\left[\left(\tens[4]C-\tens[4]C_0\right):\tens\varepsilon\right]
+   \tens\varepsilon\mapsto\tens E-\tens[4]\Gamma_0\left[\left(\tens[4]C-\tens[4]C_0\right):\tens\varepsilon\right]
 
 the *Lippmann--Schwinger operator*. In the present section, we show how this operator is implemented as a class with Janus. This will be done by composing two successive operators, namely (i) the local operator
 
@@ -85,7 +85,7 @@ where :math:`\tens\tau` denotes the stress-polarization, and (ii) the Green oper
 .. math::
    :label: non-local_operator
 
-   \tens\tau\mapsto\tens[4]\GreenOperator_0[\tens\tau].
+   \tens\tau\mapsto\tens[4]\Gamma_0[\tens\tau].
 
 For the implementation of the local operator defined by Eq. :eq:`local_operator`, it is first observed that :math:`\tens[4]C_0`, :math:`\tens[4]C_\mathrm{i}` and :math:`\tens[4]C_\mathrm{m}` being isotropic materials, :math:`\tens[4]C-\tens[4]C_0` is an isotropic tensor at any point of the unit-cell. In other words, both :math:`\tens[4]C_\text i-\tens[4]C_0` and :math:`\tens[4]C_\text m-\tens[4]C_0` will be defined as instances of :class:`FourthRankIsotropicTensor <janus.operators.FourthRankIsotropicTensor>`.
 
@@ -146,7 +146,7 @@ Finally, the discrete Green operator for strains associated with the reference m
    :start-after: Begin: create non-local operator ε ↦ Γ_0[ε]
    :end-before: End: create non-local operator ε ↦ Γ_0[ε]
 
-The Lippmann--Schwinger operator :math:`\tens\varepsilon\mapsto\tens[4]\GreenOperator_0[\left(\tens[4]C-\tens[4]C_0\right):\tens\varepsilon]` is then defined by composition
+The Lippmann--Schwinger operator :math:`\tens\varepsilon\mapsto\tens[4]\Gamma_0[\left(\tens[4]C-\tens[4]C_0\right):\tens\varepsilon]` is then defined by composition
 
 .. literalinclude:: square_basic.py
    :start-after: Begin: apply
@@ -179,7 +179,7 @@ We then define ``eps_macro``, which stores the imposed value of the macroscopic 
    :end-before: End: define strains
 
 .. note::
-   The shape of the arrays ``eps`` and ``eps_new`` is simply inferred from the shape of the input of the Green operator for strains :math:`\tens[4]\GreenOperator_0`.
+   The shape of the arrays ``eps`` and ``eps_new`` is simply inferred from the shape of the input of the Green operator for strains :math:`\tens[4]\Gamma_0`.
 
 We will not implement a stopping criterion for this simple example. Rather, a fixed number of iterations will be specified. Meanwhile, the residual
 
@@ -197,7 +197,7 @@ will be computed and stored at each iteration through the following estimate
 where normalization (using :math:`\lVert\tens E\rVert`) is also applied.
 
 .. note::
-   Note that the quantity defined by Eq. :eq:`residual` is truly a residual. Indeed, it is the norm of the difference between the left- and right-hand side in Eq. :eq:`Lippmann-Schwinger`, since :math:`\tens\varepsilon^{k+1}-\tens\varepsilon^k=\tens E-\tens[4]\GreenOperator_0[\left(\tens[4]C-\tens[4]C_0\right):\tens\varepsilon^k]-\tens\varepsilon^k`.
+   Note that the quantity defined by Eq. :eq:`residual` is truly a residual. Indeed, it is the norm of the difference between the left- and right-hand side in Eq. :eq:`Lippmann-Schwinger`, since :math:`\tens\varepsilon^{k+1}-\tens\varepsilon^k=\tens E-\tens[4]\Gamma_0[\left(\tens[4]C-\tens[4]C_0\right):\tens\varepsilon^k]-\tens\varepsilon^k`.
 
 The fixed-point iterations defined by Eq. :eq:`basic_scheme` are then implemented as follows
 
