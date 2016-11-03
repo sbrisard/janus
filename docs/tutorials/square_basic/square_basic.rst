@@ -27,11 +27,11 @@ The effective properties of this periodic microstructure are derived from the so
    \begin{gather}
       \nabla\cdot\tens\stress=\vec 0,\\
       \tens\stress=\tens[4]\Stiffness:\tens\strain,\\
-      \tens\strain=\tens\Strain+\nabla^\s\vec\displacement,
+      \tens\strain=\tens\Strain+\nabla^\s\vec u,
    \end{gather}
    \end{subequations}
 
-where :math:`\vec\displacement` denotes the unknown, periodic displacement, :math:`\tens\strain` (resp. :math:`\tens\stress`) is the local strain (resp. stress) and :math:`\tens[4]\Stiffness` is the local stiffness (inclusion or matrix). From the solution to the above problem, the effective stiffness :math:`\tens[4]\Stiffness^\eff` is defined as the tensor mapping the macroscopic (imposed) strain :math:`\tens\Strain=\volavg{\tens\strain}` to the macroscopic stress :math:`\tens\Stress=\overline{\tens\stress}` (where overlined quantities denote volume averages)
+where :math:`\vec u` denotes the unknown, periodic displacement, :math:`\tens\strain` (resp. :math:`\tens\stress`) is the local strain (resp. stress) and :math:`\tens[4]\Stiffness` is the local stiffness (inclusion or matrix). From the solution to the above problem, the effective stiffness :math:`\tens[4]\Stiffness^\eff` is defined as the tensor mapping the macroscopic (imposed) strain :math:`\tens\Strain=\volavg{\tens\strain}` to the macroscopic stress :math:`\tens\Stress=\overline{\tens\stress}` (where overlined quantities denote volume averages)
 
 .. math::
 
