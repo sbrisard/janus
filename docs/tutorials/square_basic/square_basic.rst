@@ -15,7 +15,7 @@ In this tutorial, we will compute the effective elastic properties of a simple 2
 
    The periodic microstructure under consideration.
 
-   :math:`\mu_\mathrm i` (resp. :math:`\mu_\mathrm m`) denotes the shear modulus of the inclusion (resp. the matrix); :math:`\PoissonRatio_\mathrm i` (resp. :math:`\PoissonRatio_\mathrm m`) denotes the Poisson ratio of the inclusion (resp. the matrix).
+   :math:`\mu_\mathrm i` (resp. :math:`\mu_\mathrm m`) denotes the shear modulus of the inclusion (resp. the matrix); :math:`\nu_\mathrm i` (resp. :math:`\nu_\mathrm m`) denotes the Poisson ratio of the inclusion (resp. the matrix).
 
 The effective properties of this periodic microstructure are derived from the solution to the so-called *corrector* problem
 
@@ -54,7 +54,7 @@ and the volume average :math:`\volavg{\stress_{12}}` will be evaluated. To do so
 
    \tens\strain+\tens[4]\GreenOperator_0[\left(\tens[4]\Stiffness-\tens[4]\Stiffness_0\right):\tens\strain]=\tens\Strain,
 
-where :math:`\tens[4]\Stiffness_0` denotes the stiffness of the reference material, :math:`\tens[4]\GreenOperator_0` the related Green operator for strains, and :math:`\tens\strain` the local strain tensor. We will assume that the reference material is isotropic, with shear modulus :math:`\mu_0` and Poisson ratio :math:`\PoissonRatio_0`.
+where :math:`\tens[4]\Stiffness_0` denotes the stiffness of the reference material, :math:`\tens[4]\GreenOperator_0` the related Green operator for strains, and :math:`\tens\strain` the local strain tensor. We will assume that the reference material is isotropic, with shear modulus :math:`\mu_0` and Poisson ratio :math:`\nu_0`.
 
 Following :ref:`Moulinec and Suquet (1998) <MOUL1998>`, the above Lippmann--Schwinger equation :eq:`Lippmann-Schwinger` is solved by means of fixed point iterations
 
