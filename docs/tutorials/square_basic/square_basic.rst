@@ -31,7 +31,7 @@ The effective properties of this periodic microstructure are derived from the so
    \end{gather}
    \end{subequations}
 
-where :math:`\vec u` denotes the unknown, periodic displacement, :math:`\tens\varepsilon` (resp. :math:`\tens\sigma`) is the local strain (resp. stress) and :math:`\tens[4]C` is the local stiffness (inclusion or matrix). From the solution to the above problem, the effective stiffness :math:`\tens[4]C^\mathrm{eff}` is defined as the tensor mapping the macroscopic (imposed) strain :math:`\tens E=\volavg{\tens\varepsilon}` to the macroscopic stress :math:`\tens\sigma=\overline{\tens\sigma}` (where overlined quantities denote volume averages)
+where :math:`\vec u` denotes the unknown, periodic displacement, :math:`\tens\varepsilon` (resp. :math:`\tens\sigma`) is the local strain (resp. stress) and :math:`\tens[4]C` is the local stiffness (inclusion or matrix). From the solution to the above problem, the effective stiffness :math:`\tens[4]C^\mathrm{eff}` is defined as the tensor mapping the macroscopic (imposed) strain :math:`\tens E=\langle\tens\varepsilon\rangle` to the macroscopic stress :math:`\tens\Sigma=\langle\tens\sigma\rangle` (where quantities between angle brackets denote volume averages)
 
 .. math::
 
@@ -47,7 +47,7 @@ In the present tutorial, we shall concentrate on the 1212 component of the effec
 
    \tens E=E_{12}\left(\vec e_1\otimes\vec e_2+\vec e_2\otimes\vec e_1\right),
 
-and the volume average :math:`\volavg{\sigma_{12}}` will be evaluated. To do so, the boundary value problem :eq:`corrector_problem` is transformed into an integral equation, known as the Lippmann--Schwinger equation (:ref:`Korringa, 1973 <KORR1973>`; :ref:`Zeller & Dederichs, 1973 <ZELL1973>` ; :ref:`Kröner, 1974 <KRON1974>`) . This equation reads
+and the volume average :math:`\langle\sigma_{12}\rangle` will be evaluated. To do so, the boundary value problem :eq:`corrector_problem` is transformed into an integral equation, known as the Lippmann--Schwinger equation (:ref:`Korringa, 1973 <KORR1973>`; :ref:`Zeller & Dederichs, 1973 <ZELL1973>` ; :ref:`Kröner, 1974 <KRON1974>`) . This equation reads
 
 .. math::
    :label: Lippmann-Schwinger
@@ -214,13 +214,13 @@ and the results are post-processed
 To compute the macroscopic stiffness, we recall the definition of the stress-polarization from which we find
 
 .. math::
-   \tens[4]C^\mathrm{eff}:\tens E=\volavg{\tens\sigma}=\volavg{\tens[4]C:\tens\varepsilon+\tens\tau}=\tens[4]C:\tens E+\volavg{\tens\tau}.
+   \tens[4]C^\mathrm{eff}:\tens E=\langle\tens\sigma\rangle=\langle\tens[4]C:\tens\varepsilon+\tens\tau\rangle=\tens[4]C:\tens E+\langle\tens\tau\rangle.
 
 Then, from the specific macroscopic strain :math:`\tens E` that we considered [see Eq. :eq:`macroscopic_strain`]
 
 .. math::
 
-   C_{1212}^\mathrm{eff}=C_{0, 1212}+\frac{\volavg{\tau}_{12}}{2E_{12}}=C_{0, 1212}+\frac{[\volavg{\tens\tau}]_{-1}}{2[\tens E]_{-1}}=\mu_0+\frac{[\volavg{\tens\tau}]_{-1}}{2[\tens E]_{-1}}
+   C_{1212}^\mathrm{eff}=C_{0, 1212}+\frac{\langle\tau_{12}\rangle}{2E_{12}}=C_{0, 1212}+\frac{[\langle\tens\tau\rangle]_{-1}}{2[\tens E]_{-1}}=\mu_0+\frac{[\langle\tens\tau\rangle]_{-1}}{2[\tens E]_{-1}}
 
 where brackets refer to the :ref:`Mandel_notation`, and the -1 index denotes the last component of the column-vector (which, in Mandel's notation, refers to the 12 component of second-rank symmetric tensors, both in two and three dimensions). We get the following approximation
 
