@@ -91,11 +91,6 @@ latex_logo = './logo_janus.png'
 
 pngmath_latex_preamble = ''
 
-with open('preamble.tex', 'r') as f:
-    for line in f:
-        latex_elements['preamble'] += line
-        pngmath_latex_preamble += line
-
 man_pages = [
     ('index', 'janus', 'Documentation of the Janus Library',
      ['S. Brisard'], 1)
