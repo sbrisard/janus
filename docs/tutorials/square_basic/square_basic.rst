@@ -26,16 +26,16 @@ The effective properties of this periodic microstructure are derived from the so
    \begin{subequations}
    \begin{gather}
       \nabla\cdot\tens\stress=\vec 0,\\
-      \tens\stress=\tens[4]\Stiffness:\tens\strain,\\
+      \tens\stress=\tens[4] C:\tens\strain,\\
       \tens\strain=\tens\Strain+\nabla^\s\vec u,
    \end{gather}
    \end{subequations}
 
-where :math:`\vec u` denotes the unknown, periodic displacement, :math:`\tens\strain` (resp. :math:`\tens\stress`) is the local strain (resp. stress) and :math:`\tens[4]\Stiffness` is the local stiffness (inclusion or matrix). From the solution to the above problem, the effective stiffness :math:`\tens[4]\Stiffness^\eff` is defined as the tensor mapping the macroscopic (imposed) strain :math:`\tens\Strain=\volavg{\tens\strain}` to the macroscopic stress :math:`\tens\Stress=\overline{\tens\stress}` (where overlined quantities denote volume averages)
+where :math:`\vec u` denotes the unknown, periodic displacement, :math:`\tens\strain` (resp. :math:`\tens\stress`) is the local strain (resp. stress) and :math:`\tens[4]C` is the local stiffness (inclusion or matrix). From the solution to the above problem, the effective stiffness :math:`\tens[4]C^\eff` is defined as the tensor mapping the macroscopic (imposed) strain :math:`\tens\Strain=\volavg{\tens\strain}` to the macroscopic stress :math:`\tens\Stress=\overline{\tens\stress}` (where overlined quantities denote volume averages)
 
 .. math::
 
-   \tens[4]\Stiffness^\eff:\tens\Strain=\frac1{L^d}\int_{\left(0,L\right)^d}\tens\stress(x_1,x_2)\,\diff x_1\cdots\diff x_d.
+   \tens[4]C^\eff:\tens\Strain=\frac1{L^d}\int_{\left(0,L\right)^d}\tens\stress(x_1,x_2)\,\diff x_1\cdots\diff x_d.
 
 .. note::
    This example is illustrated in two dimensions (:math:`d=2`). However, it is implemented so as to be dimension independent, so that :math:`d=3` should work out of the box.
@@ -52,16 +52,16 @@ and the volume average :math:`\volavg{\stress_{12}}` will be evaluated. To do so
 .. math::
    :label: Lippmann-Schwinger
 
-   \tens\strain+\tens[4]\GreenOperator_0[\left(\tens[4]\Stiffness-\tens[4]\Stiffness_0\right):\tens\strain]=\tens\Strain,
+   \tens\strain+\tens[4]\GreenOperator_0[\left(\tens[4]C-\tens[4]C_0\right):\tens\strain]=\tens\Strain,
 
-where :math:`\tens[4]\Stiffness_0` denotes the stiffness of the reference material, :math:`\tens[4]\GreenOperator_0` the related Green operator for strains, and :math:`\tens\strain` the local strain tensor. We will assume that the reference material is isotropic, with shear modulus :math:`\mu_0` and Poisson ratio :math:`\nu_0`.
+where :math:`\tens[4]C_0` denotes the stiffness of the reference material, :math:`\tens[4]\GreenOperator_0` the related Green operator for strains, and :math:`\tens\strain` the local strain tensor. We will assume that the reference material is isotropic, with shear modulus :math:`\mu_0` and Poisson ratio :math:`\nu_0`.
 
 Following :ref:`Moulinec and Suquet (1998) <MOUL1998>`, the above Lippmann--Schwinger equation :eq:`Lippmann-Schwinger` is solved by means of fixed point iterations
 
 .. math::
    :label: basic_scheme
 
-   \tens\strain^{k+1}=\tens\Strain-\tens[4]\GreenOperator_0[\left(\tens[4]\Stiffness-\tens[4]\Stiffness_0\right):\tens\strain^k].
+   \tens\strain^{k+1}=\tens\Strain-\tens[4]\GreenOperator_0[\left(\tens[4]C-\tens[4]C_0\right):\tens\strain^k].
 
 Finally, the above iterative scheme is discretized over a regular grid, leading to the basic uniform grid, periodic Lippmann--Schwinger solver.
 
@@ -71,14 +71,14 @@ Implementation of the Lippmann--Schwinger operator
 We will call the operator
 
 .. math::
-   \tens\strain\mapsto\tens\Strain-\tens[4]\GreenOperator_0\left[\left(\tens[4]\Stiffness-\tens[4]\Stiffness_0\right):\tens\strain\right]
+   \tens\strain\mapsto\tens\Strain-\tens[4]\GreenOperator_0\left[\left(\tens[4]C-\tens[4]C_0\right):\tens\strain\right]
 
 the *Lippmann--Schwinger operator*. In the present section, we show how this operator is implemented as a class with Janus. This will be done by composing two successive operators, namely (i) the local operator
 
 .. math::
    :label: local_operator
 
-   \tens\strain\mapsto\tens\tau=\left(\tens[4]\Stiffness-\tens[4]\Stiffness_0\right):\tens\strain,
+   \tens\strain\mapsto\tens\tau=\left(\tens[4]C-\tens[4]C_0\right):\tens\strain,
 
 where :math:`\tens\tau` denotes the stress-polarization, and (ii) the Green operator for strains
 
@@ -87,9 +87,9 @@ where :math:`\tens\tau` denotes the stress-polarization, and (ii) the Green oper
 
    \tens\tau\mapsto\tens[4]\GreenOperator_0[\tens\tau].
 
-For the implementation of the local operator defined by Eq. :eq:`local_operator`, it is first observed that :math:`\tens[4]\Stiffness_0`, :math:`\tens[4]\Stiffness_\mathrm{i}` and :math:`\tens[4]\Stiffness_\mathrm{m}` being isotropic materials, :math:`\tens[4]\Stiffness-\tens[4]\Stiffness_0` is an isotropic tensor at any point of the unit-cell. In other words, both :math:`\tens[4]\Stiffness_\text i-\tens[4]\Stiffness_0` and :math:`\tens[4]\Stiffness_\text m-\tens[4]\Stiffness_0` will be defined as instances of :class:`FourthRankIsotropicTensor <janus.operators.FourthRankIsotropicTensor>`.
+For the implementation of the local operator defined by Eq. :eq:`local_operator`, it is first observed that :math:`\tens[4]C_0`, :math:`\tens[4]C_\mathrm{i}` and :math:`\tens[4]C_\mathrm{m}` being isotropic materials, :math:`\tens[4]C-\tens[4]C_0` is an isotropic tensor at any point of the unit-cell. In other words, both :math:`\tens[4]C_\text i-\tens[4]C_0` and :math:`\tens[4]C_\text m-\tens[4]C_0` will be defined as instances of :class:`FourthRankIsotropicTensor <janus.operators.FourthRankIsotropicTensor>`.
 
-Furthermore, this operator is *local*. In other words, the output value in cell ``(i0, i1)`` depends on the input value in the same cell only (the neighboring cells are ignored). More precisely, we assume that a uniform grid of shape ``(n, n)`` is used to discretized Eq. :eq:`basic_scheme`. Then the material properties are constant in each cell, and we define ``delta_C[i0, i1, :, :]`` the matrix representation of :math:`\tens[4]\Stiffness-\tens[4]\Stiffness_0` (see :ref:`Mandel_notation`). Likewise, ``eps[i0, i1, :]`` is the vector representation of the strain tensor in cell ``(i0, i1)``. Then, the stress-polarization :math:`\left(\tens[4]\Stiffness-\tens[4]\Stiffness_0\right):\tens\strain` in cell ``(i0, i1)`` is given by the expression::
+Furthermore, this operator is *local*. In other words, the output value in cell ``(i0, i1)`` depends on the input value in the same cell only (the neighboring cells are ignored). More precisely, we assume that a uniform grid of shape ``(n, n)`` is used to discretized Eq. :eq:`basic_scheme`. Then the material properties are constant in each cell, and we define ``delta_C[i0, i1, :, :]`` the matrix representation of :math:`\tens[4]C-\tens[4]C_0` (see :ref:`Mandel_notation`). Likewise, ``eps[i0, i1, :]`` is the vector representation of the strain tensor in cell ``(i0, i1)``. Then, the stress-polarization :math:`\left(\tens[4]C-\tens[4]C_0\right):\tens\strain` in cell ``(i0, i1)`` is given by the expression::
 
     tau[i0, i1] = delta_C[i0, i1] @ eps[i0, i1],
 
@@ -112,18 +112,18 @@ We then define a class ``Example``, which represents the microsctructure describ
 .. note::
    As much as possible, keep your code dimension-independent. This means that the spatial dimension (2 or 3) should not be hard-coded. Rather, you should make it a rule to always parameterize the spatial dimension (use a variable ``dim``), even if you do not really intend to change this dimension. Janus object sometimes have different implementations depending on the spatial dimension. For example, the abstract class :class:`FourthRankIsotropicTensor <janus.operators.FourthRankIsotropicTensor>` has two concrete daughter classes :class:`FourthRankIsotropicTensor2D <janus.operators.FourthRankIsotropicTensor2D>` and :class:`FourthRankIsotropicTensor3D <janus.operators.FourthRankIsotropicTensor3D>`. However, both can be instantiated through the unique function :func:`isotropic_4 <janus.operators.isotropic_4>`, where the spatial dimension can be specified.
 
-We then define the local operators :math:`\tens[4]\Stiffness_\text i-\tens[4]\Stiffness_0` and :math:`\tens[4]\Stiffness_\text m-\tens[4]\Stiffness_0` as :class:`FourthRankIsotropicTensor <janus.operators.FourthRankIsotropicTensor>`. It is recalled that the stiffness :math:`\tens[4]\Stiffness` of a material with bulk modulus :math:`\bulkModulus` and shear modulus :math:`\mu` reads
+We then define the local operators :math:`\tens[4]C_\text i-\tens[4]C_0` and :math:`\tens[4]C_\text m-\tens[4]C_0` as :class:`FourthRankIsotropicTensor <janus.operators.FourthRankIsotropicTensor>`. It is recalled that the stiffness :math:`\tens[4]C` of a material with bulk modulus :math:`\bulkModulus` and shear modulus :math:`\mu` reads
 
 .. math::
-   \tens[4]\Stiffness = d\bulkModulus\tens[4]\sphericalProjector+2\mu\tens[4]\deviatoricProjector,
+   \tens[4]C = d\bulkModulus\tens[4]\sphericalProjector+2\mu\tens[4]\deviatoricProjector,
 
-where :math:`d` denotes the dimension of the physical space and :math:`\tens[4]\sphericalProjector` (resp. :math:`\tens[4]\deviatoricProjector`) denote the spherical (resp. deviatoric) projector tensor. In other words, the spherical and deviatoric projections of :math:`\tens[4]\Stiffness` are :math:`d\bulkModulus` and :math:`2\mu`, respectively. As a consequence, the spherical and deviatoric projections of :math:`\tens[4]\Stiffness-\tens[4]\Stiffness_0` are :math:`d\left(\bulkModulus-\bulkModulus_0\right)` and :math:`2\left(\mu-\mu_0\right)`, respectively. This leads to the following definitions
+where :math:`d` denotes the dimension of the physical space and :math:`\tens[4]\sphericalProjector` (resp. :math:`\tens[4]\deviatoricProjector`) denote the spherical (resp. deviatoric) projector tensor. In other words, the spherical and deviatoric projections of :math:`\tens[4]C` are :math:`d\bulkModulus` and :math:`2\mu`, respectively. As a consequence, the spherical and deviatoric projections of :math:`\tens[4]C-\tens[4]C_0` are :math:`d\left(\bulkModulus-\bulkModulus_0\right)` and :math:`2\left(\mu-\mu_0\right)`, respectively. This leads to the following definitions
 
 .. literalinclude:: square_basic.py
    :start-after: Begin: create (C_i - C_0) and (C_m - C_0)
    :end-before: End: create (C_i - C_0) and (C_m - C_0)
 
-Now, ``delta_C_i`` and ``delta_C_m`` are used to create the operator :math:`\tens\strain\mapsto\left(\tens[4]\Stiffness-\tens[4]\Stiffness_0\right):\tens\strain` as a :class:`BlockDiagonalOperator2D <janus.operators.BlockDiagonalOperator2D>`. Block-diagonal operators are initialized from an array of local operators, called ``ops`` below
+Now, ``delta_C_i`` and ``delta_C_m`` are used to create the operator :math:`\tens\strain\mapsto\left(\tens[4]C-\tens[4]C_0\right):\tens\strain` as a :class:`BlockDiagonalOperator2D <janus.operators.BlockDiagonalOperator2D>`. Block-diagonal operators are initialized from an array of local operators, called ``ops`` below
 
 .. todo::
    This code snippet is not dimension independent.
@@ -132,12 +132,12 @@ Now, ``delta_C_i`` and ``delta_C_m`` are used to create the operator :math:`\ten
    :start-after: Begin: create local operator ε ↦ (C-C_0):ε
    :end-before: End: create local operator ε ↦ (C-C_0):ε
 
-The upper-left quarter of the unit-cell is filled with ``delta_C_i`` (:math:`\tens[4]\Stiffness_\text i-\tens[4]\Stiffness_0`), while the remainder of the unit-cell receives ``delta_C_m`` (:math:`\tens[4]\Stiffness_\text m-\tens[4]\Stiffness_0`). Finally, a :class:`BlockDiagonalOperator2D <janus.operators.BlockDiagonalOperator2D>` is created from the array of local operators. It is called ``eps_to_tau`` as it maps the strain (:math:`\tens\strain`) to the stress-polarization (:math:`\tens\tau`).
+The upper-left quarter of the unit-cell is filled with ``delta_C_i`` (:math:`\tens[4]C_\text i-\tens[4]C_0`), while the remainder of the unit-cell receives ``delta_C_m`` (:math:`\tens[4]C_\text m-\tens[4]C_0`). Finally, a :class:`BlockDiagonalOperator2D <janus.operators.BlockDiagonalOperator2D>` is created from the array of local operators. It is called ``eps_to_tau`` as it maps the strain (:math:`\tens\strain`) to the stress-polarization (:math:`\tens\tau`).
 
 .. note::
    ``eps_to_tau`` is not a *method*. Rather, it is an *attribute*, which turns out to be a function.
 
-Finally, the discrete Green operator for strains associated with the reference material :math:`\tens[4]\Stiffness_0` is created. This requires first to create a FFT object (see :ref:`FFT`).
+Finally, the discrete Green operator for strains associated with the reference material :math:`\tens[4]C_0` is created. This requires first to create a FFT object (see :ref:`FFT`).
 
 .. todo::
    Document Green operators for strains.
@@ -146,7 +146,7 @@ Finally, the discrete Green operator for strains associated with the reference m
    :start-after: Begin: create non-local operator ε ↦ Γ_0[ε]
    :end-before: End: create non-local operator ε ↦ Γ_0[ε]
 
-The Lippmann--Schwinger operator :math:`\tens\strain\mapsto\tens[4]\GreenOperator_0[\left(\tens[4]\Stiffness-\tens[4]\Stiffness_0\right):\tens\strain]` is then defined by composition
+The Lippmann--Schwinger operator :math:`\tens\strain\mapsto\tens[4]\GreenOperator_0[\left(\tens[4]C-\tens[4]C_0\right):\tens\strain]` is then defined by composition
 
 .. literalinclude:: square_basic.py
    :start-after: Begin: apply
@@ -197,7 +197,7 @@ will be computed and stored at each iteration through the following estimate
 where normalization (using :math:`\lVert\tens\Strain\rVert`) is also applied.
 
 .. note::
-   Note that the quantity defined by Eq. :eq:`residual` is truly a residual. Indeed, it is the norm of the difference between the left- and right-hand side in Eq. :eq:`Lippmann-Schwinger`, since :math:`\tens\strain^{k+1}-\tens\strain^k=\tens\Strain-\tens[4]\GreenOperator_0[\left(\tens[4]\Stiffness-\tens[4]\Stiffness_0\right):\tens\strain^k]-\tens\strain^k`.
+   Note that the quantity defined by Eq. :eq:`residual` is truly a residual. Indeed, it is the norm of the difference between the left- and right-hand side in Eq. :eq:`Lippmann-Schwinger`, since :math:`\tens\strain^{k+1}-\tens\strain^k=\tens\Strain-\tens[4]\GreenOperator_0[\left(\tens[4]C-\tens[4]C_0\right):\tens\strain^k]-\tens\strain^k`.
 
 The fixed-point iterations defined by Eq. :eq:`basic_scheme` are then implemented as follows
 
@@ -214,13 +214,13 @@ and the results are post-processed
 To compute the macroscopic stiffness, we recall the definition of the stress-polarization from which we find
 
 .. math::
-   \tens[4]\Stiffness^\eff:\tens\Strain=\volavg{\tens\stress}=\volavg{\tens[4]\Stiffness:\tens\strain+\tens\tau}=\tens[4]\Stiffness:\tens\Strain+\volavg{\tens\tau}.
+   \tens[4]C^\eff:\tens\Strain=\volavg{\tens\stress}=\volavg{\tens[4]C:\tens\strain+\tens\tau}=\tens[4]C:\tens\Strain+\volavg{\tens\tau}.
 
 Then, from the specific macroscopic strain :math:`\tens\Strain` that we considered [see Eq. :eq:`macroscopic_strain`]
 
 .. math::
 
-   \Stiffness_{1212}^\eff=\Stiffness_{0, 1212}+\frac{\volavg{\tau}_{12}}{2\Strain_{12}}=\Stiffness_{0, 1212}+\frac{[\volavg{\tens\tau}]_{-1}}{2[\tens\Strain]_{-1}}=\mu_0+\frac{[\volavg{\tens\tau}]_{-1}}{2[\tens\Strain]_{-1}}
+   C_{1212}^\eff=C_{0, 1212}+\frac{\volavg{\tau}_{12}}{2\Strain_{12}}=C_{0, 1212}+\frac{[\volavg{\tens\tau}]_{-1}}{2[\tens\Strain]_{-1}}=\mu_0+\frac{[\volavg{\tens\tau}]_{-1}}{2[\tens\Strain]_{-1}}
 
 where brackets refer to the :ref:`Mandel_notation`, and the -1 index denotes the last component of the column-vector (which, in Mandel's notation, refers to the 12 component of second-rank symmetric tensors, both in two and three dimensions). We get the following approximation
 
