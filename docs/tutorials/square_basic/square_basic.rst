@@ -87,7 +87,7 @@ where :math:`\tens\tau` denotes the stress-polarization, and (ii) the Green oper
 
    \tens\tau\mapsto\tens[4]\Gamma_0[\tens\tau].
 
-For the implementation of the local operator defined by Eq. :eq:`local_operator`, it is first observed that :math:`\tens[4]C_0`, :math:`\tens[4]C_\mathrm{i}` and :math:`\tens[4]C_\mathrm{m}` being isotropic materials, :math:`\tens[4]C-\tens[4]C_0` is an isotropic tensor at any point of the unit-cell. In other words, both :math:`\tens[4]C_\text i-\tens[4]C_0` and :math:`\tens[4]C_\text m-\tens[4]C_0` will be defined as instances of :class:`FourthRankIsotropicTensor <janus.operators.FourthRankIsotropicTensor>`.
+For the implementation of the local operator defined by Eq. :eq:`local_operator`, it is first observed that :math:`\tens[4]C_0`, :math:`\tens[4]C_\mathrm{i}` and :math:`\tens[4]C_\mathrm{m}` being isotropic materials, :math:`\tens[4]C-\tens[4]C_0` is an isotropic tensor at any point of the unit-cell. In other words, both :math:`\tens[4]C_\mathrm i-\tens[4]C_0` and :math:`\tens[4]C_\mathrm m-\tens[4]C_0` will be defined as instances of :class:`FourthRankIsotropicTensor <janus.operators.FourthRankIsotropicTensor>`.
 
 Furthermore, this operator is *local*. In other words, the output value in cell ``(i0, i1)`` depends on the input value in the same cell only (the neighboring cells are ignored). More precisely, we assume that a uniform grid of shape ``(n, n)`` is used to discretized Eq. :eq:`basic_scheme`. Then the material properties are constant in each cell, and we define ``delta_C[i0, i1, :, :]`` the matrix representation of :math:`\tens[4]C-\tens[4]C_0` (see :ref:`Mandel_notation`). Likewise, ``eps[i0, i1, :]`` is the vector representation of the strain tensor in cell ``(i0, i1)``. Then, the stress-polarization :math:`\left(\tens[4]C-\tens[4]C_0\right):\tens\varepsilon` in cell ``(i0, i1)`` is given by the expression::
 
@@ -112,7 +112,7 @@ We then define a class ``Example``, which represents the microsctructure describ
 .. note::
    As much as possible, keep your code dimension-independent. This means that the spatial dimension (2 or 3) should not be hard-coded. Rather, you should make it a rule to always parameterize the spatial dimension (use a variable ``dim``), even if you do not really intend to change this dimension. Janus object sometimes have different implementations depending on the spatial dimension. For example, the abstract class :class:`FourthRankIsotropicTensor <janus.operators.FourthRankIsotropicTensor>` has two concrete daughter classes :class:`FourthRankIsotropicTensor2D <janus.operators.FourthRankIsotropicTensor2D>` and :class:`FourthRankIsotropicTensor3D <janus.operators.FourthRankIsotropicTensor3D>`. However, both can be instantiated through the unique function :func:`isotropic_4 <janus.operators.isotropic_4>`, where the spatial dimension can be specified.
 
-We then define the local operators :math:`\tens[4]C_\text i-\tens[4]C_0` and :math:`\tens[4]C_\text m-\tens[4]C_0` as :class:`FourthRankIsotropicTensor <janus.operators.FourthRankIsotropicTensor>`. It is recalled that the stiffness :math:`\tens[4]C` of a material with bulk modulus :math:`\kappa` and shear modulus :math:`\mu` reads
+We then define the local operators :math:`\tens[4]C_\mathrm i-\tens[4]C_0` and :math:`\tens[4]C_\mathrm m-\tens[4]C_0` as :class:`FourthRankIsotropicTensor <janus.operators.FourthRankIsotropicTensor>`. It is recalled that the stiffness :math:`\tens[4]C` of a material with bulk modulus :math:`\kappa` and shear modulus :math:`\mu` reads
 
 .. math::
    \tens[4]C = d\kappa\tens[4]J+2\mu\tens[4]K,
@@ -132,7 +132,7 @@ Now, ``delta_C_i`` and ``delta_C_m`` are used to create the operator :math:`\ten
    :start-after: Begin: create local operator ε ↦ (C-C_0):ε
    :end-before: End: create local operator ε ↦ (C-C_0):ε
 
-The upper-left quarter of the unit-cell is filled with ``delta_C_i`` (:math:`\tens[4]C_\text i-\tens[4]C_0`), while the remainder of the unit-cell receives ``delta_C_m`` (:math:`\tens[4]C_\text m-\tens[4]C_0`). Finally, a :class:`BlockDiagonalOperator2D <janus.operators.BlockDiagonalOperator2D>` is created from the array of local operators. It is called ``eps_to_tau`` as it maps the strain (:math:`\tens\varepsilon`) to the stress-polarization (:math:`\tens\tau`).
+The upper-left quarter of the unit-cell is filled with ``delta_C_i`` (:math:`\tens[4]C_\mathrm i-\tens[4]C_0`), while the remainder of the unit-cell receives ``delta_C_m`` (:math:`\tens[4]C_\mathrm m-\tens[4]C_0`). Finally, a :class:`BlockDiagonalOperator2D <janus.operators.BlockDiagonalOperator2D>` is created from the array of local operators. It is called ``eps_to_tau`` as it maps the strain (:math:`\tens\varepsilon`) to the stress-polarization (:math:`\tens\tau`).
 
 .. note::
    ``eps_to_tau`` is not a *method*. Rather, it is an *attribute*, which turns out to be a function.
