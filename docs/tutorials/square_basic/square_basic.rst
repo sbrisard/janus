@@ -27,15 +27,15 @@ The effective properties of this periodic microstructure are derived from the so
    \begin{gather}
       \nabla\cdot\tens\sigma=\vec 0,\\
       \tens\sigma=\tens[4] C:\tens\strain,\\
-      \tens\strain=\tens\Strain+\nabla^\s\vec u,
+      \tens\strain=\tens E+\nabla^\s\vec u,
    \end{gather}
    \end{subequations}
 
-where :math:`\vec u` denotes the unknown, periodic displacement, :math:`\tens\strain` (resp. :math:`\tens\sigma`) is the local strain (resp. stress) and :math:`\tens[4]C` is the local stiffness (inclusion or matrix). From the solution to the above problem, the effective stiffness :math:`\tens[4]C^\eff` is defined as the tensor mapping the macroscopic (imposed) strain :math:`\tens\Strain=\volavg{\tens\strain}` to the macroscopic stress :math:`\tens\sigma=\overline{\tens\sigma}` (where overlined quantities denote volume averages)
+where :math:`\vec u` denotes the unknown, periodic displacement, :math:`\tens\strain` (resp. :math:`\tens\sigma`) is the local strain (resp. stress) and :math:`\tens[4]C` is the local stiffness (inclusion or matrix). From the solution to the above problem, the effective stiffness :math:`\tens[4]C^\eff` is defined as the tensor mapping the macroscopic (imposed) strain :math:`\tens E=\volavg{\tens\strain}` to the macroscopic stress :math:`\tens\sigma=\overline{\tens\sigma}` (where overlined quantities denote volume averages)
 
 .. math::
 
-   \tens[4]C^\eff:\tens\Strain=\frac1{L^d}\int_{\left(0,L\right)^d}\tens\sigma(x_1,x_2)\,\diff x_1\cdots\diff x_d.
+   \tens[4]C^\eff:\tens E=\frac1{L^d}\int_{\left(0,L\right)^d}\tens\sigma(x_1,x_2)\,\diff x_1\cdots\diff x_d.
 
 .. note::
    This example is illustrated in two dimensions (:math:`d=2`). However, it is implemented so as to be dimension independent, so that :math:`d=3` should work out of the box.
@@ -45,14 +45,14 @@ In the present tutorial, we shall concentrate on the 1212 component of the effec
 .. math::
    :label: macroscopic_strain
 
-   \tens\Strain=\Strain_{12}\left(\vec e_1\otimes\vec e_2+\vec e_2\otimes\vec e_1\right),
+   \tens E=E_{12}\left(\vec e_1\otimes\vec e_2+\vec e_2\otimes\vec e_1\right),
 
 and the volume average :math:`\volavg{\sigma_{12}}` will be evaluated. To do so, the boundary value problem :eq:`corrector_problem` is transformed into an integral equation, known as the Lippmann--Schwinger equation (:ref:`Korringa, 1973 <KORR1973>`; :ref:`Zeller & Dederichs, 1973 <ZELL1973>` ; :ref:`Kröner, 1974 <KRON1974>`) . This equation reads
 
 .. math::
    :label: Lippmann-Schwinger
 
-   \tens\strain+\tens[4]\GreenOperator_0[\left(\tens[4]C-\tens[4]C_0\right):\tens\strain]=\tens\Strain,
+   \tens\strain+\tens[4]\GreenOperator_0[\left(\tens[4]C-\tens[4]C_0\right):\tens\strain]=\tens E,
 
 where :math:`\tens[4]C_0` denotes the stiffness of the reference material, :math:`\tens[4]\GreenOperator_0` the related Green operator for strains, and :math:`\tens\strain` the local strain tensor. We will assume that the reference material is isotropic, with shear modulus :math:`\mu_0` and Poisson ratio :math:`\nu_0`.
 
@@ -61,7 +61,7 @@ Following :ref:`Moulinec and Suquet (1998) <MOUL1998>`, the above Lippmann--Schw
 .. math::
    :label: basic_scheme
 
-   \tens\strain^{k+1}=\tens\Strain-\tens[4]\GreenOperator_0[\left(\tens[4]C-\tens[4]C_0\right):\tens\strain^k].
+   \tens\strain^{k+1}=\tens E-\tens[4]\GreenOperator_0[\left(\tens[4]C-\tens[4]C_0\right):\tens\strain^k].
 
 Finally, the above iterative scheme is discretized over a regular grid, leading to the basic uniform grid, periodic Lippmann--Schwinger solver.
 
@@ -71,7 +71,7 @@ Implementation of the Lippmann--Schwinger operator
 We will call the operator
 
 .. math::
-   \tens\strain\mapsto\tens\Strain-\tens[4]\GreenOperator_0\left[\left(\tens[4]C-\tens[4]C_0\right):\tens\strain\right]
+   \tens\strain\mapsto\tens E-\tens[4]\GreenOperator_0\left[\left(\tens[4]C-\tens[4]C_0\right):\tens\strain\right]
 
 the *Lippmann--Schwinger operator*. In the present section, we show how this operator is implemented as a class with Janus. This will be done by composing two successive operators, namely (i) the local operator
 
@@ -172,7 +172,7 @@ Then, an instance of class ``Example`` is created
    :start-after: Begin: instantiate example
    :end-before: End: instantiate example
 
-We then define ``eps_macro``, which stores the imposed value of the macroscopic strain :math:`\tens\Strain`, and ``eps`` and ``eps_new``, which hold two successive iterates of the local strain field :math:`\tens\strain`.
+We then define ``eps_macro``, which stores the imposed value of the macroscopic strain :math:`\tens E`, and ``eps`` and ``eps_new``, which hold two successive iterates of the local strain field :math:`\tens\strain`.
 
 .. literalinclude:: square_basic.py
    :start-after: Begin: define strains
@@ -194,10 +194,10 @@ will be computed and stored at each iteration through the following estimate
 
    norm(new_eps-eps)/sqrt(num_cells)/norm(avg_eps),
 
-where normalization (using :math:`\lVert\tens\Strain\rVert`) is also applied.
+where normalization (using :math:`\lVert\tens E\rVert`) is also applied.
 
 .. note::
-   Note that the quantity defined by Eq. :eq:`residual` is truly a residual. Indeed, it is the norm of the difference between the left- and right-hand side in Eq. :eq:`Lippmann-Schwinger`, since :math:`\tens\strain^{k+1}-\tens\strain^k=\tens\Strain-\tens[4]\GreenOperator_0[\left(\tens[4]C-\tens[4]C_0\right):\tens\strain^k]-\tens\strain^k`.
+   Note that the quantity defined by Eq. :eq:`residual` is truly a residual. Indeed, it is the norm of the difference between the left- and right-hand side in Eq. :eq:`Lippmann-Schwinger`, since :math:`\tens\strain^{k+1}-\tens\strain^k=\tens E-\tens[4]\GreenOperator_0[\left(\tens[4]C-\tens[4]C_0\right):\tens\strain^k]-\tens\strain^k`.
 
 The fixed-point iterations defined by Eq. :eq:`basic_scheme` are then implemented as follows
 
@@ -214,13 +214,13 @@ and the results are post-processed
 To compute the macroscopic stiffness, we recall the definition of the stress-polarization from which we find
 
 .. math::
-   \tens[4]C^\eff:\tens\Strain=\volavg{\tens\sigma}=\volavg{\tens[4]C:\tens\strain+\tens\tau}=\tens[4]C:\tens\Strain+\volavg{\tens\tau}.
+   \tens[4]C^\eff:\tens E=\volavg{\tens\sigma}=\volavg{\tens[4]C:\tens\strain+\tens\tau}=\tens[4]C:\tens E+\volavg{\tens\tau}.
 
-Then, from the specific macroscopic strain :math:`\tens\Strain` that we considered [see Eq. :eq:`macroscopic_strain`]
+Then, from the specific macroscopic strain :math:`\tens E` that we considered [see Eq. :eq:`macroscopic_strain`]
 
 .. math::
 
-   C_{1212}^\eff=C_{0, 1212}+\frac{\volavg{\tau}_{12}}{2\Strain_{12}}=C_{0, 1212}+\frac{[\volavg{\tens\tau}]_{-1}}{2[\tens\Strain]_{-1}}=\mu_0+\frac{[\volavg{\tens\tau}]_{-1}}{2[\tens\Strain]_{-1}}
+   C_{1212}^\eff=C_{0, 1212}+\frac{\volavg{\tau}_{12}}{2E_{12}}=C_{0, 1212}+\frac{[\volavg{\tens\tau}]_{-1}}{2[\tens E]_{-1}}=\mu_0+\frac{[\volavg{\tens\tau}]_{-1}}{2[\tens E]_{-1}}
 
 where brackets refer to the :ref:`Mandel_notation`, and the -1 index denotes the last component of the column-vector (which, in Mandel's notation, refers to the 12 component of second-rank symmetric tensors, both in two and three dimensions). We get the following approximation
 
