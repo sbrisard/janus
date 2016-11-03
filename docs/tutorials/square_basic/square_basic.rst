@@ -25,17 +25,17 @@ The effective properties of this periodic microstructure are derived from the so
 
    \begin{subequations}
    \begin{gather}
-      \nabla\cdot\tens\stress=\vec 0,\\
-      \tens\stress=\tens[4] C:\tens\strain,\\
+      \nabla\cdot\tens\sigma=\vec 0,\\
+      \tens\sigma=\tens[4] C:\tens\strain,\\
       \tens\strain=\tens\Strain+\nabla^\s\vec u,
    \end{gather}
    \end{subequations}
 
-where :math:`\vec u` denotes the unknown, periodic displacement, :math:`\tens\strain` (resp. :math:`\tens\stress`) is the local strain (resp. stress) and :math:`\tens[4]C` is the local stiffness (inclusion or matrix). From the solution to the above problem, the effective stiffness :math:`\tens[4]C^\eff` is defined as the tensor mapping the macroscopic (imposed) strain :math:`\tens\Strain=\volavg{\tens\strain}` to the macroscopic stress :math:`\tens\Stress=\overline{\tens\stress}` (where overlined quantities denote volume averages)
+where :math:`\vec u` denotes the unknown, periodic displacement, :math:`\tens\strain` (resp. :math:`\tens\sigma`) is the local strain (resp. stress) and :math:`\tens[4]C` is the local stiffness (inclusion or matrix). From the solution to the above problem, the effective stiffness :math:`\tens[4]C^\eff` is defined as the tensor mapping the macroscopic (imposed) strain :math:`\tens\Strain=\volavg{\tens\strain}` to the macroscopic stress :math:`\tens\sigma=\overline{\tens\sigma}` (where overlined quantities denote volume averages)
 
 .. math::
 
-   \tens[4]C^\eff:\tens\Strain=\frac1{L^d}\int_{\left(0,L\right)^d}\tens\stress(x_1,x_2)\,\diff x_1\cdots\diff x_d.
+   \tens[4]C^\eff:\tens\Strain=\frac1{L^d}\int_{\left(0,L\right)^d}\tens\sigma(x_1,x_2)\,\diff x_1\cdots\diff x_d.
 
 .. note::
    This example is illustrated in two dimensions (:math:`d=2`). However, it is implemented so as to be dimension independent, so that :math:`d=3` should work out of the box.
@@ -47,7 +47,7 @@ In the present tutorial, we shall concentrate on the 1212 component of the effec
 
    \tens\Strain=\Strain_{12}\left(\vec e_1\otimes\vec e_2+\vec e_2\otimes\vec e_1\right),
 
-and the volume average :math:`\volavg{\stress_{12}}` will be evaluated. To do so, the boundary value problem :eq:`corrector_problem` is transformed into an integral equation, known as the Lippmann--Schwinger equation (:ref:`Korringa, 1973 <KORR1973>`; :ref:`Zeller & Dederichs, 1973 <ZELL1973>` ; :ref:`Kröner, 1974 <KRON1974>`) . This equation reads
+and the volume average :math:`\volavg{\sigma_{12}}` will be evaluated. To do so, the boundary value problem :eq:`corrector_problem` is transformed into an integral equation, known as the Lippmann--Schwinger equation (:ref:`Korringa, 1973 <KORR1973>`; :ref:`Zeller & Dederichs, 1973 <ZELL1973>` ; :ref:`Kröner, 1974 <KRON1974>`) . This equation reads
 
 .. math::
    :label: Lippmann-Schwinger
@@ -214,7 +214,7 @@ and the results are post-processed
 To compute the macroscopic stiffness, we recall the definition of the stress-polarization from which we find
 
 .. math::
-   \tens[4]C^\eff:\tens\Strain=\volavg{\tens\stress}=\volavg{\tens[4]C:\tens\strain+\tens\tau}=\tens[4]C:\tens\Strain+\volavg{\tens\tau}.
+   \tens[4]C^\eff:\tens\Strain=\volavg{\tens\sigma}=\volavg{\tens[4]C:\tens\strain+\tens\tau}=\tens[4]C:\tens\Strain+\volavg{\tens\tau}.
 
 Then, from the specific macroscopic strain :math:`\tens\Strain` that we considered [see Eq. :eq:`macroscopic_strain`]
 
