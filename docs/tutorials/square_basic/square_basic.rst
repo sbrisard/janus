@@ -115,9 +115,9 @@ We then define a class ``Example``, which represents the microsctructure describ
 We then define the local operators :math:`\tens[4]C_\text i-\tens[4]C_0` and :math:`\tens[4]C_\text m-\tens[4]C_0` as :class:`FourthRankIsotropicTensor <janus.operators.FourthRankIsotropicTensor>`. It is recalled that the stiffness :math:`\tens[4]C` of a material with bulk modulus :math:`\kappa` and shear modulus :math:`\mu` reads
 
 .. math::
-   \tens[4]C = d\kappa\tens[4]\sphericalProjector+2\mu\tens[4]\deviatoricProjector,
+   \tens[4]C = d\kappa\tens[4]\sphericalProjector+2\mu\tens[4]K,
 
-where :math:`d` denotes the dimension of the physical space and :math:`\tens[4]\sphericalProjector` (resp. :math:`\tens[4]\deviatoricProjector`) denote the spherical (resp. deviatoric) projector tensor. In other words, the spherical and deviatoric projections of :math:`\tens[4]C` are :math:`d\kappa` and :math:`2\mu`, respectively. As a consequence, the spherical and deviatoric projections of :math:`\tens[4]C-\tens[4]C_0` are :math:`d\left(\kappa-\kappa_0\right)` and :math:`2\left(\mu-\mu_0\right)`, respectively. This leads to the following definitions
+where :math:`d` denotes the dimension of the physical space and :math:`\tens[4]\sphericalProjector` (resp. :math:`\tens[4]K`) denote the spherical (resp. deviatoric) projector tensor. In other words, the spherical and deviatoric projections of :math:`\tens[4]C` are :math:`d\kappa` and :math:`2\mu`, respectively. As a consequence, the spherical and deviatoric projections of :math:`\tens[4]C-\tens[4]C_0` are :math:`d\left(\kappa-\kappa_0\right)` and :math:`2\left(\mu-\mu_0\right)`, respectively. This leads to the following definitions
 
 .. literalinclude:: square_basic.py
    :start-after: Begin: create (C_i - C_0) and (C_m - C_0)
