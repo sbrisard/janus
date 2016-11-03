@@ -78,14 +78,14 @@ the *Lippmann--Schwinger operator*. In the present section, we show how this ope
 .. math::
    :label: local_operator
 
-   \tens\strain\mapsto\tens\stressPolarization=\left(\tens[4]\Stiffness-\tens[4]\Stiffness_0\right):\tens\strain,
+   \tens\strain\mapsto\tens\tau=\left(\tens[4]\Stiffness-\tens[4]\Stiffness_0\right):\tens\strain,
 
-where :math:`\tens\stressPolarization` denotes the stress-polarization, and (ii) the Green operator for strains
+where :math:`\tens\tau` denotes the stress-polarization, and (ii) the Green operator for strains
 
 .. math::
    :label: non-local_operator
 
-   \tens\stressPolarization\mapsto\tens[4]\GreenOperator_0[\tens\stressPolarization].
+   \tens\tau\mapsto\tens[4]\GreenOperator_0[\tens\tau].
 
 For the implementation of the local operator defined by Eq. :eq:`local_operator`, it is first observed that :math:`\tens[4]\Stiffness_0`, :math:`\tens[4]\Stiffness_\mathrm{i}` and :math:`\tens[4]\Stiffness_\mathrm{m}` being isotropic materials, :math:`\tens[4]\Stiffness-\tens[4]\Stiffness_0` is an isotropic tensor at any point of the unit-cell. In other words, both :math:`\tens[4]\Stiffness_\text i-\tens[4]\Stiffness_0` and :math:`\tens[4]\Stiffness_\text m-\tens[4]\Stiffness_0` will be defined as instances of :class:`FourthRankIsotropicTensor <janus.operators.FourthRankIsotropicTensor>`.
 
@@ -132,7 +132,7 @@ Now, ``delta_C_i`` and ``delta_C_m`` are used to create the operator :math:`\ten
    :start-after: Begin: create local operator ε ↦ (C-C_0):ε
    :end-before: End: create local operator ε ↦ (C-C_0):ε
 
-The upper-left quarter of the unit-cell is filled with ``delta_C_i`` (:math:`\tens[4]\Stiffness_\text i-\tens[4]\Stiffness_0`), while the remainder of the unit-cell receives ``delta_C_m`` (:math:`\tens[4]\Stiffness_\text m-\tens[4]\Stiffness_0`). Finally, a :class:`BlockDiagonalOperator2D <janus.operators.BlockDiagonalOperator2D>` is created from the array of local operators. It is called ``eps_to_tau`` as it maps the strain (:math:`\tens\strain`) to the stress-polarization (:math:`\tens\stressPolarization`).
+The upper-left quarter of the unit-cell is filled with ``delta_C_i`` (:math:`\tens[4]\Stiffness_\text i-\tens[4]\Stiffness_0`), while the remainder of the unit-cell receives ``delta_C_m`` (:math:`\tens[4]\Stiffness_\text m-\tens[4]\Stiffness_0`). Finally, a :class:`BlockDiagonalOperator2D <janus.operators.BlockDiagonalOperator2D>` is created from the array of local operators. It is called ``eps_to_tau`` as it maps the strain (:math:`\tens\strain`) to the stress-polarization (:math:`\tens\tau`).
 
 .. note::
    ``eps_to_tau`` is not a *method*. Rather, it is an *attribute*, which turns out to be a function.
@@ -214,13 +214,13 @@ and the results are post-processed
 To compute the macroscopic stiffness, we recall the definition of the stress-polarization from which we find
 
 .. math::
-   \tens[4]\Stiffness^\eff:\tens\Strain=\volavg{\tens\stress}=\volavg{\tens[4]\Stiffness:\tens\strain+\tens\stressPolarization}=\tens[4]\Stiffness:\tens\Strain+\volavg{\tens\stressPolarization}.
+   \tens[4]\Stiffness^\eff:\tens\Strain=\volavg{\tens\stress}=\volavg{\tens[4]\Stiffness:\tens\strain+\tens\tau}=\tens[4]\Stiffness:\tens\Strain+\volavg{\tens\tau}.
 
 Then, from the specific macroscopic strain :math:`\tens\Strain` that we considered [see Eq. :eq:`macroscopic_strain`]
 
 .. math::
 
-   \Stiffness_{1212}^\eff=\Stiffness_{0, 1212}+\frac{\volavg{\stressPolarization}_{12}}{2\Strain_{12}}=\Stiffness_{0, 1212}+\frac{[\volavg{\tens\stressPolarization}]_{-1}}{2[\tens\Strain]_{-1}}=\mu_0+\frac{[\volavg{\tens\stressPolarization}]_{-1}}{2[\tens\Strain]_{-1}}
+   \Stiffness_{1212}^\eff=\Stiffness_{0, 1212}+\frac{\volavg{\tau}_{12}}{2\Strain_{12}}=\Stiffness_{0, 1212}+\frac{[\volavg{\tens\tau}]_{-1}}{2[\tens\Strain]_{-1}}=\mu_0+\frac{[\volavg{\tens\tau}]_{-1}}{2[\tens\Strain]_{-1}}
 
 where brackets refer to the :ref:`Mandel_notation`, and the -1 index denotes the last component of the column-vector (which, in Mandel's notation, refers to the 12 component of second-rank symmetric tensors, both in two and three dimensions). We get the following approximation
 
