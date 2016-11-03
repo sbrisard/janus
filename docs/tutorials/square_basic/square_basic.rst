@@ -27,7 +27,7 @@ The effective properties of this periodic microstructure are derived from the so
    \begin{gather}
       \nabla\cdot\tens\sigma=\vec 0,\\
       \tens\sigma=\tens[4] C:\tens\varepsilon,\\
-      \tens\varepsilon=\tens E+\nabla^\s\vec u,
+      \tens\varepsilon=\tens E+\nabla^\mathrm{s}\vec u,
    \end{gather}
    \end{subequations}
 
