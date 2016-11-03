@@ -23,13 +23,11 @@ The effective properties of this periodic microstructure are derived from the so
    :nowrap:
    :label: corrector_problem
 
-   \begin{subequations}
    \begin{gather}
       \nabla\cdot\boldsymbol\sigma=\boldsymbol 0,\\
       \boldsymbol\sigma=\mathbf C:\boldsymbol\varepsilon,\\
       \boldsymbol\varepsilon=\mathbf E+\nabla^\mathrm{s}\mathbf u,
    \end{gather}
-   \end{subequations}
 
 where :math:`\mathbf u` denotes the unknown, periodic displacement, :math:`\boldsymbol\varepsilon` (resp. :math:`\boldsymbol\sigma`) is the local strain (resp. stress) and :math:`\mathbf C` is the local stiffness (inclusion or matrix). From the solution to the above problem, the effective stiffness :math:`\mathbf C^\mathrm{eff}` is defined as the tensor mapping the macroscopic (imposed) strain :math:`\mathbf E=\langle\boldsymbol\varepsilon\rangle` to the macroscopic stress :math:`\boldsymbol\sigma=\langle\boldsymbol\sigma\rangle` (where quantities between angle brackets denote volume averages)
 

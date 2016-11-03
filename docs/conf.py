@@ -38,7 +38,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.doctest',
               'sphinx.ext.todo',
               'sphinx.ext.coverage',
-              'sphinx.ext.pngmath',
+              'sphinx.ext.mathjax',
               'sphinx.ext.viewcode']
 
 todo_include_todos = True
@@ -88,8 +88,6 @@ latex_documents = [
    'S. Brisard', 'manual'),
 ]
 latex_logo = './logo_janus.png'
-
-pngmath_latex_preamble = ''
 
 man_pages = [
     ('index', 'janus', 'Documentation of the Janus Library',
