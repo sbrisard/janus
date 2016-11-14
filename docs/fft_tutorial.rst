@@ -24,24 +24,29 @@ The following piece of code creates an object ``transform`` which can perform re
 
 The function :func:`janus.fft.serial.create_real` can be passed planner flags (see `Planner Flags <http://www.fftw.org/fftw3_doc/Planner-Flags.html#Planner-Flags>`_ in the FFTW manual). The attributes of the returned object are
 
-  - ``transform.shape`` contains the *global* shape of the input array,
-  - ``transform.rshape`` contains the *local* shape of the input (real) array. For serial transforms, local and global shapes coincide,
-  - ``transform.cshape`` contains the *local* shape of the output (complex) array.
+  - ``transform.global_ishape`` contains the *global* shape of the input array,
+  - ``transform.ishape`` contains the *local* shape of the input (real) array,
+  - ``transform.global_oshape`` contains the *global* shape of the output (complex) array,
+  - ``transform.oshape`` contains the *local* shape of the output (complex) array. For serial transforms, local and global output shapes coincide.
 
->>> transform.shape
+For serial transforms, local and global shapes coincide.
+
+>>> transform.global_ishape
 (32, 64)
->>> transform.rshape
+>>> transform.ishape
 (32, 64)
->>> transform.cshape
+>>> transform.global_oshape
+(32, 66)
+>>> transform.oshape
 (32, 66)
 
 It should be noted that complex-valued tables are stored according to the FFTW library: even (resp. odd) values of the fast index correspond to the real (resp. imaginary) part of the complex number (see also `Multi-Dimensional DFTs of Real Data <http://www.fftw.org/fftw3_doc/Multi_002dDimensional-DFTs-of-Real-Data.html#Multi_002dDimensional-DFTs-of-Real-Data>`_ in the FFTW manual).
 
-Direct (real-to-complex) transforms are computed through the method ``transform.r2c()``, which takes as input a ``MemoryView`` of shape ``transform.rshape``, and returns a ``MemoryView`` of shape ``transform.cshape``.
+Direct (real-to-complex) transforms are computed through the method ``transform.r2c()``, which takes as input a ``MemoryView`` of shape ``transform.ishape``, and returns a ``MemoryView`` of shape ``transform.oshape``.
 
 >>> import numpy as np
 >>> np.random.seed(20150223)
->>> x = np.random.rand(*transform.rshape)
+>>> x = np.random.rand(*transform.ishape)
 >>> y1 = transform.r2c(x)
 
 It should be noted that ``y1`` is a ``MemoryView``, not a ``numpy`` array; it can, however, readily be converted into an array
@@ -76,14 +81,14 @@ Inverse discrete Fourier transform is computed through the method ``transform.c2
 
 It should be noted that the output array can be passed as an argument to both ``transform.r2c()``
 
->>> y2 = np.empty(transform.cshape)
+>>> y2 = np.empty(transform.oshape)
 >>> out = transform.r2c(x, y2)
 >>> assert out.base is y2
 >>> assert np.sum((y2 - y1)**2) == 0.0
 
 and ``transform.c2r()``
 
->>> x2 = np.empty(transform.rshape)
+>>> x2 = np.empty(transform.ishape)
 >>> out = transform.c2r(y1, x2)
 >>> assert out.base is x2
 >>> assert np.sum((x2 - x1)**2) == 0.0
