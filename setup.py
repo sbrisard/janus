@@ -120,20 +120,21 @@ def mpicc_show():
     # Strip command line from first part, which is the name of the compiler
     mpicc_show = re.sub('\S+\s', '', mpicc_show, count=1)
 
-    def my_filter(regex, iterable):
+    def my_filter(regex, iterable, group=0):
         matching = []
         non_matching = []
         for item in iterable:
-            if re.match(regex, item):
-                matching.append(item)
+            m = re.search(regex, item)
+            if m is not None:
+                matching.append(m.group(group))
             else:
                 non_matching.append(item)
         return matching, non_matching
 
     cflags = split_quoted(mpicc_show)
-    incdirs, cflags = my_filter('^-I', cflags)
-    libdirs, cflags = my_filter('^-L', cflags)
-    ldflags, cflags = my_filter('^-W?l', cflags)
+    incdirs, cflags = my_filter('^-I(.*)', cflags, 1)
+    libdirs, cflags = my_filter('^-L(.*)', cflags, 1)
+    ldflags, cflags = my_filter('^-W?l.*', cflags)
     ldflags += cflags
     incdirs.append(mpi4py.get_include())
 
