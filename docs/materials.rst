@@ -22,11 +22,8 @@ module.
 Elastic materials
 =================
 
-Linear, elastic materials
--------------------------
-
 Isotropic, linear, elastic materials
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------------------
 
 Such materials are created from their shear modulus (μ) and Poisson ratio (ν) as follows
 
@@ -69,3 +66,10 @@ array([[ 0.06778426, -0.01457726, -0.03279883, -0.03092304,  0.13606136,
          0.17055394],
        [ 0.09070758,  0.05978454, -0.09276911,  0.0196793 ,  0.17055394,
          0.14941691]])
+
+API of module :mod:`janus.material.elastic.linear.isotropic`
+------------------------------------------------------------
+
+.. automodule:: janus.material.elastic.linear.isotropic
+   :members:
+   :undoc-members:
