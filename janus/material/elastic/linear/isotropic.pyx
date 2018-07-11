@@ -1,13 +1,15 @@
 """This module defines isotropic, linear elastic materials.
 
 Materials defined in this module can operate on physical space of
-dimension dim = 2 or 3. dim = 2 refers to plane strain elasticity, while
-dim = 3 refers to classical 3D elasticity.
+dimension 2 or 3; all functions and methods defined in this module refer to
+this dimension as `dim`, which is therefore *not documented*:
 
-To create a plane stress material with shear modulus mu and Poisson
-ratio nu, a plane strain material should be created, with the same shear
-modulus mu, and fictitious Poisson ratio nu / (1 + nu).
+* ``dim == 2``: plane strain elasticity,
+* ``dim == 3``: classical 3D elasticity.
 
+To create a plane stress material with shear modulus ``g`` and Poisson ratio
+``nu``, a plane strain material should be created, with same shear modulus
+``g``, and fictitious Poisson ratio ``nu/(1+nu)``.
 """
 
 from cython cimport boundscheck
@@ -21,14 +23,8 @@ from janus.green cimport AbstractGreenOperator
 def create(g, nu, dim=3):
     """Create a new isotropic, linear and elastic material.
 
-    Args:
-        g: the shear modulus
-        nu: the Poisson ratio
-        dim: the dimension of the physical space (default 3)
-
-    Returns:
-        A new instance of IsotropicLinearElasticMaterial.
-
+    Returns a new instance of :class:`IsotropicLinearElasticMaterial`
+    with shear modulus `g` and Poisson ratio `nu`.
     """
     return IsotropicLinearElasticMaterial(g, nu, dim)
 
@@ -37,20 +33,9 @@ def create(g, nu, dim=3):
 cpdef double poisson_from_bulk_and_shear_moduli(double k, double g, int dim=3):
     """Compute the Poisson ratio from the bulk and shear moduli.
 
-    No checks are performed on the positivity of the bulk and shear
-    moduli, or on the validity of the returned Poisson ratio (which
-    should lie between -1 and 1/2).
-
-    Args:
-        k: the bulk modulus
-        g: the shear modulus
-        dim: the dimension of the physical space (default 3). Must be 2
-            (plane strain elasticity) or 3 (3D elasticity).
-
-
-    Returns:
-        The Poisson ratio.
-
+    No checks are performed on the positivity of the bulk modulus `k` and
+    shear modulus `g`, or on the validity of the returned Poisson ratio
+    (which should lie between -1 and 1/2).
     """
     if dim == 2:
         return (k - g) / (2. * k)
@@ -64,17 +49,9 @@ cdef class IsotropicLinearElasticMaterial:
 
     """Isotropic, linear and elastic materials.
 
-    Args:
-        g: the shear modulus
-        nu: the Poisson ratio
-        dim: the dimension of the physical space (default 3)
-
-    Attributes:
-        k: the bulk modulus (read-only)
-        g: the shear modulus (read-only)
-        nu: the Poisson ratio (read-only)
-        dim: the dimension of the physical space (read-only)
-
+    :param g: Shear modulus (``float``).
+    :param nu: Poisson ratio (``float``).
+    :param dim: Dimension of the physical space (``int``, optional).
     """
 
     @cdivision(True)
