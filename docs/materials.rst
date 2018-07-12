@@ -25,7 +25,7 @@ Elastic materials
 Isotropic, linear, elastic materials
 ------------------------------------
 
-Such materials are created from their shear modulus (μ) and Poisson ratio (ν) as follows
+Such materials are defined in the module :mod:`janus.material.elastic.linear.isotropic`. They are created from their shear modulus (μ) and Poisson ratio (ν) as follows
 
 >>> import janus.material.elastic.linear.isotropic as material
 >>> mat = material.create(1.0, 0.3, 3)
@@ -72,4 +72,5 @@ API of module :mod:`janus.material.elastic.linear.isotropic`
 
 .. automodule:: janus.material.elastic.linear.isotropic
    :members:
+   :private-members:
    :undoc-members:
