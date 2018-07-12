@@ -2,7 +2,7 @@
 
 Materials defined in this module can operate on physical space of
 dimension 2 or 3; all functions and methods defined in this module refer to
-this dimension as `dim`, which is therefore *not documented*:
+this dimension as `dim`, which is therefore *not documented in detail below*:
 
 * ``dim == 2``: plane strain elasticity,
 * ``dim == 3``: classical 3D elasticity.
@@ -37,6 +37,7 @@ cpdef double poisson_from_bulk_and_shear_moduli(double k, double g, int dim=3):
     shear modulus `g`, or on the validity of the returned Poisson ratio
     (which should lie between -1 and 1/2).
     """
+
     if dim == 2:
         return (k - g) / (2. * k)
     elif dim == 3:
@@ -46,12 +47,15 @@ cpdef double poisson_from_bulk_and_shear_moduli(double k, double g, int dim=3):
 
 
 cdef class IsotropicLinearElasticMaterial:
-
     """Isotropic, linear and elastic materials.
 
-    :param g: Shear modulus (``float``).
-    :param nu: Poisson ratio (``float``).
-    :param dim: Dimension of the physical space (``int``, optional).
+    New instances are created as follows::
+
+        IsotropicLinearElasticMaterial(g, nu, dim)
+
+    where `g` is the shear modulus (``float``), `nu` the Poisson ratio
+    (``float``) and `dim` the dimension of the physical space (``ìnt``,
+    default: 3).
     """
 
     @cdivision(True)
@@ -93,7 +97,6 @@ cdef class IsotropicLinearElasticMaterial:
 
 
 cdef class _GreenOperatorForStrains(AbstractGreenOperator):
-
     """Periodic Green operator for strains.
 
     Instances of this class are associated to isotropic, linear elastic
@@ -101,12 +104,12 @@ cdef class _GreenOperatorForStrains(AbstractGreenOperator):
 
     This class factorizes code common to the 2D and 3D implementations.
 
-    Args:
-        mat: the underlying material
+    New instances are created as follows::
 
-    Attributes:
-        mat: the underlying material
+        _GreenOperatorForStrains(mat)
 
+    where `mat` is the reference material
+    (:class:`IsotropicLinearElasticMaterial`).
     """
 
     # The auxiliary variables daux1 to daux4 are defined as follows
@@ -117,7 +120,9 @@ cdef class _GreenOperatorForStrains(AbstractGreenOperator):
     # where g (resp. nu) is the shear modulus (resp. Poisson ratio) of the
     # reference material.
     cdef double daux1, daux2, daux3, daux4
+
     cdef readonly IsotropicLinearElasticMaterial mat
+    """Reference material (:class:`IsotropicLinearElasticMaterial`)."""
 
     @cdivision(True)
     def __cinit__(self, IsotropicLinearElasticMaterial mat):
@@ -134,8 +139,11 @@ cdef class _GreenOperatorForStrains(AbstractGreenOperator):
 
 
 cdef class _GreenOperatorForStrains2D(_GreenOperatorForStrains):
+    """2D periodic Green operator for strains.
 
-    """Periodic Green operator for strains (2D implementation). """
+    This is the Green operator associated to a
+    :class:`IsotropicLinearElasticMaterial` (with ``dim == 2``).
+    """
 
     cdef double g00, g01, g02, g11, g12, g22
 
@@ -199,8 +207,11 @@ cdef class _GreenOperatorForStrains2D(_GreenOperatorForStrains):
 
 
 cdef class _GreenOperatorForStrains3D(_GreenOperatorForStrains):
+    """3D periodic Green operator for strains.
 
-    """Periodic Green operator for strains (3D implementation). """
+    This is the Green operator associated to a
+    :class:`IsotropicLinearElasticMaterial` (with ``dim == 3``).
+    """
 
     cdef:
         double g00, g01, g02, g03, g04, g05, g11, g12, g13, g14, g15
