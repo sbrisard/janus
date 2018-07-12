@@ -99,3 +99,5 @@ texinfo_documents = [
    'S. Brisard', 'Janus', 'One line description of project.',
    'Miscellaneous'),
 ]
+
+autodoc_member_order = 'groupwise'
