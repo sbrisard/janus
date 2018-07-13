@@ -1,0 +1,300 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Materials &mdash; Janus 0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Computing discrete Fourier transforms" href="fft_tutorial.html" />
+    <link rel="prev" title="Operators" href="operators.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Janus
+          
+
+          
+            
+            <img src="_static/logo_janus-200x200.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="operators.html">Operators</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Materials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#elastic-materials">Elastic materials</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#isotropic-linear-elastic-materials">Isotropic, linear, elastic materials</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="fft_tutorial.html">Computing discrete Fourier transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/square_basic/square_basic.html">Square inclusion, basic scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="todo.html">TODO List</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mandel.html">Mandel notation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Janus</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Materials</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/materials.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="materials">
+<span id="id1"></span><h1>Materials<a class="headerlink" href="#materials" title="Permalink to this headline">¶</a></h1>
+<p>Classes and functions for the definition of materials are provided in
+the <code class="xref py py-mod docutils literal notranslate"><span class="pre">janus.material</span></code> package. This package is structured in three
+levels</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>the physical model (e.g. elasticity, thermal conductivity, …),</li>
+<li>linear/nonlinear constitutive law,</li>
+<li>material symmetries (isotropic, transverse isotropic, …).</li>
+</ol>
+</div></blockquote>
+<p>Regardless of the actual constitutive law, an attempt is made to expose
+a unified interface. For example, a new instance of a specific material
+can be created through the function <code class="docutils literal notranslate"><span class="pre">create()</span></code> of the corresponding
+module.</p>
+<div class="section" id="elastic-materials">
+<h2>Elastic materials<a class="headerlink" href="#elastic-materials" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="isotropic-linear-elastic-materials">
+<h3>Isotropic, linear, elastic materials<a class="headerlink" href="#isotropic-linear-elastic-materials" title="Permalink to this headline">¶</a></h3>
+<p>Such materials are defined in the module <a class="reference internal" href="api.html#module-janus.material.elastic.linear.isotropic" title="janus.material.elastic.linear.isotropic"><code class="xref py py-mod docutils literal notranslate"><span class="pre">janus.material.elastic.linear.isotropic</span></code></a>. They are created from their shear modulus (μ) and Poisson ratio (ν) as follows</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">janus.material.elastic.linear.isotropic</span> <span class="k">as</span> <span class="nn">material</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mat</span> <span class="o">=</span> <span class="n">material</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mat</span>
+<span class="go">IsotropicLinearElasticMaterial(g=1.0, nu=0.3, dim=3)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mat</span><span class="o">.</span><span class="n">g</span> <span class="c1"># Shear modulus</span>
+<span class="go">1.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mat</span><span class="o">.</span><span class="n">nu</span> <span class="c1"># Poisson ratio</span>
+<span class="go">0.3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mat</span><span class="o">.</span><span class="n">k</span> <span class="c1"># Bulk modulus</span>
+<span class="go">2.1666666666666665</span>
+</pre></div>
+</div>
+<p>The function <a class="reference internal" href="api.html#janus.material.elastic.linear.isotropic.create" title="janus.material.elastic.linear.isotropic.create"><code class="xref py py-func docutils literal notranslate"><span class="pre">janus.material.elastic.linear.isotropic.create()</span></code></a> takes two positional arguments: the shear modulus and the Poisson ratio, and one optional argument: the dimension of the physical space, which can be 2 (plane strain elasticity) or 3 (3D elasticity); the default value is 3. To create a <em>plane stress</em> (μ, ν) material, a <em>plane strain</em> (μ, ν’) material should be created, with ν’ = ν / (1 + ν).</p>
+<p>A helper function, <a class="reference internal" href="api.html#janus.material.elastic.linear.isotropic.poisson_from_bulk_and_shear_moduli" title="janus.material.elastic.linear.isotropic.poisson_from_bulk_and_shear_moduli"><code class="xref py py-func docutils literal notranslate"><span class="pre">janus.material.elastic.linear.isotropic.poisson_from_bulk_and_shear_moduli()</span></code></a> is also provided. It returns the Poisson ratio, computed from the bulk and shear moduli.</p>
+<p>Green operators for strains associated with a given material are instanciated with the <code class="docutils literal notranslate"><span class="pre">green_operator()</span></code> method, like so</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">green</span> <span class="o">=</span> <span class="n">mat</span><span class="o">.</span><span class="n">green_operator</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">green</span>
+<span class="go">Green Operator(IsotropicLinearElasticMaterial(g=1.0, nu=0.3, dim=3))</span>
+</pre></div>
+</div>
+<p>The returned operator can then be manipulated frequency-wise</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">green</span><span class="o">.</span><span class="n">set_frequency</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">green</span><span class="o">.</span><span class="n">to_memoryview</span><span class="p">())</span>
+<span class="go">array([[ 0.06778426, -0.01457726, -0.03279883, -0.03092304,  0.13606136,</span>
+<span class="go">         0.09070758],</span>
+<span class="go">       [-0.01457726,  0.22740525, -0.13119534,  0.17935362, -0.06184607,</span>
+<span class="go">         0.05978454],</span>
+<span class="go">       [-0.03279883, -0.13119534,  0.34766764,  0.02473843,  0.01236921,</span>
+<span class="go">        -0.09276911],</span>
+<span class="go">       [-0.03092304,  0.17935362,  0.02473843,  0.20189504, -0.05976676,</span>
+<span class="go">         0.0196793 ],</span>
+<span class="go">       [ 0.13606136, -0.06184607,  0.01236921, -0.05976676,  0.29154519,</span>
+<span class="go">         0.17055394],</span>
+<span class="go">       [ 0.09070758,  0.05978454, -0.09276911,  0.0196793 ,  0.17055394,</span>
+<span class="go">         0.14941691]])</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="fft_tutorial.html" class="btn btn-neutral float-right" title="Computing discrete Fourier transforms" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="operators.html" class="btn btn-neutral" title="Operators" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013-2015, S. Brisard.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

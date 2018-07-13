@@ -1,0 +1,962 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Operators &mdash; Janus 0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Materials" href="materials.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Janus
+          
+
+          
+            
+            <img src="_static/logo_janus-200x200.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Operators</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#structured-operators">Structured operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#block-diagonal-operators">Block-diagonal operators</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#block-diagonal-linear-operators">Block-diagonal linear operators</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#performing-in-place-operations">Performing in-place operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-janus.operators">API of module <code class="docutils literal notranslate"><span class="pre">janus.operators</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#functions-defined-in-this-module">Functions defined in this module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#classes-defined-in-this-module">Classes defined in this module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="materials.html">Materials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fft_tutorial.html">Computing discrete Fourier transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/square_basic/square_basic.html">Square inclusion, basic scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="todo.html">TODO List</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mandel.html">Mandel notation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Janus</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Operators</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/operators.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="operators">
+<h1>Operators<a class="headerlink" href="#operators" title="Permalink to this headline">¶</a></h1>
+<p>Classes and functions for the definition of operators are provided in the <a class="reference internal" href="#module-janus.operators" title="janus.operators"><code class="xref py py-mod docutils literal notranslate"><span class="pre">janus.operators</span></code></a> module. Operator should be understood in the most general sense, as a mapping from a (real) vector space to another. If the mapping is <em>linear</em>, then the resulting operator is a <em>tensor</em>.</p>
+<p>The root of the hierarchy tree of operators is the class <a class="reference internal" href="#janus.operators.AbstractOperator" title="janus.operators.AbstractOperator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractOperator</span></code></a>. Instances of this class have two attributes, <code class="docutils literal notranslate"><span class="pre">isize</span></code> and <code class="docutils literal notranslate"><span class="pre">osize</span></code> which are the sizes of the input and output of the operator, respectively (in other words, these attributes are the dimensions of the domain and codomain, respectively).</p>
+<p>Operator <code class="docutils literal notranslate"><span class="pre">op</span></code> is mapped to the vector <code class="docutils literal notranslate"><span class="pre">x</span></code> through the method <a class="reference internal" href="#janus.operators.AbstractOperator.apply" title="janus.operators.AbstractOperator.apply"><code class="xref py py-meth docutils literal notranslate"><span class="pre">AbstractOperator.apply</span></code></a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">y</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">x</span></code> (resp. <code class="docutils literal notranslate"><span class="pre">y</span></code>) is a 1D array of length <code class="docutils literal notranslate"><span class="pre">op.isize</span></code> (resp. <code class="docutils literal notranslate"><span class="pre">op.osize</span></code>).</p>
+<div class="section" id="structured-operators">
+<span id="id1"></span><h2>Structured operators<a class="headerlink" href="#structured-operators" title="Permalink to this headline">¶</a></h2>
+<p>Structured operators are operators whose input and output are structured in multi-dimensional grids. The content of each cell might be tensorial, so that the input and output of 2D structured operators are <em>3-dimensional</em> arrays. Likewise, the input and output arrays of 3D structured operators are <em>4-dimensional</em> arrays. The <em>local</em> input and output then refer to data contained in one specific cell. For example, let <code class="docutils literal notranslate"><span class="pre">x[:,</span> <span class="pre">:,</span> <span class="pre">:]</span></code> (resp. <code class="docutils literal notranslate"><span class="pre">y[:,</span> <span class="pre">:,</span> <span class="pre">:]</span></code>) be the input (resp. output) of a 2D structured operator; the local input (resp. output) of cell <code class="docutils literal notranslate"><span class="pre">(i0,</span> <span class="pre">i1)</span></code> is the 1D array <code class="docutils literal notranslate"><span class="pre">x[i0,</span> <span class="pre">i1,</span> <span class="pre">:]</span></code> (resp <code class="docutils literal notranslate"><span class="pre">y[i0,</span> <span class="pre">i1,</span> <span class="pre">:]</span></code>).</p>
+<p>Two- and three- dimensional structured operators are defined in this module through the classes <a class="reference internal" href="#janus.operators.AbstractStructuredOperator2D" title="janus.operators.AbstractStructuredOperator2D"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractStructuredOperator2D</span></code></a> and <a class="reference internal" href="#janus.operators.AbstractStructuredOperator3D" title="janus.operators.AbstractStructuredOperator3D"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractStructuredOperator3D</span></code></a>). Instances of these classes have two attributes, <code class="docutils literal notranslate"><span class="pre">ishape</span></code> and <code class="docutils literal notranslate"><span class="pre">oshape</span></code> which are the shapes (tuples of dimensions) of the input and output of the operator, respectively. It should be noted that the data layout (the dimensions of the <em>spatial</em> grid) of the input and output are identical. In other words:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">op</span><span class="o">.</span><span class="n">ishape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">op</span><span class="o">.</span><span class="n">oshape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>for any structured operator <code class="docutils literal notranslate"><span class="pre">op</span></code>. Of course, <code class="docutils literal notranslate"><span class="pre">op.ishape[-1]</span></code> and <code class="docutils literal notranslate"><span class="pre">op.oshape[-1]</span></code> may differ. Structured operators are applied to multidimensional arrays as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">y</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">x.shape</span> <span class="pre">==</span> <span class="pre">op.ishape</span></code> and <code class="docutils literal notranslate"><span class="pre">y.shape</span> <span class="pre">==</span> <span class="pre">op.oshape</span></code>.</p>
+</div>
+<div class="section" id="block-diagonal-operators">
+<span id="id2"></span><h2>Block-diagonal operators<a class="headerlink" href="#block-diagonal-operators" title="Permalink to this headline">¶</a></h2>
+<p>Block-diagonal operators (<a class="reference internal" href="#janus.operators.BlockDiagonalOperator2D" title="janus.operators.BlockDiagonalOperator2D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockDiagonalOperator2D</span></code></a>, <a class="reference internal" href="#janus.operators.BlockDiagonalOperator3D" title="janus.operators.BlockDiagonalOperator3D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockDiagonalOperator3D</span></code></a>) are defined as structured operators for which the local output depends on the local input only. Any block diagonal operator can be represented as an array of local operators (of type <a class="reference internal" href="#janus.operators.AbstractOperator" title="janus.operators.AbstractOperator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractOperator</span></code></a>) <code class="docutils literal notranslate"><span class="pre">loc</span></code>. Then, the input <code class="docutils literal notranslate"><span class="pre">x</span></code> is mapped to the output <code class="docutils literal notranslate"><span class="pre">y</span></code> as follows</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">[</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">loc</span><span class="p">[</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="p">:])</span>
+</pre></div>
+</div>
+<p>in 2D, and</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">[</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">loc</span><span class="p">[</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">,</span> <span class="p">:])</span>
+</pre></div>
+</div>
+<p>in 3D.</p>
+<div class="section" id="block-diagonal-linear-operators">
+<span id="id3"></span><h3>Block-diagonal linear operators<a class="headerlink" href="#block-diagonal-linear-operators" title="Permalink to this headline">¶</a></h3>
+<p>This can be further simplified in the case of linear, block-diagonal operators (<a class="reference internal" href="#janus.operators.BlockDiagonalLinearOperator2D" title="janus.operators.BlockDiagonalLinearOperator2D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockDiagonalLinearOperator2D</span></code></a>, <a class="reference internal" href="#janus.operators.BlockDiagonalLinearOperator3D" title="janus.operators.BlockDiagonalLinearOperator3D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockDiagonalLinearOperator3D</span></code></a>). Indeed, <code class="docutils literal notranslate"><span class="pre">loc</span></code> is then an array of matrices, which can be viewed as a higher-dimension array. Therefore, a block-diagonal linear operator can be defined through a <cite>float64</cite> array <code class="docutils literal notranslate"><span class="pre">a</span></code> such that</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">[</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">,</span> <span class="n">j2</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">j2</span><span class="p">],</span> <span class="n">j2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>in 2D, and</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">[</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">,</span> <span class="n">i3</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">,</span> <span class="n">i3</span><span class="p">,</span> <span class="n">j3</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">,</span> <span class="n">j3</span><span class="p">],</span> <span class="n">j3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>in 3D.</p>
+<p>Block-diagonal linear operators are created with the function <a class="reference internal" href="#janus.operators.block_diagonal_linear_operator" title="janus.operators.block_diagonal_linear_operator"><code class="xref py py-func docutils literal notranslate"><span class="pre">block_diagonal_linear_operator</span></code></a>, which takes as an input an array, whose last two dimensions correspond to the matrix of the local operator.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">janus.operators</span> <span class="k">as</span> <span class="nn">operators</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">120.</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">op</span> <span class="o">=</span> <span class="n">operators</span><span class="o">.</span><span class="n">block_diagonal_linear_operator</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">30.</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">yy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">a</span> <span class="o">*</span> <span class="n">x</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">yy</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+<span class="go">0.0</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="performing-in-place-operations">
+<span id="in-place-operations"></span><h2>Performing in-place operations<a class="headerlink" href="#performing-in-place-operations" title="Permalink to this headline">¶</a></h2>
+<p>All types of operators define a method <code class="docutils literal notranslate"><span class="pre">apply(x,</span> <span class="pre">y)</span></code>, where <code class="docutils literal notranslate"><span class="pre">x</span></code> is a memoryview of the input and <code class="docutils literal notranslate"><span class="pre">y</span></code> is a memoryview of the output. If <code class="docutils literal notranslate"><span class="pre">y</span></code> is <code class="docutils literal notranslate"><span class="pre">None</span></code>, then <code class="docutils literal notranslate"><span class="pre">apply</span></code> returns a newly created memoryview. If <code class="docutils literal notranslate"><span class="pre">y</span></code> is not <code class="docutils literal notranslate"><span class="pre">None</span></code>, then <code class="docutils literal notranslate"><span class="pre">apply</span></code> returns a reference to <code class="docutils literal notranslate"><span class="pre">y</span></code>.</p>
+<p>Depending on the implementation, some operators allow for in-place operations, which can further reduce memory allocations. In other words, <code class="docutils literal notranslate"><span class="pre">apply(x,</span> <span class="pre">x)</span></code> is valid for such operators and returns the expected value. Whether or not an operator allows for in-place operations is implementation dependent, and should be specified in the documentation. <strong>Unless otherwise stated, it should be assumed that in-place operations are not supported.</strong></p>
+<p>If relevant, the above also applies to the Cython method <code class="docutils literal notranslate"><span class="pre">c_apply(x,</span> <span class="pre">y)</span></code>.</p>
+</div>
+<div class="section" id="module-janus.operators">
+<span id="api-of-module-janus-operators"></span><h2>API of module <a class="reference internal" href="#module-janus.operators" title="janus.operators"><code class="xref py py-mod docutils literal notranslate"><span class="pre">janus.operators</span></code></a><a class="headerlink" href="#module-janus.operators" title="Permalink to this headline">¶</a></h2>
+<p>This module defines operators in the general sense, as a mapping from a
+(real) vector space to another.</p>
+<div class="section" id="functions-defined-in-this-module">
+<h3>Functions defined in this module<a class="headerlink" href="#functions-defined-in-this-module" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><a class="reference internal" href="#janus.operators.isotropic_4" title="janus.operators.isotropic_4"><code class="xref py py-func docutils literal notranslate"><span class="pre">isotropic_4()</span></code></a> – create a fourth-rank, isotropic tensor with minor
+symmetries.</li>
+<li><a class="reference internal" href="#janus.operators.block_diagonal_operator" title="janus.operators.block_diagonal_operator"><code class="xref py py-func docutils literal notranslate"><span class="pre">block_diagonal_operator()</span></code></a> – create a block-diagonal operator.</li>
+<li><a class="reference internal" href="#janus.operators.block_diagonal_linear_operator" title="janus.operators.block_diagonal_linear_operator"><code class="xref py py-func docutils literal notranslate"><span class="pre">block_diagonal_linear_operator()</span></code></a> – create a block-diagonal, linear
+operator.</li>
+</ul>
+</div>
+<div class="section" id="classes-defined-in-this-module">
+<h3>Classes defined in this module<a class="headerlink" href="#classes-defined-in-this-module" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><a class="reference internal" href="#janus.operators.AbstractOperator" title="janus.operators.AbstractOperator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractOperator</span></code></a> – general operator</li>
+<li><a class="reference internal" href="#janus.operators.AbstractLinearOperator" title="janus.operators.AbstractLinearOperator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractLinearOperator</span></code></a> – general linear operator</li>
+<li><a class="reference internal" href="#janus.operators.FourthRankIsotropicTensor" title="janus.operators.FourthRankIsotropicTensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">FourthRankIsotropicTensor</span></code></a> – fourth-rank, isotropic tensor with
+minor symmetries</li>
+<li><a class="reference internal" href="#janus.operators.FourthRankIsotropicTensor2D" title="janus.operators.FourthRankIsotropicTensor2D"><code class="xref py py-class docutils literal notranslate"><span class="pre">FourthRankIsotropicTensor2D</span></code></a> – specialization of the above to 2D</li>
+<li><a class="reference internal" href="#janus.operators.FourthRankIsotropicTensor3D" title="janus.operators.FourthRankIsotropicTensor3D"><code class="xref py py-class docutils literal notranslate"><span class="pre">FourthRankIsotropicTensor3D</span></code></a> – specialization of the above to 3D</li>
+<li><a class="reference internal" href="#janus.operators.AbstractStructuredOperator2D" title="janus.operators.AbstractStructuredOperator2D"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractStructuredOperator2D</span></code></a> – operator with 2D layout of
+the data</li>
+<li><a class="reference internal" href="#janus.operators.AbstractStructuredOperator3D" title="janus.operators.AbstractStructuredOperator3D"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractStructuredOperator3D</span></code></a> – operator with 3D layout of
+the data</li>
+<li><a class="reference internal" href="#janus.operators.BlockDiagonalOperator2D" title="janus.operators.BlockDiagonalOperator2D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockDiagonalOperator2D</span></code></a> – block-diagonal operator with 2D
+layout of the data</li>
+<li><a class="reference internal" href="#janus.operators.BlockDiagonalOperator3D" title="janus.operators.BlockDiagonalOperator3D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockDiagonalOperator3D</span></code></a> – block-diagonal operator with 3D
+layout of the data</li>
+<li><a class="reference internal" href="#janus.operators.BlockDiagonalLinearOperator2D" title="janus.operators.BlockDiagonalLinearOperator2D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockDiagonalLinearOperator2D</span></code></a> – block-diagonal, linear
+operator with 2D layout of the data</li>
+<li><a class="reference internal" href="#janus.operators.BlockDiagonalLinearOperator3D" title="janus.operators.BlockDiagonalLinearOperator3D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockDiagonalLinearOperator3D</span></code></a> – block-diagonal, linear
+operator with 3D layout of the data</li>
+</ul>
+<dl class="class">
+<dt id="janus.operators.AbstractLinearOperator">
+<em class="property">class </em><code class="descclassname">janus.operators.</code><code class="descname">AbstractLinearOperator</code><a class="headerlink" href="#janus.operators.AbstractLinearOperator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specialization of class AbstractOperator to linear operators.</p>
+<p>This abstract class defines the method <a class="reference internal" href="#janus.operators.AbstractLinearOperator.to_memoryview" title="janus.operators.AbstractLinearOperator.to_memoryview"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_memoryview()</span></code></a>, which
+returns the matrix of this linear operator as a memoryview.</p>
+<dl class="method">
+<dt id="janus.operators.AbstractLinearOperator.to_memoryview">
+<code class="descname">to_memoryview</code><span class="sig-paren">(</span><em>self</em>, <em>__Pyx_memviewslice out=None</em><span class="sig-paren">)</span><a class="headerlink" href="#janus.operators.AbstractLinearOperator.to_memoryview" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the matrix of this operator as a memoryview.</p>
+<p>If <cite>out</cite> is <cite>None</cite>, a new memoryview is allocated and returned.
+Otherwise, the matrix is stored in <cite>out</cite>, and a view of out is
+returned.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>(</strong><strong>float</strong><strong>[</strong> (<em>out</em>) – , :]): The output array.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="janus.operators.AbstractOperator">
+<em class="property">class </em><code class="descclassname">janus.operators.</code><code class="descname">AbstractOperator</code><a class="headerlink" href="#janus.operators.AbstractOperator" title="Permalink to this definition">¶</a></dt>
+<dd><p>General operator.</p>
+<p>Concrete instances of this class map arrays of size <cite>isize</cite> to
+arrays of size <cite>osize</cite>.</p>
+<dl class="method">
+<dt id="janus.operators.AbstractOperator.apply">
+<code class="descname">apply</code><span class="sig-paren">(</span><em>self</em>, <em>__Pyx_memviewslice x</em>, <em>__Pyx_memviewslice y=None</em><span class="sig-paren">)</span><a class="headerlink" href="#janus.operators.AbstractOperator.apply" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the result of applying this operator to x.</p>
+<p>If <cite>y</cite> is <cite>None</cite>, then a new memoryview is created and
+returned. Otherwise, the image of <cite>x</cite> is stored in <cite>y</cite>, and a
+view of <cite>y</cite> is returned.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>(</strong><strong>float</strong><strong>[</strong> (<em>y</em>) – ]): The input vector.</li>
+<li><strong>(</strong><strong>float</strong><strong>[</strong> – ]): The output vector (optional).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="janus.operators.AbstractOperator.init_sizes">
+<code class="descname">init_sizes</code><span class="sig-paren">(</span><em>self</em>, <em>int isize</em>, <em>int osize</em><span class="sig-paren">)</span><a class="headerlink" href="#janus.operators.AbstractOperator.init_sizes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the values of <a class="reference internal" href="#janus.operators.AbstractOperator.isize" title="janus.operators.AbstractOperator.isize"><code class="xref py py-attr docutils literal notranslate"><span class="pre">isize</span></code></a> and <a class="reference internal" href="#janus.operators.AbstractOperator.osize" title="janus.operators.AbstractOperator.osize"><code class="xref py py-attr docutils literal notranslate"><span class="pre">osize</span></code></a>.</p>
+<p>This method is provided as a convenience to users who want to
+create pure Python implementations of this class. It should be
+called only <em>once</em> at the initialization of the instance, as it
+can potentially modify the <a class="reference internal" href="#janus.operators.AbstractOperator.isize" title="janus.operators.AbstractOperator.isize"><code class="xref py py-attr docutils literal notranslate"><span class="pre">isize</span></code></a> and <a class="reference internal" href="#janus.operators.AbstractOperator.osize" title="janus.operators.AbstractOperator.osize"><code class="xref py py-attr docutils literal notranslate"><span class="pre">osize</span></code></a>
+attributes (which are otherwise read-only).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>isize</strong> (<em>int</em>) – The size of the input.</li>
+<li><strong>osize</strong> (<em>int</em>) – The size of the output.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="janus.operators.AbstractOperator.isize">
+<code class="descname">isize</code><a class="headerlink" href="#janus.operators.AbstractOperator.isize" title="Permalink to this definition">¶</a></dt>
+<dd><p>The size of the input (<cite>int</cite>, read-only).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="janus.operators.AbstractOperator.osize">
+<code class="descname">osize</code><a class="headerlink" href="#janus.operators.AbstractOperator.osize" title="Permalink to this definition">¶</a></dt>
+<dd><p>The size of the output (<cite>int</cite>, read-only).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="janus.operators.AbstractStructuredOperator2D">
+<em class="property">class </em><code class="descclassname">janus.operators.</code><code class="descname">AbstractStructuredOperator2D</code><a class="headerlink" href="#janus.operators.AbstractStructuredOperator2D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Operator applied to vectorial data structured in a 2D grid.</p>
+<p>Structured operators map real vectors of dimension <cite>isize</cite> to real
+vectors of dimension <cite>osize</cite>. Input and output vectors are
+structured in 2D grids, each grid-cell being a vector itself.
+Therefore, the input is a <cite>float[:, :, :]</cite> of shape:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">shape0</span><span class="p">,</span> <span class="n">shape1</span><span class="p">,</span> <span class="n">ishape2</span><span class="p">),</span>
+</pre></div>
+</div>
+<p>while the output is a <cite>float[:, :, :]</cite> of shape:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">shape0</span><span class="p">,</span> <span class="n">shape1</span><span class="p">,</span> <span class="n">oshape2</span><span class="p">)</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>Furthermore:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">isize</span> <span class="o">=</span> <span class="n">shape0</span> <span class="o">*</span> <span class="n">shape1</span> <span class="o">*</span> <span class="n">ishape2</span><span class="p">,</span>
+<span class="n">osize</span> <span class="o">=</span> <span class="n">shape0</span> <span class="o">*</span> <span class="n">shape1</span> <span class="o">*</span> <span class="n">oshape2</span><span class="o">.</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="janus.operators.AbstractStructuredOperator2D.apply">
+<code class="descname">apply</code><span class="sig-paren">(</span><em>self</em>, <em>__Pyx_memviewslice x</em>, <em>__Pyx_memviewslice y=None</em><span class="sig-paren">)</span><a class="headerlink" href="#janus.operators.AbstractStructuredOperator2D.apply" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the result of applying this operator to <cite>x</cite>.</p>
+<p>If <cite>y</cite> is <cite>None</cite>, then a new memoryview is created and returned.
+Otherwise, the image of <cite>x</cite> is stored in <cite>y</cite>, and a view of <cite>y</cite>
+is returned.</p>
+<p>The default implementation calls the (Cython) method
+<cite>c_apply()</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>(</strong><strong>float</strong><strong>[</strong> (<em>y</em>) – , :, :]): The input vector.</li>
+<li><strong>(</strong><strong>float</strong><strong>[</strong> – , :, :]): The output vector.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="janus.operators.AbstractStructuredOperator2D.init_shapes">
+<code class="descname">init_shapes</code><span class="sig-paren">(</span><em>self</em>, <em>int shape0</em>, <em>int shape1</em>, <em>int ishape2</em>, <em>int oshape2</em><span class="sig-paren">)</span><a class="headerlink" href="#janus.operators.AbstractStructuredOperator2D.init_shapes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the values of <a class="reference internal" href="#janus.operators.AbstractStructuredOperator2D.ishape" title="janus.operators.AbstractStructuredOperator2D.ishape"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ishape</span></code></a> and <a class="reference internal" href="#janus.operators.AbstractStructuredOperator2D.oshape" title="janus.operators.AbstractStructuredOperator2D.oshape"><code class="xref py py-attr docutils literal notranslate"><span class="pre">oshape</span></code></a>.</p>
+<p>This method is provided as a convenience to users who want to
+create pure Python implementations of this class. It should be
+called only <em>once</em> at the initialization of the instance, as it
+can potentially modify these attributes (which are otherwise
+read-only).</p>
+<p>See <a class="reference internal" href="#janus.operators.AbstractStructuredOperator2D.shape0" title="janus.operators.AbstractStructuredOperator2D.shape0"><code class="xref py py-attr docutils literal notranslate"><span class="pre">shape0</span></code></a>, <a class="reference internal" href="#janus.operators.AbstractStructuredOperator2D.shape1" title="janus.operators.AbstractStructuredOperator2D.shape1"><code class="xref py py-attr docutils literal notranslate"><span class="pre">shape1</span></code></a>, <a class="reference internal" href="#janus.operators.AbstractStructuredOperator2D.ishape2" title="janus.operators.AbstractStructuredOperator2D.ishape2"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ishape2</span></code></a> and
+<a class="reference internal" href="#janus.operators.AbstractStructuredOperator2D.oshape2" title="janus.operators.AbstractStructuredOperator2D.oshape2"><code class="xref py py-attr docutils literal notranslate"><span class="pre">oshape2</span></code></a> for the meaning of the arguments of this
+function.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="janus.operators.AbstractStructuredOperator2D.dim">
+<code class="descname">dim</code><a class="headerlink" href="#janus.operators.AbstractStructuredOperator2D.dim" title="Permalink to this definition">¶</a></dt>
+<dd><p>The dimension of the structured grid (<cite>int</cite>, 2).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="janus.operators.AbstractStructuredOperator2D.ishape">
+<code class="descname">ishape</code><a class="headerlink" href="#janus.operators.AbstractStructuredOperator2D.ishape" title="Permalink to this definition">¶</a></dt>
+<dd><p>The shape of the input (tuple).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="janus.operators.AbstractStructuredOperator2D.ishape2">
+<code class="descname">ishape2</code><a class="headerlink" href="#janus.operators.AbstractStructuredOperator2D.ishape2" title="Permalink to this definition">¶</a></dt>
+<dd><p>The third dimension of the input (<cite>int</cite>).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="janus.operators.AbstractStructuredOperator2D.oshape">
+<code class="descname">oshape</code><a class="headerlink" href="#janus.operators.AbstractStructuredOperator2D.oshape" title="Permalink to this definition">¶</a></dt>
+<dd><p>The shape of the output (tuple).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="janus.operators.AbstractStructuredOperator2D.oshape2">
+<code class="descname">oshape2</code><a class="headerlink" href="#janus.operators.AbstractStructuredOperator2D.oshape2" title="Permalink to this definition">¶</a></dt>
+<dd><p>The third dimension of the output (<cite>int</cite>).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="janus.operators.AbstractStructuredOperator2D.shape0">
+<code class="descname">shape0</code><a class="headerlink" href="#janus.operators.AbstractStructuredOperator2D.shape0" title="Permalink to this definition">¶</a></dt>
+<dd><p>The first dimension of the input and output (<cite>int</cite>).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="janus.operators.AbstractStructuredOperator2D.shape1">
+<code class="descname">shape1</code><a class="headerlink" href="#janus.operators.AbstractStructuredOperator2D.shape1" title="Permalink to this definition">¶</a></dt>
+<dd><p>The second dimension of the input and output (<cite>int</cite>).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="janus.operators.AbstractStructuredOperator3D">
+<em class="property">class </em><code class="descclassname">janus.operators.</code><code class="descname">AbstractStructuredOperator3D</code><a class="headerlink" href="#janus.operators.AbstractStructuredOperator3D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Operator applied to vectorial data structured in a 3D grid.</p>
+<p>Structured operators map real vectors of dimension <cite>isize</cite> to real
+vectors of dimension <cite>osize</cite>. Input and output vectors are
+structured in 3D grids, each grid-cell being a vector itself.
+Therefore, the input is a <cite>float[:, :, :, :]</cite> of shape:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">shape0</span><span class="p">,</span> <span class="n">shape1</span><span class="p">,</span> <span class="n">shape2</span><span class="p">,</span> <span class="n">ishape3</span><span class="p">),</span>
+</pre></div>
+</div>
+<p>while the output is a <cite>float[:, :, :, :]</cite> of shape:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">shape0</span><span class="p">,</span> <span class="n">shape1</span><span class="p">,</span> <span class="n">shape2</span><span class="p">,</span> <span class="n">oshape3</span><span class="p">)</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>Furthermore:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">isize</span> <span class="o">=</span> <span class="n">shape0</span> <span class="o">*</span> <span class="n">shape1</span> <span class="o">*</span> <span class="n">shape2</span> <span class="o">*</span> <span class="n">ishape3</span><span class="p">,</span>
+<span class="n">osize</span> <span class="o">=</span> <span class="n">shape0</span> <span class="o">*</span> <span class="n">shape1</span> <span class="o">*</span> <span class="n">shape2</span> <span class="o">*</span> <span class="n">oshape3</span><span class="o">.</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="janus.operators.AbstractStructuredOperator3D.apply">
+<code class="descname">apply</code><span class="sig-paren">(</span><em>self</em>, <em>__Pyx_memviewslice x</em>, <em>__Pyx_memviewslice y=None</em><span class="sig-paren">)</span><a class="headerlink" href="#janus.operators.AbstractStructuredOperator3D.apply" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the result of applying this operator to <cite>x</cite>.</p>
+<p>If <cite>y</cite> is <cite>None</cite>, then a new memoryview is created and returned.
+Otherwise, the image of <cite>x</cite> is stored in <cite>y</cite>, and a view of <cite>y</cite>
+is returned.</p>
+<p>The default implementation calls the (Cython) method
+<cite>c_apply()</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>(</strong><strong>float</strong><strong>[</strong> (<em>y</em>) – , :, :, :]): The input vector.</li>
+<li><strong>(</strong><strong>float</strong><strong>[</strong> – , :, :, :]): The output vector.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="janus.operators.AbstractStructuredOperator3D.init_shapes">
+<code class="descname">init_shapes</code><span class="sig-paren">(</span><em>self</em>, <em>int shape0</em>, <em>int shape1</em>, <em>int shape2</em>, <em>int ishape3</em>, <em>int oshape3</em><span class="sig-paren">)</span><a class="headerlink" href="#janus.operators.AbstractStructuredOperator3D.init_shapes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the values of <a class="reference internal" href="#janus.operators.AbstractStructuredOperator3D.ishape" title="janus.operators.AbstractStructuredOperator3D.ishape"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ishape</span></code></a> and <a class="reference internal" href="#janus.operators.AbstractStructuredOperator3D.oshape" title="janus.operators.AbstractStructuredOperator3D.oshape"><code class="xref py py-attr docutils literal notranslate"><span class="pre">oshape</span></code></a>.</p>
+<p>This method is provided as a convenience to users who want to
+create pure Python implementations of this class. It should be
+called only <em>once</em> at the initialization of the instance, as it
+can potentially modify these attributes (which are otherwise
+read-only).</p>
+<p>See <a class="reference internal" href="#janus.operators.AbstractStructuredOperator3D.shape0" title="janus.operators.AbstractStructuredOperator3D.shape0"><code class="xref py py-attr docutils literal notranslate"><span class="pre">shape0</span></code></a>, <a class="reference internal" href="#janus.operators.AbstractStructuredOperator3D.shape1" title="janus.operators.AbstractStructuredOperator3D.shape1"><code class="xref py py-attr docutils literal notranslate"><span class="pre">shape1</span></code></a>, <a class="reference internal" href="#janus.operators.AbstractStructuredOperator3D.shape2" title="janus.operators.AbstractStructuredOperator3D.shape2"><code class="xref py py-attr docutils literal notranslate"><span class="pre">shape2</span></code></a>,
+<a class="reference internal" href="#janus.operators.AbstractStructuredOperator3D.ishape3" title="janus.operators.AbstractStructuredOperator3D.ishape3"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ishape3</span></code></a> and <a class="reference internal" href="#janus.operators.AbstractStructuredOperator3D.oshape3" title="janus.operators.AbstractStructuredOperator3D.oshape3"><code class="xref py py-attr docutils literal notranslate"><span class="pre">oshape3</span></code></a> for the meaning of the
+arguments of this function.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="janus.operators.AbstractStructuredOperator3D.dim">
+<code class="descname">dim</code><a class="headerlink" href="#janus.operators.AbstractStructuredOperator3D.dim" title="Permalink to this definition">¶</a></dt>
+<dd><p>The dimension of the structured grid (<cite>int</cite>, 3).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="janus.operators.AbstractStructuredOperator3D.ishape">
+<code class="descname">ishape</code><a class="headerlink" href="#janus.operators.AbstractStructuredOperator3D.ishape" title="Permalink to this definition">¶</a></dt>
+<dd><p>The shape of the input (tuple).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="janus.operators.AbstractStructuredOperator3D.ishape3">
+<code class="descname">ishape3</code><a class="headerlink" href="#janus.operators.AbstractStructuredOperator3D.ishape3" title="Permalink to this definition">¶</a></dt>
+<dd><p>The fourth dimension of the input (<cite>int</cite>).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="janus.operators.AbstractStructuredOperator3D.oshape">
+<code class="descname">oshape</code><a class="headerlink" href="#janus.operators.AbstractStructuredOperator3D.oshape" title="Permalink to this definition">¶</a></dt>
+<dd><p>The shape of the output (tuple).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="janus.operators.AbstractStructuredOperator3D.oshape3">
+<code class="descname">oshape3</code><a class="headerlink" href="#janus.operators.AbstractStructuredOperator3D.oshape3" title="Permalink to this definition">¶</a></dt>
+<dd><p>The fourth dimension of the output (<cite>int</cite>).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="janus.operators.AbstractStructuredOperator3D.shape0">
+<code class="descname">shape0</code><a class="headerlink" href="#janus.operators.AbstractStructuredOperator3D.shape0" title="Permalink to this definition">¶</a></dt>
+<dd><p>The first dimension of the input and output (<cite>int</cite>).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="janus.operators.AbstractStructuredOperator3D.shape1">
+<code class="descname">shape1</code><a class="headerlink" href="#janus.operators.AbstractStructuredOperator3D.shape1" title="Permalink to this definition">¶</a></dt>
+<dd><p>The second dimension of the input and output (<cite>int</cite>).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="janus.operators.AbstractStructuredOperator3D.shape2">
+<code class="descname">shape2</code><a class="headerlink" href="#janus.operators.AbstractStructuredOperator3D.shape2" title="Permalink to this definition">¶</a></dt>
+<dd><p>The third dimension of the input and output (<cite>int</cite>).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="janus.operators.BlockDiagonalLinearOperator2D">
+<em class="property">class </em><code class="descclassname">janus.operators.</code><code class="descname">BlockDiagonalLinearOperator2D</code><a class="headerlink" href="#janus.operators.BlockDiagonalLinearOperator2D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Block-diagonal linear operator with 2D layout of the data.</p>
+<p>Instances of this class keep a <em>shallow</em> copy of the array of
+local matrices passed to the initializer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>(</strong><strong>float</strong><strong>[</strong> (<em>a</em>) – , :, :, :]): The array of local matrices.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="janus.operators.BlockDiagonalLinearOperator2D.apply_transpose">
+<code class="descname">apply_transpose</code><span class="sig-paren">(</span><em>self</em>, <em>__Pyx_memviewslice x</em>, <em>__Pyx_memviewslice y=None</em><span class="sig-paren">)</span><a class="headerlink" href="#janus.operators.BlockDiagonalLinearOperator2D.apply_transpose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the result of applying the transposed operator to <cite>x</cite>.</p>
+<p>The output is defined as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">[</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">j2</span><span class="p">,</span> <span class="n">i2</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">j2</span><span class="p">],</span> <span class="n">j2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If <cite>y</cite> is <cite>None</cite>, then a new memoryview is created and returned.
+Otherwise, the image of <cite>x</cite> is stored in <cite>y</cite>, and a view of <cite>y</cite>
+is returned.</p>
+<p>The default implementation calls the (Cython) method
+<cite>c_apply_transpose()</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>(</strong><strong>float</strong><strong>[</strong> (<em>y</em>) – , :, :]): The input vector.</li>
+<li><strong>(</strong><strong>float</strong><strong>[</strong> – , :, :]): The output vector.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="janus.operators.BlockDiagonalLinearOperator3D">
+<em class="property">class </em><code class="descclassname">janus.operators.</code><code class="descname">BlockDiagonalLinearOperator3D</code><a class="headerlink" href="#janus.operators.BlockDiagonalLinearOperator3D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Block-diagonal linear operator with 3D layout of the data.</p>
+<p>Instances of this class keep a <em>shallow</em> copy of the array of
+local matrices passed to the initializer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>(</strong><strong>float</strong><strong>[</strong> (<em>a</em>) – , :, :, :, :]): The array of local matrices.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="janus.operators.BlockDiagonalLinearOperator3D.apply_transpose">
+<code class="descname">apply_transpose</code><span class="sig-paren">(</span><em>self</em>, <em>__Pyx_memviewslice x</em>, <em>__Pyx_memviewslice y=None</em><span class="sig-paren">)</span><a class="headerlink" href="#janus.operators.BlockDiagonalLinearOperator3D.apply_transpose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the result of applying the transposed operator to <cite>x</cite>.</p>
+<p>The output is defined as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">y</span><span class="p">[</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">,</span> <span class="n">i3</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">,</span> <span class="n">j3</span><span class="p">,</span> <span class="n">i3</span><span class="p">]</span> <span class="o">*</span>
+                        <span class="n">x</span><span class="p">[</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">,</span> <span class="n">j3</span><span class="p">],</span> <span class="n">j3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If <cite>y</cite> is <cite>None</cite>, then a new memoryview is created and returned.
+Otherwise, the image of <cite>x</cite> is stored in <cite>y</cite>, and a view of <cite>y</cite>
+is returned.</p>
+<p>The default implementation calls the (Cython) method
+<cite>c_apply_transpose()</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>(</strong><strong>float</strong><strong>[</strong> (<em>y</em>) – , :, :, :]): The input vector.</li>
+<li><strong>(</strong><strong>float</strong><strong>[</strong> – , :, :, :]): The output vector.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="janus.operators.BlockDiagonalOperator2D">
+<em class="property">class </em><code class="descclassname">janus.operators.</code><code class="descname">BlockDiagonalOperator2D</code><a class="headerlink" href="#janus.operators.BlockDiagonalOperator2D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Block-diagonal operator with 2D layout of the (vectorial) data.</p>
+<p>If the local operators <cite>loc</cite> allow for in-place operations, then
+the block-diagonal operator also allows for in-place operations.</p>
+<p>Instances of this class keep a <em>shallow</em> copy of the array of
+local operators passed to the initializer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>(</strong><strong>AbstractOperator</strong><strong>[</strong> (<em>loc</em>) – , :]): The array of local operators.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="janus.operators.BlockDiagonalOperator3D">
+<em class="property">class </em><code class="descclassname">janus.operators.</code><code class="descname">BlockDiagonalOperator3D</code><a class="headerlink" href="#janus.operators.BlockDiagonalOperator3D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Block-diagonal operator with 3D layout of the (vectorial) data.</p>
+<p>If the local operators <cite>loc</cite> allow for in-place operations, then
+the block-diagonal operator also allows for in-place operations.</p>
+<p>Instances of this class keep a <em>shallow</em> copy of the array of
+local operators passed to the initializer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>(</strong><strong>AbstractOperator</strong><strong>[</strong> (<em>loc</em>) – , :, :]): The array of local operators.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="janus.operators.FourthRankCubicTensor2D">
+<em class="property">class </em><code class="descclassname">janus.operators.</code><code class="descname">FourthRankCubicTensor2D</code><a class="headerlink" href="#janus.operators.FourthRankCubicTensor2D" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="janus.operators.FourthRankCubicTensor2D.dim">
+<code class="descname">dim</code><a class="headerlink" href="#janus.operators.FourthRankCubicTensor2D.dim" title="Permalink to this definition">¶</a></dt>
+<dd><p>The dimension of the physical space (<cite>int</cite>, read-only).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="janus.operators.FourthRankCubicTensor2D.t11">
+<code class="descname">t11</code><a class="headerlink" href="#janus.operators.FourthRankCubicTensor2D.t11" title="Permalink to this definition">¶</a></dt>
+<dd><p>The (1, 1) coefficient of the Mandel-Voigt matrix representation.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="janus.operators.FourthRankCubicTensor2D.t12">
+<code class="descname">t12</code><a class="headerlink" href="#janus.operators.FourthRankCubicTensor2D.t12" title="Permalink to this definition">¶</a></dt>
+<dd><p>The (1, 2) coefficient of the Mandel-Voigt matrix representation.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="janus.operators.FourthRankCubicTensor2D.t13">
+<code class="descname">t13</code><a class="headerlink" href="#janus.operators.FourthRankCubicTensor2D.t13" title="Permalink to this definition">¶</a></dt>
+<dd><p>The (1, 3) coefficient of the Mandel-Voigt matrix representation.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="janus.operators.FourthRankCubicTensor2D.t23">
+<code class="descname">t23</code><a class="headerlink" href="#janus.operators.FourthRankCubicTensor2D.t23" title="Permalink to this definition">¶</a></dt>
+<dd><p>The (2, 3) coefficient of the Mandel-Voigt matrix representation.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="janus.operators.FourthRankCubicTensor2D.t33">
+<code class="descname">t33</code><a class="headerlink" href="#janus.operators.FourthRankCubicTensor2D.t33" title="Permalink to this definition">¶</a></dt>
+<dd><p>The (3, 3) coefficient of the Mandel-Voigt matrix representation.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="janus.operators.FourthRankIsotropicTensor">
+<em class="property">class </em><code class="descclassname">janus.operators.</code><code class="descname">FourthRankIsotropicTensor</code><a class="headerlink" href="#janus.operators.FourthRankIsotropicTensor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fourth rank, isotropic tensor with minor symmetries.</p>
+<p>Such a tensor is defined by its spherical and deviatoric
+projections. <strong>Warning:</strong> this class should <em>not</em> be instantiated
+directly, as the object returned by <code class="docutils literal notranslate"><span class="pre">__cinit__</span></code> would not be in a
+legal state. Use the function <a class="reference internal" href="#janus.operators.isotropic_4" title="janus.operators.isotropic_4"><code class="xref py py-func docutils literal notranslate"><span class="pre">isotropic_4()</span></code></a> instead.</p>
+<p>Any fourth rank, isotropic tensor <cite>T</cite> is a linear combination of
+the spherical projection tensor <cite>J</cite> and the deviatoric projection
+tensor <cite>K</cite>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">T</span> <span class="o">=</span> <span class="n">sph</span> <span class="o">*</span> <span class="n">J</span> <span class="o">+</span> <span class="n">dev</span> <span class="o">*</span> <span class="n">K</span><span class="o">.</span>
+</pre></div>
+</div>
+<p><cite>sph</cite> and <cite>dev</cite> are the two coefficients which are passed to the
+initializer of this class. The components of <cite>J</cite> are:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">J_ijkl</span> <span class="o">=</span> <span class="n">δ_ij</span> <span class="o">*</span> <span class="n">δ_kl</span> <span class="o">/</span> <span class="n">d</span><span class="p">,</span>
+</pre></div>
+</div>
+<p>where <cite>δ_ij</cite> denotes the Kronecker symbol, and <cite>d</cite> is the dimension
+of the physical space on which the tensor operates. The components
+of <cite>K</cite> are found from the identity <cite>K = I - J</cite>, where <cite>I</cite> is the
+fourth-rank identity tensor:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">I_ijkl</span> <span class="o">=</span> <span class="p">(</span><span class="n">δ_ik</span> <span class="o">*</span> <span class="n">δ_jl</span> <span class="o">+</span> <span class="n">δ_il</span> <span class="o">*</span> <span class="n">δ_jk</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>sph</strong> – See <a class="reference internal" href="#janus.operators.FourthRankIsotropicTensor.sph" title="janus.operators.FourthRankIsotropicTensor.sph"><code class="xref py py-attr docutils literal notranslate"><span class="pre">sph</span></code></a>.</li>
+<li><strong>dev</strong> – See <a class="reference internal" href="#janus.operators.FourthRankIsotropicTensor.dev" title="janus.operators.FourthRankIsotropicTensor.dev"><code class="xref py py-attr docutils literal notranslate"><span class="pre">dev</span></code></a>.</li>
+<li><strong>dim</strong> – See <a class="reference internal" href="#janus.operators.FourthRankIsotropicTensor.dim" title="janus.operators.FourthRankIsotropicTensor.dim"><code class="xref py py-attr docutils literal notranslate"><span class="pre">dim</span></code></a>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="janus.operators.FourthRankIsotropicTensor.dev">
+<code class="descname">dev</code><a class="headerlink" href="#janus.operators.FourthRankIsotropicTensor.dev" title="Permalink to this definition">¶</a></dt>
+<dd><p>The deviatoric projection of the tensor (<cite>float</cite>, read-only).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="janus.operators.FourthRankIsotropicTensor.dim">
+<code class="descname">dim</code><a class="headerlink" href="#janus.operators.FourthRankIsotropicTensor.dim" title="Permalink to this definition">¶</a></dt>
+<dd><p>The dimension of the physical space (<cite>int</cite>, read-only).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="janus.operators.FourthRankIsotropicTensor.sph">
+<code class="descname">sph</code><a class="headerlink" href="#janus.operators.FourthRankIsotropicTensor.sph" title="Permalink to this definition">¶</a></dt>
+<dd><p>The spherical projection of the tensor (<cite>float</cite>, read-only).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="janus.operators.FourthRankIsotropicTensor2D">
+<em class="property">class </em><code class="descclassname">janus.operators.</code><code class="descname">FourthRankIsotropicTensor2D</code><a class="headerlink" href="#janus.operators.FourthRankIsotropicTensor2D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specialization of <a class="reference internal" href="#janus.operators.FourthRankIsotropicTensor" title="janus.operators.FourthRankIsotropicTensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">FourthRankIsotropicTensor</span></code></a> to 2D.</p>
+<p>The present implementation allows for in-place operations.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="janus.operators.FourthRankIsotropicTensor3D">
+<em class="property">class </em><code class="descclassname">janus.operators.</code><code class="descname">FourthRankIsotropicTensor3D</code><a class="headerlink" href="#janus.operators.FourthRankIsotropicTensor3D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specialization of <a class="reference internal" href="#janus.operators.FourthRankIsotropicTensor" title="janus.operators.FourthRankIsotropicTensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">FourthRankIsotropicTensor</span></code></a> to 3D.</p>
+<p>The present implementation allows for in-place operations.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="janus.operators.LinearOperator">
+<em class="property">class </em><code class="descclassname">janus.operators.</code><code class="descname">LinearOperator</code><a class="headerlink" href="#janus.operators.LinearOperator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Matrix-based <a class="reference internal" href="#janus.operators.AbstractLinearOperator" title="janus.operators.AbstractLinearOperator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractLinearOperator</span></code></a>.</p>
+<p>Instances of this class keep a <em>shallow</em> copy of the matrix that was
+passed to the initializer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>(</strong><strong>float</strong><strong>[</strong> (<em>a</em>) – , :]): The matrix of the linear operator.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="janus.operators.LinearOperator.apply_transpose">
+<code class="descname">apply_transpose</code><span class="sig-paren">(</span><em>self</em>, <em>__Pyx_memviewslice x</em>, <em>__Pyx_memviewslice y=None</em><span class="sig-paren">)</span><a class="headerlink" href="#janus.operators.LinearOperator.apply_transpose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the result of applying the transposed operator to <cite>x</cite>.</p>
+<p>If <cite>y</cite> is <cite>None</cite>, then a new memoryview is created and returned.
+Otherwise, the image of <cite>x</cite> is stored in <cite>y</cite>, and a view of <cite>y</cite>
+is returned.</p>
+<p>The default implementation calls the (Cython) method
+<cite>c_apply_transpose()</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>(</strong><strong>float</strong><strong>[</strong> (<em>y</em>) – ]): The input vector.</li>
+<li><strong>(</strong><strong>float</strong><strong>[</strong> – ]): The output vector.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="janus.operators.block_diagonal_linear_operator">
+<code class="descclassname">janus.operators.</code><code class="descname">block_diagonal_linear_operator</code><span class="sig-paren">(</span><em>a</em><span class="sig-paren">)</span><a class="headerlink" href="#janus.operators.block_diagonal_linear_operator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a block-diagonal, linear operator.</p>
+<p>The array of local matrices <cite>a</cite> is a 4D or 5D  memoryview of
+<cite>float</cite>.</p>
+<p>The returned instance of <a class="reference internal" href="#janus.operators.BlockDiagonalLinearOperator2D" title="janus.operators.BlockDiagonalLinearOperator2D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockDiagonalLinearOperator2D</span></code></a>
+(if <cite>a</cite> is of type <cite>float[:, :, :, :]</cite>)
+or <a class="reference internal" href="#janus.operators.BlockDiagonalLinearOperator3D" title="janus.operators.BlockDiagonalLinearOperator3D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockDiagonalLinearOperator3D</span></code></a>
+(if <cite>a</cite> is of type <cite>float[:, :, :, :, :]</cite>) keeps a <em>shallow</em> copy
+of <cite>a</cite>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="janus.operators.block_diagonal_operator">
+<code class="descclassname">janus.operators.</code><code class="descname">block_diagonal_operator</code><span class="sig-paren">(</span><em>loc</em><span class="sig-paren">)</span><a class="headerlink" href="#janus.operators.block_diagonal_operator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a block-diagonal operator.</p>
+<p>The array of local operators <cite>loc</cite> is a two- or three- dimensional
+memoryview of <a class="reference internal" href="#janus.operators.AbstractOperator" title="janus.operators.AbstractOperator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractOperator</span></code></a>.</p>
+<p>The returned instance of <a class="reference internal" href="#janus.operators.BlockDiagonalOperator2D" title="janus.operators.BlockDiagonalOperator2D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockDiagonalOperator2D</span></code></a> or
+<a class="reference internal" href="#janus.operators.BlockDiagonalOperator3D" title="janus.operators.BlockDiagonalOperator3D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockDiagonalOperator3D</span></code></a> keeps a <em>shallow</em> copy of <cite>loc</cite>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="janus.operators.isotropic_4">
+<code class="descclassname">janus.operators.</code><code class="descname">isotropic_4</code><span class="sig-paren">(</span><em>sph</em>, <em>dev</em>, <em>dim</em><span class="sig-paren">)</span><a class="headerlink" href="#janus.operators.isotropic_4" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new instance of <a class="reference internal" href="#janus.operators.FourthRankIsotropicTensor" title="janus.operators.FourthRankIsotropicTensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">FourthRankIsotropicTensor</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>sph</strong> (<em>float</em>) – The spherical projection.</li>
+<li><strong>dev</strong> (<em>float</em>) – The deviatoric projection.</li>
+<li><strong>dim</strong> (<em>int</em>) – The dimension of the physical space.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="materials.html" class="btn btn-neutral float-right" title="Materials" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="installation.html" class="btn btn-neutral" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013-2015, S. Brisard.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

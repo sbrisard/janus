@@ -1,0 +1,597 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Square inclusion, basic scheme &mdash; Janus 0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="API Reference" href="../../api.html" />
+    <link rel="prev" title="Computing discrete Fourier transforms" href="../../fft_tutorial.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Janus
+          
+
+          
+            
+            <img src="../../_static/logo_janus-200x200.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../operators.html">Operators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../materials.html">Materials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fft_tutorial.html">Computing discrete Fourier transforms</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Square inclusion, basic scheme</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#description-of-the-problem">Description of the problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#implementation-of-the-lippmann-schwinger-operator">Implementation of the Lippmann–Schwinger operator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-main-block-of-the-script">The main block of the script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-complete-program">The complete program</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../todo.html">TODO List</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mandel.html">Mandel notation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../bibliography.html">Bibliography</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Janus</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+      <li>Square inclusion, basic scheme</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/tutorials/square_basic/square_basic.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="square-inclusion-basic-scheme">
+<h1>Square inclusion, basic scheme<a class="headerlink" href="#square-inclusion-basic-scheme" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="description-of-the-problem">
+<h2>Description of the problem<a class="headerlink" href="#description-of-the-problem" title="Permalink to this headline">¶</a></h2>
+<p>In this tutorial, we will compute the effective elastic properties of a simple 2D microstructure in plane strain. More precisely, we consider a periodic microstructure made of a square inclusion of size <span class="math notranslate nohighlight">\(a\)</span>, embedded in a unit-cell of size <span class="math notranslate nohighlight">\(L\)</span> (see <a class="reference internal" href="#fig-microstructure"><span class="std std-numref">Fig. 1</span></a>).</p>
+<div class="figure align-center" id="id1">
+<span id="fig-microstructure"></span><img alt="../../_images/microstructure.svg" src="../../_images/microstructure.svg" /><p class="caption"><span class="caption-number">Fig. 1 </span><span class="caption-text">The periodic microstructure under consideration.</span></p>
+<div class="legend">
+<span class="math notranslate nohighlight">\(\mu_\mathrm i\)</span> (resp. <span class="math notranslate nohighlight">\(\mu_\mathrm m\)</span>) denotes the shear modulus of the inclusion (resp. the matrix); <span class="math notranslate nohighlight">\(\nu_\mathrm i\)</span> (resp. <span class="math notranslate nohighlight">\(\nu_\mathrm m\)</span>) denotes the Poisson ratio of the inclusion (resp. the matrix).</div>
+</div>
+<p>The effective properties of this periodic microstructure are derived from the solution to the so-called <em>corrector</em> problem</p>
+<div class="math notranslate nohighlight" id="equation-corrector-problem">
+\begin{gather}
+   \nabla\cdot\boldsymbol\sigma=\boldsymbol 0,\\
+   \boldsymbol\sigma=\mathbf C:\boldsymbol\varepsilon,\\
+   \boldsymbol\varepsilon=\mathbf E+\nabla^\mathrm{s}\mathbf u,
+\end{gather}</div><p>where <span class="math notranslate nohighlight">\(\mathbf u\)</span> denotes the unknown, periodic displacement, <span class="math notranslate nohighlight">\(\boldsymbol\varepsilon\)</span> (resp. <span class="math notranslate nohighlight">\(\boldsymbol\sigma\)</span>) is the local strain (resp. stress) and <span class="math notranslate nohighlight">\(\mathbf C\)</span> is the local stiffness (inclusion or matrix). From the solution to the above problem, the effective stiffness <span class="math notranslate nohighlight">\(\mathbf C^\mathrm{eff}\)</span> is defined as the tensor mapping the macroscopic (imposed) strain <span class="math notranslate nohighlight">\(\mathbf E=\langle\boldsymbol\varepsilon\rangle\)</span> to the macroscopic stress <span class="math notranslate nohighlight">\(\boldsymbol\sigma=\langle\boldsymbol\sigma\rangle\)</span> (where quantities between angle brackets denote volume averages)</p>
+<div class="math notranslate nohighlight">
+\[\mathbf C^\mathrm{eff}:\mathbf E=\frac1{L^d}\int_{\left(0,L\right)^d}\boldsymbol\sigma(x_1,x_2)\,\operatorname{d}\!x_1\cdots\operatorname{d}\!x_d.\]</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This example is illustrated in two dimensions (<span class="math notranslate nohighlight">\(d=2\)</span>). However, it is implemented so as to be dimension independent, so that <span class="math notranslate nohighlight">\(d=3\)</span> should work out of the box.</p>
+</div>
+<p>In the present tutorial, we shall concentrate on the 1212 component of the effective stiffness, that is to say that the following macroscopic strain will be imposed</p>
+<div class="math notranslate nohighlight" id="equation-macroscopic-strain">
+<span class="eqno">(2)<a class="headerlink" href="#equation-macroscopic-strain" title="Permalink to this equation">¶</a></span>\[\mathbf E=E_{12}\left(\mathbf e_1\otimes\mathbf e_2+\mathbf e_2\otimes\mathbf e_1\right),\]</div>
+<p>and the volume average <span class="math notranslate nohighlight">\(\langle\sigma_{12}\rangle\)</span> will be evaluated. To do so, the boundary value problem <a class="reference internal" href="#equation-corrector-problem">(1)</a> is transformed into an integral equation, known as the Lippmann–Schwinger equation (<a class="reference internal" href="../../bibliography.html#korr1973"><span class="std std-ref">Korringa, 1973</span></a>; <a class="reference internal" href="../../bibliography.html#zell1973"><span class="std std-ref">Zeller &amp; Dederichs, 1973</span></a> ; <a class="reference internal" href="../../bibliography.html#kron1974"><span class="std std-ref">Kröner, 1974</span></a>) . This equation reads</p>
+<div class="math notranslate nohighlight" id="equation-lippmann-schwinger">
+<span class="eqno">(3)<a class="headerlink" href="#equation-lippmann-schwinger" title="Permalink to this equation">¶</a></span>\[\boldsymbol\varepsilon+\boldsymbol\Gamma_0[\left(\mathbf C-\mathbf C_0\right):\boldsymbol\varepsilon]=\mathbf E,\]</div>
+<p>where <span class="math notranslate nohighlight">\(\mathbf C_0\)</span> denotes the stiffness of the reference material, <span class="math notranslate nohighlight">\(\boldsymbol\Gamma_0\)</span> the related Green operator for strains, and <span class="math notranslate nohighlight">\(\boldsymbol\varepsilon\)</span> the local strain tensor. We will assume that the reference material is isotropic, with shear modulus <span class="math notranslate nohighlight">\(\mu_0\)</span> and Poisson ratio <span class="math notranslate nohighlight">\(\nu_0\)</span>.</p>
+<p>Following <a class="reference internal" href="../../bibliography.html#moul1998"><span class="std std-ref">Moulinec and Suquet (1998)</span></a>, the above Lippmann–Schwinger equation <a class="reference internal" href="#equation-lippmann-schwinger">(3)</a> is solved by means of fixed point iterations</p>
+<div class="math notranslate nohighlight" id="equation-basic-scheme">
+<span class="eqno">(4)<a class="headerlink" href="#equation-basic-scheme" title="Permalink to this equation">¶</a></span>\[\boldsymbol\varepsilon^{k+1}=\mathbf E-\boldsymbol\Gamma_0[\left(\mathbf C-\mathbf C_0\right):\boldsymbol\varepsilon^k].\]</div>
+<p>Finally, the above iterative scheme is discretized over a regular grid, leading to the basic uniform grid, periodic Lippmann–Schwinger solver.</p>
+</div>
+<div class="section" id="implementation-of-the-lippmann-schwinger-operator">
+<h2>Implementation of the Lippmann–Schwinger operator<a class="headerlink" href="#implementation-of-the-lippmann-schwinger-operator" title="Permalink to this headline">¶</a></h2>
+<p>We will call the operator</p>
+<div class="math notranslate nohighlight">
+\[\boldsymbol\varepsilon\mapsto\mathbf E-\boldsymbol\Gamma_0\left[\left(\mathbf C-\mathbf C_0\right):\boldsymbol\varepsilon\right]\]</div>
+<p>the <em>Lippmann–Schwinger operator</em>. In the present section, we show how this operator is implemented as a class with Janus. This will be done by composing two successive operators, namely (i) the local operator</p>
+<div class="math notranslate nohighlight" id="equation-local-operator">
+<span class="eqno">(5)<a class="headerlink" href="#equation-local-operator" title="Permalink to this equation">¶</a></span>\[\boldsymbol\varepsilon\mapsto\boldsymbol\tau=\left(\mathbf C-\mathbf C_0\right):\boldsymbol\varepsilon,\]</div>
+<p>where <span class="math notranslate nohighlight">\(\boldsymbol\tau\)</span> denotes the stress-polarization, and (ii) the Green operator for strains</p>
+<div class="math notranslate nohighlight" id="equation-non-local-operator">
+<span class="eqno">(6)<a class="headerlink" href="#equation-non-local-operator" title="Permalink to this equation">¶</a></span>\[\boldsymbol\tau\mapsto\boldsymbol\Gamma_0[\boldsymbol\tau].\]</div>
+<p>For the implementation of the local operator defined by Eq. <a class="reference internal" href="#equation-local-operator">(5)</a>, it is first observed that <span class="math notranslate nohighlight">\(\mathbf C_0\)</span>, <span class="math notranslate nohighlight">\(\mathbf C_\mathrm{i}\)</span> and <span class="math notranslate nohighlight">\(\mathbf C_\mathrm{m}\)</span> being isotropic materials, <span class="math notranslate nohighlight">\(\mathbf C-\mathbf C_0\)</span> is an isotropic tensor at any point of the unit-cell. In other words, both <span class="math notranslate nohighlight">\(\mathbf C_\mathrm i-\mathbf C_0\)</span> and <span class="math notranslate nohighlight">\(\mathbf C_\mathrm m-\mathbf C_0\)</span> will be defined as instances of <a class="reference internal" href="../../operators.html#janus.operators.FourthRankIsotropicTensor" title="janus.operators.FourthRankIsotropicTensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">FourthRankIsotropicTensor</span></code></a>.</p>
+<p>Furthermore, this operator is <em>local</em>. In other words, the output value in cell <code class="docutils literal notranslate"><span class="pre">(i0,</span> <span class="pre">i1)</span></code> depends on the input value in the same cell only (the neighboring cells are ignored). More precisely, we assume that a uniform grid of shape <code class="docutils literal notranslate"><span class="pre">(n,</span> <span class="pre">n)</span></code> is used to discretized Eq. <a class="reference internal" href="#equation-basic-scheme">(4)</a>. Then the material properties are constant in each cell, and we define <code class="docutils literal notranslate"><span class="pre">delta_C[i0,</span> <span class="pre">i1,</span> <span class="pre">:,</span> <span class="pre">:]</span></code> the matrix representation of <span class="math notranslate nohighlight">\(\mathbf C-\mathbf C_0\)</span> (see <a class="reference internal" href="../../mandel.html#mandel-notation"><span class="std std-ref">Mandel notation</span></a>). Likewise, <code class="docutils literal notranslate"><span class="pre">eps[i0,</span> <span class="pre">i1,</span> <span class="pre">:]</span></code> is the vector representation of the strain tensor in cell <code class="docutils literal notranslate"><span class="pre">(i0,</span> <span class="pre">i1)</span></code>. Then, the stress-polarization <span class="math notranslate nohighlight">\(\left(\mathbf C-\mathbf C_0\right):\boldsymbol\varepsilon\)</span> in cell <code class="docutils literal notranslate"><span class="pre">(i0,</span> <span class="pre">i1)</span></code> is given by the expression:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tau</span><span class="p">[</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">]</span> <span class="o">=</span> <span class="n">delta_C</span><span class="p">[</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">]</span> <span class="o">@</span> <span class="n">eps</span><span class="p">[</span><span class="n">i0</span><span class="p">,</span> <span class="n">i1</span><span class="p">],</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">&#64;</span></code> denotes the matrix multiplication operator. It results from the above relation that the lcoal operator defined by <a class="reference internal" href="#equation-local-operator">(5)</a> should be implemented as a <a class="reference internal" href="../../operators.html#janus.operators.BlockDiagonalOperator2D" title="janus.operators.BlockDiagonalOperator2D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockDiagonalOperator2D</span></code></a>. As for the non-local operator, it is instanciated by a simple call to the <code class="docutils literal notranslate"><span class="pre">green_operator</span></code> method of the relevant material (see <a class="reference internal" href="../../materials.html#materials"><span class="std std-ref">Materials</span></a>).</p>
+<p>The script starts with imports from the standard library, the SciPy stack and Janus itself:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">itertools</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">import</span> <span class="nn">janus.green</span> <span class="k">as</span> <span class="nn">green</span>
+<span class="kn">import</span> <span class="nn">janus.fft.serial</span> <span class="k">as</span> <span class="nn">fft</span>
+<span class="kn">import</span> <span class="nn">janus.material.elastic.linear.isotropic</span> <span class="k">as</span> <span class="nn">material</span>
+<span class="kn">import</span> <span class="nn">janus.operators</span> <span class="k">as</span> <span class="nn">operators</span>
+
+<span class="kn">from</span> <span class="nn">janus.operators</span> <span class="k">import</span> <span class="n">isotropic_4</span>
+</pre></div>
+</div>
+<p>We then define a class <code class="docutils literal notranslate"><span class="pre">Example</span></code>, which represents the microsctructure described above. The first few lines of its initializer are pretty simple</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Example</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mat_i</span><span class="p">,</span> <span class="n">mat_m</span><span class="p">,</span> <span class="n">mat_0</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mat_i</span> <span class="o">=</span> <span class="n">mat_i</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mat_m</span> <span class="o">=</span> <span class="n">mat_m</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="n">n</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dim</span><span class="p">))</span>
+        <span class="c1"># ...</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">mat_i</span></code> (resp. <code class="docutils literal notranslate"><span class="pre">mat_m</span></code>, <code class="docutils literal notranslate"><span class="pre">mat_0</span></code>) are the material properties of the inclusion (resp. the matrix, the reference material); <code class="docutils literal notranslate"><span class="pre">n</span></code> is the number of grid cells along each side, <code class="docutils literal notranslate"><span class="pre">a</span></code> is the size of the inclusion, and <code class="docutils literal notranslate"><span class="pre">dim</span></code> is the dimension of the physical space. The <code class="docutils literal notranslate"><span class="pre">shape</span></code> of the grid is stored in a tuple, the length of which depends on <code class="docutils literal notranslate"><span class="pre">dim</span></code>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">As much as possible, keep your code dimension-independent. This means that the spatial dimension (2 or 3) should not be hard-coded. Rather, you should make it a rule to always parameterize the spatial dimension (use a variable <code class="docutils literal notranslate"><span class="pre">dim</span></code>), even if you do not really intend to change this dimension. Janus object sometimes have different implementations depending on the spatial dimension. For example, the abstract class <a class="reference internal" href="../../operators.html#janus.operators.FourthRankIsotropicTensor" title="janus.operators.FourthRankIsotropicTensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">FourthRankIsotropicTensor</span></code></a> has two concrete daughter classes <a class="reference internal" href="../../operators.html#janus.operators.FourthRankIsotropicTensor2D" title="janus.operators.FourthRankIsotropicTensor2D"><code class="xref py py-class docutils literal notranslate"><span class="pre">FourthRankIsotropicTensor2D</span></code></a> and <a class="reference internal" href="../../operators.html#janus.operators.FourthRankIsotropicTensor3D" title="janus.operators.FourthRankIsotropicTensor3D"><code class="xref py py-class docutils literal notranslate"><span class="pre">FourthRankIsotropicTensor3D</span></code></a>. However, both can be instantiated through the unique function <a class="reference internal" href="../../operators.html#janus.operators.isotropic_4" title="janus.operators.isotropic_4"><code class="xref py py-func docutils literal notranslate"><span class="pre">isotropic_4</span></code></a>, where the spatial dimension can be specified.</p>
+</div>
+<p>We then define the local operators <span class="math notranslate nohighlight">\(\mathbf C_\mathrm i-\mathbf C_0\)</span> and <span class="math notranslate nohighlight">\(\mathbf C_\mathrm m-\mathbf C_0\)</span> as <a class="reference internal" href="../../operators.html#janus.operators.FourthRankIsotropicTensor" title="janus.operators.FourthRankIsotropicTensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">FourthRankIsotropicTensor</span></code></a>. It is recalled that the stiffness <span class="math notranslate nohighlight">\(\mathbf C\)</span> of a material with bulk modulus <span class="math notranslate nohighlight">\(\kappa\)</span> and shear modulus <span class="math notranslate nohighlight">\(\mu\)</span> reads</p>
+<div class="math notranslate nohighlight">
+\[\mathbf C = d\kappa\mathbf J+2\mu\mathbf K,\]</div>
+<p>where <span class="math notranslate nohighlight">\(d\)</span> denotes the dimension of the physical space and <span class="math notranslate nohighlight">\(\mathbf J\)</span> (resp. <span class="math notranslate nohighlight">\(\mathbf K\)</span>) denote the spherical (resp. deviatoric) projector tensor. In other words, the spherical and deviatoric projections of <span class="math notranslate nohighlight">\(\mathbf C\)</span> are <span class="math notranslate nohighlight">\(d\kappa\)</span> and <span class="math notranslate nohighlight">\(2\mu\)</span>, respectively. As a consequence, the spherical and deviatoric projections of <span class="math notranslate nohighlight">\(\mathbf C-\mathbf C_0\)</span> are <span class="math notranslate nohighlight">\(d\left(\kappa-\kappa_0\right)\)</span> and <span class="math notranslate nohighlight">\(2\left(\mu-\mu_0\right)\)</span>, respectively. This leads to the following definitions</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>        <span class="c1"># ...</span>
+        <span class="n">delta_C_i</span> <span class="o">=</span> <span class="n">isotropic_4</span><span class="p">(</span><span class="n">dim</span><span class="o">*</span><span class="p">(</span><span class="n">mat_i</span><span class="o">.</span><span class="n">k</span><span class="o">-</span><span class="n">mat_0</span><span class="o">.</span><span class="n">k</span><span class="p">),</span>
+                                <span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">mat_i</span><span class="o">.</span><span class="n">g</span><span class="o">-</span><span class="n">mat_0</span><span class="o">.</span><span class="n">g</span><span class="p">),</span> <span class="n">dim</span><span class="p">)</span>
+        <span class="n">delta_C_m</span> <span class="o">=</span> <span class="n">isotropic_4</span><span class="p">(</span><span class="n">dim</span><span class="o">*</span><span class="p">(</span><span class="n">mat_m</span><span class="o">.</span><span class="n">k</span><span class="o">-</span><span class="n">mat_0</span><span class="o">.</span><span class="n">k</span><span class="p">),</span>
+                                <span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">mat_m</span><span class="o">.</span><span class="n">g</span><span class="o">-</span><span class="n">mat_0</span><span class="o">.</span><span class="n">g</span><span class="p">),</span> <span class="n">dim</span><span class="p">)</span>
+        <span class="c1"># ...</span>
+</pre></div>
+</div>
+<p>Now, <code class="docutils literal notranslate"><span class="pre">delta_C_i</span></code> and <code class="docutils literal notranslate"><span class="pre">delta_C_m</span></code> are used to create the operator <span class="math notranslate nohighlight">\(\boldsymbol\varepsilon\mapsto\left(\mathbf C-\mathbf C_0\right):\boldsymbol\varepsilon\)</span> as a <a class="reference internal" href="../../operators.html#janus.operators.BlockDiagonalOperator2D" title="janus.operators.BlockDiagonalOperator2D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockDiagonalOperator2D</span></code></a>. Block-diagonal operators are initialized from an array of local operators, called <code class="docutils literal notranslate"><span class="pre">ops</span></code> below</p>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">This code snippet is not dimension independent.</p>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>        <span class="c1"># ...</span>
+        <span class="n">ops</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+        <span class="n">ops</span><span class="p">[:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">delta_C_m</span>
+        <span class="n">imax</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n</span><span class="o">*</span><span class="n">a</span><span class="o">-</span><span class="mf">0.5</span><span class="p">))</span>
+        <span class="n">ops</span><span class="p">[:</span><span class="n">imax</span><span class="p">,</span> <span class="p">:</span><span class="n">imax</span><span class="p">]</span> <span class="o">=</span> <span class="n">delta_C_i</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eps_to_tau</span> <span class="o">=</span> <span class="n">operators</span><span class="o">.</span><span class="n">BlockDiagonalOperator2D</span><span class="p">(</span><span class="n">ops</span><span class="p">)</span>
+        <span class="c1"># ...</span>
+</pre></div>
+</div>
+<p>The upper-left quarter of the unit-cell is filled with <code class="docutils literal notranslate"><span class="pre">delta_C_i</span></code> (<span class="math notranslate nohighlight">\(\mathbf C_\mathrm i-\mathbf C_0\)</span>), while the remainder of the unit-cell receives <code class="docutils literal notranslate"><span class="pre">delta_C_m</span></code> (<span class="math notranslate nohighlight">\(\mathbf C_\mathrm m-\mathbf C_0\)</span>). Finally, a <a class="reference internal" href="../../operators.html#janus.operators.BlockDiagonalOperator2D" title="janus.operators.BlockDiagonalOperator2D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockDiagonalOperator2D</span></code></a> is created from the array of local operators. It is called <code class="docutils literal notranslate"><span class="pre">eps_to_tau</span></code> as it maps the strain (<span class="math notranslate nohighlight">\(\boldsymbol\varepsilon\)</span>) to the stress-polarization (<span class="math notranslate nohighlight">\(\boldsymbol\tau\)</span>).</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><code class="docutils literal notranslate"><span class="pre">eps_to_tau</span></code> is not a <em>method</em>. Rather, it is an <em>attribute</em>, which turns out to be a function.</p>
+</div>
+<p>Finally, the discrete Green operator for strains associated with the reference material <span class="math notranslate nohighlight">\(\mathbf C_0\)</span> is created. This requires first to create a FFT object (see <a class="reference internal" href="../../fft_tutorial.html#fft"><span class="std std-ref">Computing discrete Fourier transforms</span></a>).</p>
+<div class="admonition-todo admonition" id="index-1">
+<p class="first admonition-title">Todo</p>
+<p class="last">Document Green operators for strains.</p>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>        <span class="c1"># ...</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">green</span> <span class="o">=</span> <span class="n">green</span><span class="o">.</span><span class="n">truncated</span><span class="p">(</span><span class="n">mat_0</span><span class="o">.</span><span class="n">green_operator</span><span class="p">(),</span>
+                                     <span class="n">shape</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span>
+                                     <span class="n">fft</span><span class="o">.</span><span class="n">create_real</span><span class="p">(</span><span class="n">shape</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The Lippmann–Schwinger operator <span class="math notranslate nohighlight">\(\boldsymbol\varepsilon\mapsto\boldsymbol\Gamma_0[\left(\mathbf C-\mathbf C_0\right):\boldsymbol\varepsilon]\)</span> is then defined by composition</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eps_to_tau</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">green</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>which closes the definition of the class <code class="docutils literal notranslate"><span class="pre">Example</span></code>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Note how we allowed for the output array to be passed by reference, thus allowing for memory reuse.</p>
+</div>
+</div>
+<div class="section" id="the-main-block-of-the-script">
+<h2>The main block of the script<a class="headerlink" href="#the-main-block-of-the-script" title="Permalink to this headline">¶</a></h2>
+<p>It starts with the definition of a few parameters</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">dim</span> <span class="o">=</span> <span class="mi">2</span>                <span class="c1"># Spatial dimension</span>
+    <span class="n">sym</span> <span class="o">=</span> <span class="p">(</span><span class="n">dim</span><span class="o">*</span><span class="p">(</span><span class="n">dim</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span><span class="o">//</span><span class="mi">2</span> <span class="c1"># Dim. of space of second rank, symmetric tensors</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="mi">256</span>                <span class="c1"># Number of cells along each side of the grid</span>
+    <span class="n">mu_i</span><span class="p">,</span> <span class="n">nu_i</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="mf">0.2</span>  <span class="c1"># Shear modulus and Poisson ratio of inclusion</span>
+    <span class="n">mu_m</span><span class="p">,</span> <span class="n">nu_m</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.3</span>    <span class="c1"># Shear modulus and Poisson ratio of matrix</span>
+    <span class="n">mu_0</span><span class="p">,</span> <span class="n">nu_0</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="mf">0.3</span>   <span class="c1"># Shear modulus and Poisson ratio of ref. mat.</span>
+    <span class="n">num_cells</span> <span class="o">=</span> <span class="n">n</span><span class="o">**</span><span class="n">dim</span>     <span class="c1"># Total number of cells</span>
+</pre></div>
+</div>
+<p>Then, an instance of class <code class="docutils literal notranslate"><span class="pre">Example</span></code> is created</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">example</span> <span class="o">=</span> <span class="n">Example</span><span class="p">(</span><span class="n">mat_i</span><span class="o">=</span><span class="n">material</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">mu_i</span><span class="p">,</span> <span class="n">nu_i</span><span class="p">,</span> <span class="n">dim</span><span class="p">),</span>
+                      <span class="n">mat_m</span><span class="o">=</span><span class="n">material</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">mu_m</span><span class="p">,</span> <span class="n">nu_m</span><span class="p">,</span> <span class="n">dim</span><span class="p">),</span>
+                      <span class="n">mat_0</span><span class="o">=</span><span class="n">material</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">mu_0</span><span class="p">,</span> <span class="n">nu_0</span><span class="p">,</span> <span class="n">dim</span><span class="p">),</span>
+                      <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span>
+                      <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We then define <code class="docutils literal notranslate"><span class="pre">eps_macro</span></code>, which stores the imposed value of the macroscopic strain <span class="math notranslate nohighlight">\(\mathbf E\)</span>, and <code class="docutils literal notranslate"><span class="pre">eps</span></code> and <code class="docutils literal notranslate"><span class="pre">eps_new</span></code>, which hold two successive iterates of the local strain field <span class="math notranslate nohighlight">\(\boldsymbol\varepsilon\)</span>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">avg_eps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">sym</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">avg_eps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+    <span class="n">eps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">example</span><span class="o">.</span><span class="n">green</span><span class="o">.</span><span class="n">ishape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">new_eps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">eps</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The shape of the arrays <code class="docutils literal notranslate"><span class="pre">eps</span></code> and <code class="docutils literal notranslate"><span class="pre">eps_new</span></code> is simply inferred from the shape of the input of the Green operator for strains <span class="math notranslate nohighlight">\(\boldsymbol\Gamma_0\)</span>.</p>
+</div>
+<p>We will not implement a stopping criterion for this simple example. Rather, a fixed number of iterations will be specified. Meanwhile, the residual</p>
+<div class="math notranslate nohighlight" id="equation-residual">
+<span class="eqno">(7)<a class="headerlink" href="#equation-residual" title="Permalink to this equation">¶</a></span>\[\left(\frac1{L^d}\int_{(0,L)^d}\left(\boldsymbol\varepsilon^{k+1}-\boldsymbol\varepsilon^k\right):\left(\boldsymbol\varepsilon^{k+1}-\boldsymbol\varepsilon^k\right)\operatorname{d}\!x_1\cdots\operatorname{d}\!x_d\right)^{1/2},\]</div>
+<p>will be computed and stored at each iteration through the following estimate</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">norm</span><span class="p">(</span><span class="n">new_eps</span><span class="o">-</span><span class="n">eps</span><span class="p">)</span><span class="o">/</span><span class="n">sqrt</span><span class="p">(</span><span class="n">num_cells</span><span class="p">)</span><span class="o">/</span><span class="n">norm</span><span class="p">(</span><span class="n">avg_eps</span><span class="p">),</span>
+</pre></div>
+</div>
+<p>where normalization (using <span class="math notranslate nohighlight">\(\lVert\mathbf E\rVert\)</span>) is also applied.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Note that the quantity defined by Eq. <a class="reference internal" href="#equation-residual">(7)</a> is truly a residual. Indeed, it is the norm of the difference between the left- and right-hand side in Eq. <a class="reference internal" href="#equation-lippmann-schwinger">(3)</a>, since <span class="math notranslate nohighlight">\(\boldsymbol\varepsilon^{k+1}-\boldsymbol\varepsilon^k=\mathbf E-\boldsymbol\Gamma_0[\left(\mathbf C-\mathbf C_0\right):\boldsymbol\varepsilon^k]-\boldsymbol\varepsilon^k\)</span>.</p>
+</div>
+<p>The fixed-point iterations defined by Eq. <a class="reference internal" href="#equation-basic-scheme">(4)</a> are then implemented as follows</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">num_iter</span> <span class="o">=</span> <span class="mi">400</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">num_iter</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">eps</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">avg_eps</span>
+    <span class="n">normalization</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">num_cells</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">avg_eps</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_iter</span><span class="p">):</span>
+        <span class="n">example</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">eps</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">new_eps</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">avg_eps</span><span class="p">,</span> <span class="n">new_eps</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">new_eps</span><span class="p">)</span>
+        <span class="n">res</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">normalization</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">new_eps</span><span class="o">-</span><span class="n">eps</span><span class="p">)</span>
+        <span class="n">eps</span><span class="p">,</span> <span class="n">new_eps</span> <span class="o">=</span> <span class="n">new_eps</span><span class="p">,</span> <span class="n">eps</span>
+</pre></div>
+</div>
+<p>and the results are post-processed</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">tau</span> <span class="o">=</span> <span class="n">example</span><span class="o">.</span><span class="n">eps_to_tau</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">eps</span><span class="p">)</span>
+    <span class="n">avg_tau</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">tau</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">dim</span><span class="p">)))</span>
+    <span class="n">C_1212</span> <span class="o">=</span> <span class="n">mu_0</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">avg_tau</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">avg_eps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">C_1212</span><span class="p">)</span>
+
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Number of iterations&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Normalized residual&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">(</span><span class="n">pad</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;residual.png&#39;</span><span class="p">,</span> <span class="n">transparent</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax_array</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">get_size_inches</span><span class="p">()</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">set_size_inches</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">width</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ax</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ax_array</span><span class="p">):</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_axis_off</span><span class="p">()</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">eps</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i</span><span class="p">],</span> <span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">(</span><span class="n">pad</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;eps.png&#39;</span><span class="p">,</span> <span class="n">transparent</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To compute the macroscopic stiffness, we recall the definition of the stress-polarization from which we find</p>
+<div class="math notranslate nohighlight">
+\[\mathbf C^\mathrm{eff}:\mathbf E=\langle\boldsymbol\sigma\rangle=\langle\mathbf C:\boldsymbol\varepsilon+\boldsymbol\tau\rangle=\mathbf C:\mathbf E+\langle\boldsymbol\tau\rangle.\]</div>
+<p>Then, from the specific macroscopic strain <span class="math notranslate nohighlight">\(\mathbf E\)</span> that we considered [see Eq. <a class="reference internal" href="#equation-macroscopic-strain">(2)</a>]</p>
+<div class="math notranslate nohighlight">
+\[C_{1212}^\mathrm{eff}=C_{0, 1212}+\frac{\langle\tau_{12}\rangle}{2E_{12}}=C_{0, 1212}+\frac{[\langle\boldsymbol\tau\rangle]_{-1}}{2[\mathbf E]_{-1}}=\mu_0+\frac{[\langle\boldsymbol\tau\rangle]_{-1}}{2[\mathbf E]_{-1}}\]</div>
+<p>where brackets refer to the <a class="reference internal" href="../../mandel.html#mandel-notation"><span class="std std-ref">Mandel notation</span></a>, and the -1 index denotes the last component of the column-vector (which, in Mandel’s notation, refers to the 12 component of second-rank symmetric tensors, both in two and three dimensions). We get the following approximation</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>C_1212 # 1.41903971282,
+</pre></div>
+</div>
+<p>and the map of the local strains is shown in <a class="reference internal" href="#fig-strains"><span class="std std-numref">Fig. 2</span></a>, while <a class="reference internal" href="#fig-residual"><span class="std std-numref">Fig. 3</span></a> shows that the residual decreases (albeit slowly) with the number of iterations. This completes this tutorial.</p>
+<div class="figure align-center" id="id2">
+<span id="fig-strains"></span><img alt="../../_images/eps.png" src="../../_images/eps.png" />
+<p class="caption"><span class="caption-number">Fig. 2 </span><span class="caption-text">The maps of <span class="math notranslate nohighlight">\(\boldsymbol\varepsilon_{11}\)</span> (left), <span class="math notranslate nohighlight">\(\boldsymbol\varepsilon_{22}\)</span> (middle) and <span class="math notranslate nohighlight">\(\boldsymbol\varepsilon_{12}\)</span> (right). Different color scales were used for the left and middle map, and for the right map. Note that in the above representation, the <span class="math notranslate nohighlight">\(x_1\)</span> axis points to the bottom, while the <span class="math notranslate nohighlight">\(x_2\)</span> axis points to the right.</span></p>
+</div>
+<div class="figure align-center" id="id3">
+<span id="fig-residual"></span><img alt="../../_images/residual.png" src="../../_images/residual.png" />
+<p class="caption"><span class="caption-number">Fig. 3 </span><span class="caption-text">The normalized residual as a function of the number of iterations.</span></p>
+</div>
+</div>
+<div class="section" id="the-complete-program">
+<h2>The complete program<a class="headerlink" href="#the-complete-program" title="Permalink to this headline">¶</a></h2>
+<p>The complete program can be downloaded <a class="reference download internal" href="../../_downloads/square_basic.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">here</span></code></a>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Begin: imports</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">import</span> <span class="nn">janus.green</span> <span class="k">as</span> <span class="nn">green</span>
+<span class="kn">import</span> <span class="nn">janus.fft.serial</span> <span class="k">as</span> <span class="nn">fft</span>
+<span class="kn">import</span> <span class="nn">janus.material.elastic.linear.isotropic</span> <span class="k">as</span> <span class="nn">material</span>
+<span class="kn">import</span> <span class="nn">janus.operators</span> <span class="k">as</span> <span class="nn">operators</span>
+
+<span class="kn">from</span> <span class="nn">janus.operators</span> <span class="k">import</span> <span class="n">isotropic_4</span>
+<span class="c1"># End: imports</span>
+
+<span class="c1"># Begin: init</span>
+<span class="k">class</span> <span class="nc">Example</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mat_i</span><span class="p">,</span> <span class="n">mat_m</span><span class="p">,</span> <span class="n">mat_0</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mat_i</span> <span class="o">=</span> <span class="n">mat_i</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mat_m</span> <span class="o">=</span> <span class="n">mat_m</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="n">n</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dim</span><span class="p">))</span>
+        <span class="c1"># ...</span>
+        <span class="c1"># End: init</span>
+        <span class="c1"># Begin: create (C_i - C_0) and (C_m - C_0)</span>
+        <span class="c1"># ...</span>
+        <span class="n">delta_C_i</span> <span class="o">=</span> <span class="n">isotropic_4</span><span class="p">(</span><span class="n">dim</span><span class="o">*</span><span class="p">(</span><span class="n">mat_i</span><span class="o">.</span><span class="n">k</span><span class="o">-</span><span class="n">mat_0</span><span class="o">.</span><span class="n">k</span><span class="p">),</span>
+                                <span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">mat_i</span><span class="o">.</span><span class="n">g</span><span class="o">-</span><span class="n">mat_0</span><span class="o">.</span><span class="n">g</span><span class="p">),</span> <span class="n">dim</span><span class="p">)</span>
+        <span class="n">delta_C_m</span> <span class="o">=</span> <span class="n">isotropic_4</span><span class="p">(</span><span class="n">dim</span><span class="o">*</span><span class="p">(</span><span class="n">mat_m</span><span class="o">.</span><span class="n">k</span><span class="o">-</span><span class="n">mat_0</span><span class="o">.</span><span class="n">k</span><span class="p">),</span>
+                                <span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">mat_m</span><span class="o">.</span><span class="n">g</span><span class="o">-</span><span class="n">mat_0</span><span class="o">.</span><span class="n">g</span><span class="p">),</span> <span class="n">dim</span><span class="p">)</span>
+        <span class="c1"># ...</span>
+        <span class="c1"># End: create (C_i - C_0) and (C_m - C_0)</span>
+        <span class="c1"># Begin: create local operator ε ↦ (C-C_0):ε</span>
+        <span class="c1"># ...</span>
+        <span class="n">ops</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+        <span class="n">ops</span><span class="p">[:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">delta_C_m</span>
+        <span class="n">imax</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n</span><span class="o">*</span><span class="n">a</span><span class="o">-</span><span class="mf">0.5</span><span class="p">))</span>
+        <span class="n">ops</span><span class="p">[:</span><span class="n">imax</span><span class="p">,</span> <span class="p">:</span><span class="n">imax</span><span class="p">]</span> <span class="o">=</span> <span class="n">delta_C_i</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eps_to_tau</span> <span class="o">=</span> <span class="n">operators</span><span class="o">.</span><span class="n">BlockDiagonalOperator2D</span><span class="p">(</span><span class="n">ops</span><span class="p">)</span>
+        <span class="c1"># ...</span>
+        <span class="c1"># End: create local operator ε ↦ (C-C_0):ε</span>
+        <span class="c1"># Begin: create non-local operator ε ↦ Γ_0[ε]</span>
+        <span class="c1"># ...</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">green</span> <span class="o">=</span> <span class="n">green</span><span class="o">.</span><span class="n">truncated</span><span class="p">(</span><span class="n">mat_0</span><span class="o">.</span><span class="n">green_operator</span><span class="p">(),</span>
+                                     <span class="n">shape</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span>
+                                     <span class="n">fft</span><span class="o">.</span><span class="n">create_real</span><span class="p">(</span><span class="n">shape</span><span class="p">))</span>
+        <span class="c1"># End: create non-local operator ε ↦ Γ_0[ε]</span>
+
+
+    <span class="c1"># Begin: apply</span>
+    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eps_to_tau</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">green</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+    <span class="c1"># End: apply</span>
+
+
+<span class="c1"># Begin: params</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">dim</span> <span class="o">=</span> <span class="mi">2</span>                <span class="c1"># Spatial dimension</span>
+    <span class="n">sym</span> <span class="o">=</span> <span class="p">(</span><span class="n">dim</span><span class="o">*</span><span class="p">(</span><span class="n">dim</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span><span class="o">//</span><span class="mi">2</span> <span class="c1"># Dim. of space of second rank, symmetric tensors</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="mi">256</span>                <span class="c1"># Number of cells along each side of the grid</span>
+    <span class="n">mu_i</span><span class="p">,</span> <span class="n">nu_i</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="mf">0.2</span>  <span class="c1"># Shear modulus and Poisson ratio of inclusion</span>
+    <span class="n">mu_m</span><span class="p">,</span> <span class="n">nu_m</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.3</span>    <span class="c1"># Shear modulus and Poisson ratio of matrix</span>
+    <span class="n">mu_0</span><span class="p">,</span> <span class="n">nu_0</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="mf">0.3</span>   <span class="c1"># Shear modulus and Poisson ratio of ref. mat.</span>
+    <span class="n">num_cells</span> <span class="o">=</span> <span class="n">n</span><span class="o">**</span><span class="n">dim</span>     <span class="c1"># Total number of cells</span>
+    <span class="c1"># End: params</span>
+    <span class="c1"># Begin: instantiate example</span>
+    <span class="n">example</span> <span class="o">=</span> <span class="n">Example</span><span class="p">(</span><span class="n">mat_i</span><span class="o">=</span><span class="n">material</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">mu_i</span><span class="p">,</span> <span class="n">nu_i</span><span class="p">,</span> <span class="n">dim</span><span class="p">),</span>
+                      <span class="n">mat_m</span><span class="o">=</span><span class="n">material</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">mu_m</span><span class="p">,</span> <span class="n">nu_m</span><span class="p">,</span> <span class="n">dim</span><span class="p">),</span>
+                      <span class="n">mat_0</span><span class="o">=</span><span class="n">material</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">mu_0</span><span class="p">,</span> <span class="n">nu_0</span><span class="p">,</span> <span class="n">dim</span><span class="p">),</span>
+                      <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span>
+                      <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span>
+    <span class="c1"># End: instantiate example</span>
+    <span class="c1"># Begin: define strains</span>
+    <span class="n">avg_eps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">sym</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">avg_eps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+    <span class="n">eps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">example</span><span class="o">.</span><span class="n">green</span><span class="o">.</span><span class="n">ishape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">new_eps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">eps</span><span class="p">)</span>
+    <span class="c1"># End: define strains</span>
+    <span class="c1"># Begin: iterate</span>
+    <span class="n">num_iter</span> <span class="o">=</span> <span class="mi">400</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">num_iter</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">eps</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">avg_eps</span>
+    <span class="n">normalization</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">num_cells</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">avg_eps</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_iter</span><span class="p">):</span>
+        <span class="n">example</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">eps</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">new_eps</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">avg_eps</span><span class="p">,</span> <span class="n">new_eps</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">new_eps</span><span class="p">)</span>
+        <span class="n">res</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">normalization</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">new_eps</span><span class="o">-</span><span class="n">eps</span><span class="p">)</span>
+        <span class="n">eps</span><span class="p">,</span> <span class="n">new_eps</span> <span class="o">=</span> <span class="n">new_eps</span><span class="p">,</span> <span class="n">eps</span>
+    <span class="c1"># End: iterate</span>
+    <span class="c1"># Begin: post-process</span>
+    <span class="n">tau</span> <span class="o">=</span> <span class="n">example</span><span class="o">.</span><span class="n">eps_to_tau</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">eps</span><span class="p">)</span>
+    <span class="n">avg_tau</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">tau</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">dim</span><span class="p">)))</span>
+    <span class="n">C_1212</span> <span class="o">=</span> <span class="n">mu_0</span><span class="o">+</span><span class="mf">0.5</span><span class="o">*</span><span class="n">avg_tau</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">avg_eps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">C_1212</span><span class="p">)</span>
+
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Number of iterations&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Normalized residual&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">(</span><span class="n">pad</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;residual.png&#39;</span><span class="p">,</span> <span class="n">transparent</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax_array</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">get_size_inches</span><span class="p">()</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">set_size_inches</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">width</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ax</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ax_array</span><span class="p">):</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_axis_off</span><span class="p">()</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">eps</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i</span><span class="p">],</span> <span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">(</span><span class="n">pad</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;eps.png&#39;</span><span class="p">,</span> <span class="n">transparent</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># End: post-process</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../../api.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../../fft_tutorial.html" class="btn btn-neutral" title="Computing discrete Fourier transforms" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013-2015, S. Brisard.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

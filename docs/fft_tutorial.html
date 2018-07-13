@@ -1,0 +1,466 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Computing discrete Fourier transforms &mdash; Janus 0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Square inclusion, basic scheme" href="tutorials/square_basic/square_basic.html" />
+    <link rel="prev" title="Materials" href="materials.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Janus
+          
+
+          
+            
+            <img src="_static/logo_janus-200x200.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="operators.html">Operators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="materials.html">Materials</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Computing discrete Fourier transforms</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#serial-computations">Serial computations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#parallel-computations">Parallel computations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#the-complete-program">The complete program</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/square_basic/square_basic.html">Square inclusion, basic scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="todo.html">TODO List</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mandel.html">Mandel notation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Janus</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Computing discrete Fourier transforms</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/fft_tutorial.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="computing-discrete-fourier-transforms">
+<span id="fft"></span><h1>Computing discrete Fourier transforms<a class="headerlink" href="#computing-discrete-fourier-transforms" title="Permalink to this headline">¶</a></h1>
+<p>Discrete Fourier transforms are computed through the Fast Fourier Transform method (FFT) implemented in the <a class="reference external" href="http://www.fftw.org/">FFTW</a> library. Module <a class="reference internal" href="api.html#module-janus.fft" title="janus.fft"><code class="xref py py-mod docutils literal notranslate"><span class="pre">janus.fft</span></code></a> provides a Python wrapper to this C library. This module exposes both serial and parallel (MPI) implementations through a unified interface.</p>
+<p>Before the main methods and functions of the <a class="reference internal" href="api.html#module-janus.fft" title="janus.fft"><code class="xref py py-mod docutils literal notranslate"><span class="pre">janus.fft</span></code></a> module are introduced, an important design issue should be mentioned. In the present implementation of the module, input data (to be transformed) is not passed directly to FFTW. Rather, a local copy is first made, and FFTW then operates on this local copy. This allows reusing the same plan to perform many transforms (which is advantageous in the context of iterative solvers). This certainly induces a performance hit, which is deemed negligible for transforms of large 2D or 3D arrays.</p>
+<p>Although not essential, it might be useful to have a look to the <a class="reference external" href="http://www.fftw.org/fftw3_doc/">FFTW manual</a>. For the time being, only two and three dimensional real-to-complex transforms are implemented.</p>
+<div class="section" id="serial-computations">
+<h2>Serial computations<a class="headerlink" href="#serial-computations" title="Permalink to this headline">¶</a></h2>
+<p>The following piece of code creates an object <code class="docutils literal notranslate"><span class="pre">transform</span></code> which can perform real FFTs on <code class="docutils literal notranslate"><span class="pre">32x64</span></code> grids of real numbers.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">janus.fft.serial</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">transform</span> <span class="o">=</span> <span class="n">janus</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">serial</span><span class="o">.</span><span class="n">create_real</span><span class="p">((</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The function <a class="reference internal" href="api.html#janus.fft.serial.create_real" title="janus.fft.serial.create_real"><code class="xref py py-func docutils literal notranslate"><span class="pre">janus.fft.serial.create_real()</span></code></a> can be passed planner flags (see <a class="reference external" href="http://www.fftw.org/fftw3_doc/Planner-Flags.html#Planner-Flags">Planner Flags</a> in the FFTW manual). The attributes of the returned object are</p>
+<blockquote>
+<div><ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">transform.global_ishape</span></code> contains the <em>global</em> shape of the input array,</li>
+<li><code class="docutils literal notranslate"><span class="pre">transform.ishape</span></code> contains the <em>local</em> shape of the input (real) array,</li>
+<li><code class="docutils literal notranslate"><span class="pre">transform.global_oshape</span></code> contains the <em>global</em> shape of the output (complex) array,</li>
+<li><code class="docutils literal notranslate"><span class="pre">transform.oshape</span></code> contains the <em>local</em> shape of the output (complex) array. For serial transforms, local and global output shapes coincide.</li>
+</ul>
+</div></blockquote>
+<p>For serial transforms, local and global shapes coincide.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">transform</span><span class="o">.</span><span class="n">global_ishape</span>
+<span class="go">(32, 64)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">transform</span><span class="o">.</span><span class="n">ishape</span>
+<span class="go">(32, 64)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">transform</span><span class="o">.</span><span class="n">global_oshape</span>
+<span class="go">(32, 66)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">transform</span><span class="o">.</span><span class="n">oshape</span>
+<span class="go">(32, 66)</span>
+</pre></div>
+</div>
+<p>It should be noted that complex-valued tables are stored according to the FFTW library: even (resp. odd) values of the fast index correspond to the real (resp. imaginary) part of the complex number (see also <a class="reference external" href="http://www.fftw.org/fftw3_doc/Multi_002dDimensional-DFTs-of-Real-Data.html#Multi_002dDimensional-DFTs-of-Real-Data">Multi-Dimensional DFTs of Real Data</a> in the FFTW manual).</p>
+<p>Direct (real-to-complex) transforms are computed through the method <code class="docutils literal notranslate"><span class="pre">transform.r2c()</span></code>, which takes as input a <code class="docutils literal notranslate"><span class="pre">MemoryView</span></code> of shape <code class="docutils literal notranslate"><span class="pre">transform.ishape</span></code>, and returns a <code class="docutils literal notranslate"><span class="pre">MemoryView</span></code> of shape <code class="docutils literal notranslate"><span class="pre">transform.oshape</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">20150223</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="o">*</span><span class="n">transform</span><span class="o">.</span><span class="n">ishape</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y1</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">r2c</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>It should be noted that <code class="docutils literal notranslate"><span class="pre">y1</span></code> is a <code class="docutils literal notranslate"><span class="pre">MemoryView</span></code>, not a <code class="docutils literal notranslate"><span class="pre">numpy</span></code> array; it can, however, readily be converted into an array</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">y1</span><span class="p">)</span>
+<span class="go">&lt;MemoryView of &#39;array&#39; object&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">y1</span><span class="p">)</span>
+<span class="go">&lt;class &#39;numpy.ndarray&#39;&gt;</span>
+</pre></div>
+</div>
+<p>The output can be converted to an array of complex numbers</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">actual</span> <span class="o">=</span> <span class="n">y1</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">y1</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">actual</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(32, 33)</span>
+</pre></div>
+</div>
+<p>and compared to the FFT of <code class="docutils literal notranslate"><span class="pre">x</span></code> computed by means of the <code class="docutils literal notranslate"><span class="pre">numpy.fft</span></code> module</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">expected</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">rfftn</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">expected</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(32, 33)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">abs_delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">expected</span> <span class="o">-</span> <span class="n">actual</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">abs_exp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">expected</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">abs_delta</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">abs_exp</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">error</span> <span class="o">&lt;</span> <span class="mf">1E-15</span>
+</pre></div>
+</div>
+<p>Inverse discrete Fourier transform is computed through the method <code class="docutils literal notranslate"><span class="pre">transform.c2r()</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x1</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">c2r</span><span class="p">(</span><span class="n">y1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">x1</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">error</span> <span class="o">&lt;</span> <span class="mf">1E-15</span>
+</pre></div>
+</div>
+<p>It should be noted that the output array can be passed as an argument to both <code class="docutils literal notranslate"><span class="pre">transform.r2c()</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">y2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">transform</span><span class="o">.</span><span class="n">oshape</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">r2c</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">out</span><span class="o">.</span><span class="n">base</span> <span class="ow">is</span> <span class="n">y2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">y2</span> <span class="o">-</span> <span class="n">y1</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="mf">0.0</span>
+</pre></div>
+</div>
+<p>and <code class="docutils literal notranslate"><span class="pre">transform.c2r()</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">transform</span><span class="o">.</span><span class="n">ishape</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">c2r</span><span class="p">(</span><span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">out</span><span class="o">.</span><span class="n">base</span> <span class="ow">is</span> <span class="n">x2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="mf">0.0</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="parallel-computations">
+<h2>Parallel computations<a class="headerlink" href="#parallel-computations" title="Permalink to this headline">¶</a></h2>
+<p>The module <code class="xref py py-mod docutils literal notranslate"><span class="pre">janus.fft.parallel</span></code> is a wrapper around the <code class="docutils literal notranslate"><span class="pre">fftw3-mpi</span></code> library (refer to <a class="reference external" href="http://www.fftw.org/fftw3_doc/Distributed_002dmemory-FFTW-with-MPI.html#Distributed_002dmemory-FFTW-with-MPI">Distributed-memory FFTW with MPI</a> in the FFTW manual for the inner workings of this library). This module must be used along with the <a class="reference external" href="https://bitbucket.org/mpi4py/mpi4py">mpi4py</a> module to handle MPI communications.</p>
+<p>The Python API is very similar to the API for serial transforms. However, computing a parallel FFT is slightly more involved than computing a serial FFT, because the data must be distributed across the processes. The computation must go through the following steps</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>create input data (root process),</li>
+<li>create a transform object (all processes),</li>
+<li>gather local shapes (root process),</li>
+<li>scatter the input data according to the previouly gathered local sizes (root process),</li>
+<li>compute the transform (all processes),</li>
+<li>gather the results (root process).</li>
+</ol>
+</div></blockquote>
+<p>This is illustrated in the step-by-step tutorial below. This tutorial aims again at computing a <code class="docutils literal notranslate"><span class="pre">32x64</span></code> real Fourier transform. The full source can be <a class="reference download internal" href="_downloads/parallel_fft_tutorial.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">downloaded</span> <span class="pre">here</span></code></a>, it must be run through the following command line:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ mpiexec -np 2 python3 parallel_fft_tutorial.py
+</pre></div>
+</div>
+<p>where the number of processes can be adjusted (all output produced below was obtained with two parallel processes).</p>
+<p>Before we proceed with the description of the program, it should be noted that communication will be carried out with the uppercase versions <cite>MPI.Comm.Gather</cite> and <cite>MPI.Comm.Scatter</cite>. The lowercase versions of <cite>MPI.Comm.scatter</cite> and <cite>MPI.Comm.gather</cite> are slightly easier to use, but communicate objects through pickling. This approach fails with very large objects (the size limit is much lower than the intrinsic MPI size limit). With <cite>MPI.Comm.Gather</cite> and <cite>MPI.Comm.Scatter</cite>, the intrinsic MPI size limit is restored. The FFT objects defined in the module <code class="xref py py-mod docutils literal notranslate"><span class="pre">janus.fft.parallel</span></code> provide attributes to help call these methods.</p>
+<p>A few modules must first be imported</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">janus.fft.parallel</span>
+
+<span class="kn">from</span> <span class="nn">mpi4py</span> <span class="k">import</span> <span class="n">MPI</span>
+
+</pre></div>
+</div>
+<p>Then, some useful variables are created</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">comm</span> <span class="o">=</span> <span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Then, the transform objects (one for each process) are created (step 2), and their various shapes are printed out.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">transform</span> <span class="o">=</span> <span class="n">janus</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">parallel</span><span class="o">.</span><span class="n">create_real</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">comm</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">comm</span><span class="o">.</span><span class="n">rank</span> <span class="o">==</span> <span class="n">root</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;global_ishape  = </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">transform</span><span class="o">.</span><span class="n">global_ishape</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;global_oshape  = </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">transform</span><span class="o">.</span><span class="n">global_oshape</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ishape = </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">transform</span><span class="o">.</span><span class="n">ishape</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;oshape = </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">transform</span><span class="o">.</span><span class="n">oshape</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>This code snippet outputs the following messages</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>global_ishape  = (32, 64)
+global_oshape  = (32, 66)
+ishape = (16, 64)
+oshape = (16, 66)
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">transform.shape</span></code> attribute refers to the <em>global</em> (logical) shape of the transform. Since the data is distributed across all processes, the <em>local</em> size in memory of the input and output data differ from <code class="docutils literal notranslate"><span class="pre">transform.shape</span></code>. Accordingly, the <code class="docutils literal notranslate"><span class="pre">transform.rshape</span></code> (resp. <code class="docutils literal notranslate"><span class="pre">transform.cshape</span></code>) attribute refers to the local shape of the real, input (resp. complex, output) data, for the current process. As expected with FFTW, it is observed that the data is distributed with respect to the first dimension. Indeed, the global, first dimension is 64, and the above example is run with 2 processes; therefore, the local first dimension is <code class="docutils literal notranslate"><span class="pre">64</span> <span class="pre">/</span> <span class="pre">2</span> <span class="pre">=</span> <span class="pre">32</span></code>.</p>
+<p>In order to figure out how to scatter the input data, the root process then gathers all local sizes and displacements, and the parameters to be passed to <code class="docutils literal notranslate"><span class="pre">mpi4py.MPI.Scatterv()</span></code> and <code class="docutils literal notranslate"><span class="pre">mpi4py.MPI.Gatherv()</span></code> are prepared</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">counts_and_displs</span> <span class="o">=</span> <span class="n">comm</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">sendobj</span><span class="o">=</span><span class="p">(</span><span class="n">transform</span><span class="o">.</span><span class="n">isize</span><span class="p">,</span> <span class="n">transform</span><span class="o">.</span><span class="n">idispl</span><span class="p">,</span>
+                                             <span class="n">transform</span><span class="o">.</span><span class="n">osize</span><span class="p">,</span> <span class="n">transform</span><span class="o">.</span><span class="n">odispl</span><span class="p">),</span>
+                                    <span class="n">root</span><span class="o">=</span><span class="n">root</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">comm</span><span class="o">.</span><span class="n">rank</span> <span class="o">==</span> <span class="n">root</span><span class="p">:</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">20150310</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="o">*</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">icounts</span><span class="p">,</span> <span class="n">idispls</span><span class="p">,</span> <span class="n">ocounts</span><span class="p">,</span> <span class="n">odispls</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">counts_and_displs</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">icounts</span><span class="p">,</span> <span class="n">idispls</span><span class="p">,</span> <span class="n">ocounts</span><span class="p">,</span> <span class="n">odispls</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+</pre></div>
+</div>
+<p>Then the input data <code class="docutils literal notranslate"><span class="pre">x</span></code> is scattered across all processes</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">x_loc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">transform</span><span class="o">.</span><span class="n">ishape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">comm</span><span class="o">.</span><span class="n">Scatterv</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">icounts</span><span class="p">,</span> <span class="n">idispls</span><span class="p">,</span> <span class="n">MPI</span><span class="o">.</span><span class="n">DOUBLE</span><span class="p">],</span> <span class="n">x_loc</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Each process then executes its transform</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">y_loc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">r2c</span><span class="p">(</span><span class="n">x_loc</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and the root process finally gathers the results</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="k">if</span> <span class="n">comm</span><span class="o">.</span><span class="n">rank</span> <span class="o">==</span> <span class="n">root</span><span class="p">:</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">transform</span><span class="o">.</span><span class="n">global_oshape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">comm</span><span class="o">.</span><span class="n">Gatherv</span><span class="p">(</span><span class="n">y_loc</span><span class="p">,</span> <span class="p">[</span><span class="n">y</span><span class="p">,</span> <span class="n">ocounts</span><span class="p">,</span> <span class="n">odispls</span><span class="p">,</span> <span class="n">MPI</span><span class="o">.</span><span class="n">DOUBLE</span><span class="p">],</span> <span class="n">root</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To check that the computation is correct, the same transform is finally computed locally by the root process</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="k">if</span> <span class="n">comm</span><span class="o">.</span><span class="n">rank</span> <span class="o">==</span> <span class="n">root</span><span class="p">:</span>
+        <span class="n">serial_transform</span> <span class="o">=</span> <span class="n">janus</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">serial</span><span class="o">.</span><span class="n">create_real</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">y_ref</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">serial_transform</span><span class="o">.</span><span class="n">r2c</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">y</span><span class="o">-</span><span class="n">y_ref</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">y_ref</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">err</span> <span class="o">&lt;=</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
+</pre></div>
+</div>
+<div class="section" id="the-complete-program">
+<h3>The complete program<a class="headerlink" href="#the-complete-program" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Imports</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">janus.fft.parallel</span>
+
+<span class="kn">from</span> <span class="nn">mpi4py</span> <span class="k">import</span> <span class="n">MPI</span>
+
+<span class="c1"># Init some variables</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">comm</span> <span class="o">=</span> <span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span>
+    <span class="c1"># Create transform objects</span>
+    <span class="n">transform</span> <span class="o">=</span> <span class="n">janus</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">parallel</span><span class="o">.</span><span class="n">create_real</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">comm</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">comm</span><span class="o">.</span><span class="n">rank</span> <span class="o">==</span> <span class="n">root</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;global_ishape  = </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">transform</span><span class="o">.</span><span class="n">global_ishape</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;global_oshape  = </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">transform</span><span class="o">.</span><span class="n">global_oshape</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ishape = </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">transform</span><span class="o">.</span><span class="n">ishape</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;oshape = </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">transform</span><span class="o">.</span><span class="n">oshape</span><span class="p">))</span>
+    <span class="c1"># Prepare communications</span>
+    <span class="n">counts_and_displs</span> <span class="o">=</span> <span class="n">comm</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">sendobj</span><span class="o">=</span><span class="p">(</span><span class="n">transform</span><span class="o">.</span><span class="n">isize</span><span class="p">,</span> <span class="n">transform</span><span class="o">.</span><span class="n">idispl</span><span class="p">,</span>
+                                             <span class="n">transform</span><span class="o">.</span><span class="n">osize</span><span class="p">,</span> <span class="n">transform</span><span class="o">.</span><span class="n">odispl</span><span class="p">),</span>
+                                    <span class="n">root</span><span class="o">=</span><span class="n">root</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">comm</span><span class="o">.</span><span class="n">rank</span> <span class="o">==</span> <span class="n">root</span><span class="p">:</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">20150310</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="o">*</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">icounts</span><span class="p">,</span> <span class="n">idispls</span><span class="p">,</span> <span class="n">ocounts</span><span class="p">,</span> <span class="n">odispls</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">counts_and_displs</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">icounts</span><span class="p">,</span> <span class="n">idispls</span><span class="p">,</span> <span class="n">ocounts</span><span class="p">,</span> <span class="n">odispls</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="c1"># Scatter input data</span>
+    <span class="n">x_loc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">transform</span><span class="o">.</span><span class="n">ishape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">comm</span><span class="o">.</span><span class="n">Scatterv</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">icounts</span><span class="p">,</span> <span class="n">idispls</span><span class="p">,</span> <span class="n">MPI</span><span class="o">.</span><span class="n">DOUBLE</span><span class="p">],</span> <span class="n">x_loc</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span>
+    <span class="c1"># Execute transform</span>
+    <span class="n">y_loc</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">r2c</span><span class="p">(</span><span class="n">x_loc</span><span class="p">)</span>
+    <span class="c1"># Gather output data</span>
+    <span class="k">if</span> <span class="n">comm</span><span class="o">.</span><span class="n">rank</span> <span class="o">==</span> <span class="n">root</span><span class="p">:</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">transform</span><span class="o">.</span><span class="n">global_oshape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">comm</span><span class="o">.</span><span class="n">Gatherv</span><span class="p">(</span><span class="n">y_loc</span><span class="p">,</span> <span class="p">[</span><span class="n">y</span><span class="p">,</span> <span class="n">ocounts</span><span class="p">,</span> <span class="n">odispls</span><span class="p">,</span> <span class="n">MPI</span><span class="o">.</span><span class="n">DOUBLE</span><span class="p">],</span> <span class="n">root</span><span class="p">)</span>
+    <span class="c1"># Validate result</span>
+    <span class="k">if</span> <span class="n">comm</span><span class="o">.</span><span class="n">rank</span> <span class="o">==</span> <span class="n">root</span><span class="p">:</span>
+        <span class="n">serial_transform</span> <span class="o">=</span> <span class="n">janus</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">serial</span><span class="o">.</span><span class="n">create_real</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">y_ref</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">serial_transform</span><span class="o">.</span><span class="n">r2c</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">y</span><span class="o">-</span><span class="n">y_ref</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">y_ref</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">err</span> <span class="o">&lt;=</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="tutorials/square_basic/square_basic.html" class="btn btn-neutral float-right" title="Square inclusion, basic scheme" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="materials.html" class="btn btn-neutral" title="Materials" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013-2015, S. Brisard.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
