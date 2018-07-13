@@ -11,26 +11,6 @@
 import os
 import sys
 
-
-on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
-
-# From http://docs.readthedocs.org/en/latest/faq.html#i-get-import-errors-\
-# on-libraries-that-depend-on-c-modules
-if on_rtd:
-    from unittest.mock import MagicMock
-
-    class Mock(MagicMock):
-        @classmethod
-        def __getattr__(cls, name):
-            return Mock()
-
-    sys.modules['janus.utils.checkarray'] = Mock()
-    sys.modules['janus.operators'] = Mock()
-    sys.modules['janus.material.elastic.linear.isotropic'] = Mock()
-    sys.modules['janus.green'] = Mock()
-    sys.modules['janus.fft.serial'] = Mock()
-    sys.modules['janus.fft.parallel'] = Mock()
-
 sys.path.insert(0, os.path.abspath('..'))
 
 extensions = ['sphinx.ext.autodoc',
@@ -67,14 +47,6 @@ pygments_style = 'sphinx'
 
 numfig = True
 
-import sphinx_rtd_theme
-
-if on_rtd:
-    html_theme = 'default'
-else:
-    html_theme = 'sphinx_rtd_theme'
-
-html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 html_logo = './logo_janus-200x200.png'
 html_static_path = ['_static']
 htmlhelp_basename = 'janusdoc'
