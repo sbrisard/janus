@@ -13,3 +13,4 @@ TAGS
 Janus.egg-info
 setup.cfg
 sphinx/_build
+docs/.buildinfo
