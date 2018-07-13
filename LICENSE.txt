@@ -1,4 +1,4 @@
-Copyright (c) 2013-2015, S. Brisard
+Copyright (c) 2013-2018, S. Brisard
 
 All rights reserved.
 
