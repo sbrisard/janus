@@ -1,6 +1,5 @@
 *~
 *.c
-*.html
 *.pyc
 *.pyd
 *.so
@@ -13,3 +12,4 @@ dist
 TAGS
 Janus.egg-info
 setup.cfg
+sphinx/_build
