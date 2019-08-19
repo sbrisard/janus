@@ -81,7 +81,9 @@ def extensions_and_packages():
     if config.has_section('fftw'):
         fftw = config['fftw']
         for key in ['include_dirs', 'library_dirs', 'libraries']:
-            kwargs[key] = fftw.get(key, '').split(',')
+            value = fftw.get(key, '')
+            if value != '':
+                kwargs[key] = value.split(',')
     serial_fft = Extension('janus.fft.serial._serial_fft',
                            sources=['janus/fft/serial/_serial_fft.pyx'],
                            **kwargs)
