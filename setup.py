@@ -74,7 +74,6 @@ def extensions_and_packages():
                           sources=['janus/operators.pyx'])
     materials = Extension('janus.material.elastic.linear.isotropic',
                           sources=['janus/material/elastic/linear/isotropic.pyx'])
-    # TODO This module also depends on fftw.pxd
 
     config = configparser.ConfigParser()
     config.read('setup.cfg')
@@ -155,7 +154,6 @@ def mpicc_show():
 
 def extensions_and_packages_with_mpi():
     try:
-        # TODO This module also depends on fftw_mpi.pxd
         kwargs = mpicc_show()
         config = configparser.ConfigParser()
         config.read('setup.cfg')
