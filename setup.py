@@ -170,6 +170,7 @@ def extensions_and_packages_with_mpi():
     except ImportError:
         return [], []
 
+
 if __name__ == '__main__':
     extensions, packages = extensions_and_packages()
     extensions_mpi, packages_mpi = extensions_and_packages_with_mpi()
