@@ -67,18 +67,18 @@ class clean(distutils.command.clean.clean):
 
 
 def extensions_and_packages():
-    extensions = [Extension('janus.utils.checkarray',
-                            sources=['janus/utils/checkarray.pyx']),
-                  Extension('janus.operators',
-                            sources=['janus/operators.pyx']),
-                  Extension('janus.material.elastic.linear.isotropic',
-                            sources=['janus/material/elastic/linear/'
-                                     'isotropic.pyx']),
-                  Extension('janus.green',
-                            sources=['janus/green.pyx'],),
-                  # TODO This module also depends on fftw.pxd
-                  Extension('janus.fft.serial._serial_fft',
-                            sources=['janus/fft/serial/_serial_fft.pyx'])]
+    utils = Extension('janus.utils.checkarray',
+                      sources=['janus/utils/checkarray.pyx'])
+    operators = Extension('janus.operators',
+                          sources=['janus/operators.pyx'])
+    materials = Extension('janus.material.elastic.linear.isotropic',
+                          sources=['janus/material/elastic/linear/isotropic.pyx'])
+    green = Extension('janus.green',
+                      sources=['janus/green.pyx'],)
+    # TODO This module also depends on fftw.pxd
+    serial_fft = Extension('janus.fft.serial._serial_fft',
+                           sources=['janus/fft/serial/_serial_fft.pyx'])
+    extensions = [utils, operators, materials, green, serial_fft]
     packages = ['janus', 'janus.fft', 'janus.fft.serial', 'janus.utils']
     return extensions, packages
 
