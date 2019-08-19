@@ -188,5 +188,6 @@ if __name__ == '__main__':
           license=LICENSE,
           packages=packages,
           ext_modules=cythonize(extensions,
-                                compiler_directives={'embedsignature': True}),
+                                compiler_directives={'embedsignature': True,
+                                                     'language_level': 3}),
           cmdclass={'clean': clean})

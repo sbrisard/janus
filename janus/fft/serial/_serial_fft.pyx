@@ -35,7 +35,7 @@ def create_real(shape, flags=FFTW_MEASURE):
 cdef create_real_2D(ptrdiff_t n0, ptrdiff_t n1, unsigned flags):
 
     cdef _RealFFT2D fft = _RealFFT2D(n0, n1, n0, 0)
-    fft.buffer = fftw_alloc_real(2 * n0 * (n1 / 2 + 1))
+    fft.buffer = fftw_alloc_real(2 * n0 * (n1 // 2 + 1))
     fft.plan_r2c = fftw_plan_dft_r2c_2d(n0, n1, fft.buffer,
                                         <fftw_complex *> fft.buffer, flags)
     fft.plan_c2r = fftw_plan_dft_c2r_2d(n0, n1, <fftw_complex *> fft.buffer,
@@ -61,7 +61,7 @@ cdef class _RealFFT2D:
         self.ishape1 = n1
         self.isize = self.ishape0 * self.ishape1
         self.oshape0 = n0_loc
-        self.oshape1 = 2 * (n1 / 2 + 1)
+        self.oshape1 = 2 * (n1 // 2 + 1)
         self.osize = self.oshape0 * self.oshape1
         self.offset0 = offset0
         self.idispl = self.offset0 * self.ishape1
@@ -187,7 +187,7 @@ cdef class _RealFFT3D:
         self.isize = self.ishape0 * self.ishape1 * self.ishape2
         self.oshape0 = n0_loc
         self.oshape1 = n1
-        self.oshape2 = 2 * (n2 / 2 + 1)
+        self.oshape2 = 2 * (n2 // 2 + 1)
         self.osize = self.oshape0 * self.oshape1 * self.oshape2
         self.offset0 = offset0
         self.idispl = self.offset0 * self.ishape1 * self.ishape2
