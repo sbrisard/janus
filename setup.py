@@ -19,8 +19,8 @@ DESCRIPTION = ''
 LONG_DESCRIPTION = ''
 AUTHOR = 'S. Brisard'
 AUTHOR_EMAIL = 'sebastien.brisard@ifsttar.fr'
-URL = 'https://bitbucket.org/sbrisard/janus/'
-DOWNLOAD_URL = 'https://bitbucket.org/sbrisard/janus/'
+URL = 'https://github.com/sbrisard/janus'
+DOWNLOAD_URL = 'https://github.com/sbrisard/janus'
 LICENSE = 'BSD-3'
 
 
