@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import configparser
 import distutils.command.clean
 import os
 import re
@@ -73,11 +74,19 @@ def extensions_and_packages():
                           sources=['janus/operators.pyx'])
     materials = Extension('janus.material.elastic.linear.isotropic',
                           sources=['janus/material/elastic/linear/isotropic.pyx'])
-    green = Extension('janus.green',
-                      sources=['janus/green.pyx'],)
     # TODO This module also depends on fftw.pxd
+
+    config = configparser.ConfigParser()
+    config.read('setup.cfg')
+    kwargs = {}
+    if config.has_section('fftw'):
+        fftw = config['fftw']
+        for key in ['include_dirs', 'library_dirs', 'libraries']:
+            kwargs[key] = fftw.get(key, '').split(',')
     serial_fft = Extension('janus.fft.serial._serial_fft',
-                           sources=['janus/fft/serial/_serial_fft.pyx'])
+                           sources=['janus/fft/serial/_serial_fft.pyx'],
+                           **kwargs)
+    green = Extension('janus.green', sources=['janus/green.pyx'], **kwargs)
     extensions = [utils, operators, materials, green, serial_fft]
     packages = ['janus', 'janus.fft', 'janus.fft.serial', 'janus.utils']
     return extensions, packages
@@ -146,14 +155,20 @@ def mpicc_show():
 
 def extensions_and_packages_with_mpi():
     try:
-        # import mpi4py
         # TODO This module also depends on fftw_mpi.pxd
-        extensions = [Extension('janus.fft.parallel._parallel_fft',
-                                sources=['janus/fft/parallel/'
-                                         '_parallel_fft.pyx'],
-                                **mpicc_show())]
-        packages = ['janus.fft.parallel']
-        return extensions, packages
+        kwargs = mpicc_show()
+        config = configparser.ConfigParser()
+        config.read('setup.cfg')
+        if config.has_section('fftw_mpi'):
+            fftw_mpi = config['fftw_mpi']
+            keys = ['include_dirs', 'library_dirs', 'libraries']
+            for key in keys:
+                kwargs[key] = kwargs.get(key, '')+fftw_mpi.get(key, '')
+
+        parallel_fft = Extension('janus.fft.parallel._parallel_fft',
+                                 sources=['janus/fft/parallel/_parallel_fft.pyx'],
+                                 **mpicc_show())
+        return [parallel_fft], ['janus.fft.parallel']
     except ImportError:
         return [], []
 
