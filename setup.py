@@ -161,9 +161,10 @@ def extensions_and_packages_with_mpi():
         config.read('setup.cfg')
         if config.has_section('fftw_mpi'):
             fftw_mpi = config['fftw_mpi']
-            keys = ['include_dirs', 'library_dirs', 'libraries']
-            for key in keys:
-                kwargs[key] = kwargs.get(key, '')+fftw_mpi.get(key, '')
+            for key in ['include_dirs', 'library_dirs', 'libraries']:
+                value = fftw_mpi.get(key, '')
+                if value != '':
+                    kwargs[key] = kwargs.get(key, [])+value.split(',')
 
         parallel_fft = Extension('janus.fft.parallel._parallel_fft',
                                  sources=['janus/fft/parallel/_parallel_fft.pyx'],
