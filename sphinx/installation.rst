@@ -45,8 +45,8 @@ Two sections of this file must be filed: ``[fftw]`` and ``[fftw_mpi]`` (if you a
 
 All these entries can be (comma separated) *lists*. Examples are provided below for several platforms.
 
-Compilation and installation under Unix-like systems (Linux, OSX)
-=================================================================
+Compilation and installation under Linux
+========================================
 
 Make sure that the MPI and FFTW packages are properly installed, including the ``dev`` packages (that include header files). On Ubuntu platforms, the following packages must be installed::
 
