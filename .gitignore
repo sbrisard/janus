@@ -9,6 +9,7 @@ build
 dist
 .cache
 .ipynb_checkpoints
+.pytest_cache/
 TAGS
 Janus.egg-info
 setup.cfg
