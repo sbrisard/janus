@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>Square inclusion, basic scheme &#8212; Janus 0.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -13,7 +11,8 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="API Reference" href="../../api.html" />
@@ -39,10 +38,11 @@
 <div class="section" id="description-of-the-problem">
 <h2>Description of the problem<a class="headerlink" href="#description-of-the-problem" title="Permalink to this headline">¶</a></h2>
 <p>In this tutorial, we will compute the effective elastic properties of a simple 2D microstructure in plane strain. More precisely, we consider a periodic microstructure made of a square inclusion of size <span class="math notranslate nohighlight">\(a\)</span>, embedded in a unit-cell of size <span class="math notranslate nohighlight">\(L\)</span> (see <a class="reference internal" href="#fig-microstructure"><span class="std std-numref">Fig. 1</span></a>).</p>
-<div class="figure align-center" id="id1">
-<span id="fig-microstructure"></span><img alt="../../_images/microstructure.svg" src="../../_images/microstructure.svg" /><p class="caption"><span class="caption-number">Fig. 1 </span><span class="caption-text">The periodic microstructure under consideration.</span></p>
+<div class="figure align-center" id="id3">
+<span id="fig-microstructure"></span><img alt="../../_images/microstructure.svg" src="../../_images/microstructure.svg" /><p class="caption"><span class="caption-number">Fig. 1 </span><span class="caption-text">The periodic microstructure under consideration.</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
 <div class="legend">
-<span class="math notranslate nohighlight">\(\mu_\mathrm i\)</span> (resp. <span class="math notranslate nohighlight">\(\mu_\mathrm m\)</span>) denotes the shear modulus of the inclusion (resp. the matrix); <span class="math notranslate nohighlight">\(\nu_\mathrm i\)</span> (resp. <span class="math notranslate nohighlight">\(\nu_\mathrm m\)</span>) denotes the Poisson ratio of the inclusion (resp. the matrix).</div>
+<p><span class="math notranslate nohighlight">\(\mu_\mathrm i\)</span> (resp. <span class="math notranslate nohighlight">\(\mu_\mathrm m\)</span>) denotes the shear modulus of the inclusion (resp. the matrix); <span class="math notranslate nohighlight">\(\nu_\mathrm i\)</span> (resp. <span class="math notranslate nohighlight">\(\nu_\mathrm m\)</span>) denotes the Poisson ratio of the inclusion (resp. the matrix).</p>
+</div>
 </div>
 <p>The effective properties of this periodic microstructure are derived from the solution to the so-called <em>corrector</em> problem</p>
 <div class="math notranslate nohighlight" id="equation-corrector-problem">
@@ -54,8 +54,8 @@
 <div class="math notranslate nohighlight">
 \[\mathbf C^\mathrm{eff}:\mathbf E=\frac1{L^d}\int_{\left(0,L\right)^d}\boldsymbol\sigma(x_1,x_2)\,\operatorname{d}\!x_1\cdots\operatorname{d}\!x_d.\]</div>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">This example is illustrated in two dimensions (<span class="math notranslate nohighlight">\(d=2\)</span>). However, it is implemented so as to be dimension independent, so that <span class="math notranslate nohighlight">\(d=3\)</span> should work out of the box.</p>
+<p class="admonition-title">Note</p>
+<p>This example is illustrated in two dimensions (<span class="math notranslate nohighlight">\(d=2\)</span>). However, it is implemented so as to be dimension independent, so that <span class="math notranslate nohighlight">\(d=3\)</span> should work out of the box.</p>
 </div>
 <p>In the present tutorial, we shall concentrate on the 1212 component of the effective stiffness, that is to say that the following macroscopic strain will be imposed</p>
 <div class="math notranslate nohighlight" id="equation-macroscopic-strain">
@@ -112,8 +112,8 @@
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">mat_i</span></code> (resp. <code class="docutils literal notranslate"><span class="pre">mat_m</span></code>, <code class="docutils literal notranslate"><span class="pre">mat_0</span></code>) are the material properties of the inclusion (resp. the matrix, the reference material); <code class="docutils literal notranslate"><span class="pre">n</span></code> is the number of grid cells along each side, <code class="docutils literal notranslate"><span class="pre">a</span></code> is the size of the inclusion, and <code class="docutils literal notranslate"><span class="pre">dim</span></code> is the dimension of the physical space. The <code class="docutils literal notranslate"><span class="pre">shape</span></code> of the grid is stored in a tuple, the length of which depends on <code class="docutils literal notranslate"><span class="pre">dim</span></code>.</p>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">As much as possible, keep your code dimension-independent. This means that the spatial dimension (2 or 3) should not be hard-coded. Rather, you should make it a rule to always parameterize the spatial dimension (use a variable <code class="docutils literal notranslate"><span class="pre">dim</span></code>), even if you do not really intend to change this dimension. Janus object sometimes have different implementations depending on the spatial dimension. For example, the abstract class <a class="reference internal" href="../../operators.html#janus.operators.FourthRankIsotropicTensor" title="janus.operators.FourthRankIsotropicTensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">FourthRankIsotropicTensor</span></code></a> has two concrete daughter classes <a class="reference internal" href="../../operators.html#janus.operators.FourthRankIsotropicTensor2D" title="janus.operators.FourthRankIsotropicTensor2D"><code class="xref py py-class docutils literal notranslate"><span class="pre">FourthRankIsotropicTensor2D</span></code></a> and <a class="reference internal" href="../../operators.html#janus.operators.FourthRankIsotropicTensor3D" title="janus.operators.FourthRankIsotropicTensor3D"><code class="xref py py-class docutils literal notranslate"><span class="pre">FourthRankIsotropicTensor3D</span></code></a>. However, both can be instantiated through the unique function <a class="reference internal" href="../../operators.html#janus.operators.isotropic_4" title="janus.operators.isotropic_4"><code class="xref py py-func docutils literal notranslate"><span class="pre">isotropic_4</span></code></a>, where the spatial dimension can be specified.</p>
+<p class="admonition-title">Note</p>
+<p>As much as possible, keep your code dimension-independent. This means that the spatial dimension (2 or 3) should not be hard-coded. Rather, you should make it a rule to always parameterize the spatial dimension (use a variable <code class="docutils literal notranslate"><span class="pre">dim</span></code>), even if you do not really intend to change this dimension. Janus object sometimes have different implementations depending on the spatial dimension. For example, the abstract class <a class="reference internal" href="../../operators.html#janus.operators.FourthRankIsotropicTensor" title="janus.operators.FourthRankIsotropicTensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">FourthRankIsotropicTensor</span></code></a> has two concrete daughter classes <a class="reference internal" href="../../operators.html#janus.operators.FourthRankIsotropicTensor2D" title="janus.operators.FourthRankIsotropicTensor2D"><code class="xref py py-class docutils literal notranslate"><span class="pre">FourthRankIsotropicTensor2D</span></code></a> and <a class="reference internal" href="../../operators.html#janus.operators.FourthRankIsotropicTensor3D" title="janus.operators.FourthRankIsotropicTensor3D"><code class="xref py py-class docutils literal notranslate"><span class="pre">FourthRankIsotropicTensor3D</span></code></a>. However, both can be instantiated through the unique function <a class="reference internal" href="../../operators.html#janus.operators.isotropic_4" title="janus.operators.isotropic_4"><code class="xref py py-func docutils literal notranslate"><span class="pre">isotropic_4</span></code></a>, where the spatial dimension can be specified.</p>
 </div>
 <p>We then define the local operators <span class="math notranslate nohighlight">\(\mathbf C_\mathrm i-\mathbf C_0\)</span> and <span class="math notranslate nohighlight">\(\mathbf C_\mathrm m-\mathbf C_0\)</span> as <a class="reference internal" href="../../operators.html#janus.operators.FourthRankIsotropicTensor" title="janus.operators.FourthRankIsotropicTensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">FourthRankIsotropicTensor</span></code></a>. It is recalled that the stiffness <span class="math notranslate nohighlight">\(\mathbf C\)</span> of a material with bulk modulus <span class="math notranslate nohighlight">\(\kappa\)</span> and shear modulus <span class="math notranslate nohighlight">\(\mu\)</span> reads</p>
 <div class="math notranslate nohighlight">
@@ -128,9 +128,9 @@
 </pre></div>
 </div>
 <p>Now, <code class="docutils literal notranslate"><span class="pre">delta_C_i</span></code> and <code class="docutils literal notranslate"><span class="pre">delta_C_m</span></code> are used to create the operator <span class="math notranslate nohighlight">\(\boldsymbol\varepsilon\mapsto\left(\mathbf C-\mathbf C_0\right):\boldsymbol\varepsilon\)</span> as a <a class="reference internal" href="../../operators.html#janus.operators.BlockDiagonalOperator2D" title="janus.operators.BlockDiagonalOperator2D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockDiagonalOperator2D</span></code></a>. Block-diagonal operators are initialized from an array of local operators, called <code class="docutils literal notranslate"><span class="pre">ops</span></code> below</p>
-<div class="admonition-todo admonition" id="index-0">
-<p class="first admonition-title">Todo</p>
-<p class="last">This code snippet is not dimension independent.</p>
+<div class="admonition-todo admonition" id="id1">
+<p class="admonition-title">Todo</p>
+<p>This code snippet is not dimension independent.</p>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>        <span class="c1"># ...</span>
         <span class="n">ops</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
@@ -143,13 +143,13 @@
 </div>
 <p>The upper-left quarter of the unit-cell is filled with <code class="docutils literal notranslate"><span class="pre">delta_C_i</span></code> (<span class="math notranslate nohighlight">\(\mathbf C_\mathrm i-\mathbf C_0\)</span>), while the remainder of the unit-cell receives <code class="docutils literal notranslate"><span class="pre">delta_C_m</span></code> (<span class="math notranslate nohighlight">\(\mathbf C_\mathrm m-\mathbf C_0\)</span>). Finally, a <a class="reference internal" href="../../operators.html#janus.operators.BlockDiagonalOperator2D" title="janus.operators.BlockDiagonalOperator2D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockDiagonalOperator2D</span></code></a> is created from the array of local operators. It is called <code class="docutils literal notranslate"><span class="pre">eps_to_tau</span></code> as it maps the strain (<span class="math notranslate nohighlight">\(\boldsymbol\varepsilon\)</span>) to the stress-polarization (<span class="math notranslate nohighlight">\(\boldsymbol\tau\)</span>).</p>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last"><code class="docutils literal notranslate"><span class="pre">eps_to_tau</span></code> is not a <em>method</em>. Rather, it is an <em>attribute</em>, which turns out to be a function.</p>
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">eps_to_tau</span></code> is not a <em>method</em>. Rather, it is an <em>attribute</em>, which turns out to be a function.</p>
 </div>
 <p>Finally, the discrete Green operator for strains associated with the reference material <span class="math notranslate nohighlight">\(\mathbf C_0\)</span> is created. This requires first to create a FFT object (see <a class="reference internal" href="../../fft_tutorial.html#fft"><span class="std std-ref">Computing discrete Fourier transforms</span></a>).</p>
-<div class="admonition-todo admonition" id="index-1">
-<p class="first admonition-title">Todo</p>
-<p class="last">Document Green operators for strains.</p>
+<div class="admonition-todo admonition" id="id2">
+<p class="admonition-title">Todo</p>
+<p>Document Green operators for strains.</p>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>        <span class="c1"># ...</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">green</span> <span class="o">=</span> <span class="n">green</span><span class="o">.</span><span class="n">truncated</span><span class="p">(</span><span class="n">mat_0</span><span class="o">.</span><span class="n">green_operator</span><span class="p">(),</span>
@@ -167,8 +167,8 @@
 </div>
 <p>which closes the definition of the class <code class="docutils literal notranslate"><span class="pre">Example</span></code>.</p>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Note how we allowed for the output array to be passed by reference, thus allowing for memory reuse.</p>
+<p class="admonition-title">Note</p>
+<p>Note how we allowed for the output array to be passed by reference, thus allowing for memory reuse.</p>
 </div>
 </div>
 <div class="section" id="the-main-block-of-the-script">
@@ -201,8 +201,8 @@
 </pre></div>
 </div>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">The shape of the arrays <code class="docutils literal notranslate"><span class="pre">eps</span></code> and <code class="docutils literal notranslate"><span class="pre">eps_new</span></code> is simply inferred from the shape of the input of the Green operator for strains <span class="math notranslate nohighlight">\(\boldsymbol\Gamma_0\)</span>.</p>
+<p class="admonition-title">Note</p>
+<p>The shape of the arrays <code class="docutils literal notranslate"><span class="pre">eps</span></code> and <code class="docutils literal notranslate"><span class="pre">eps_new</span></code> is simply inferred from the shape of the input of the Green operator for strains <span class="math notranslate nohighlight">\(\boldsymbol\Gamma_0\)</span>.</p>
 </div>
 <p>We will not implement a stopping criterion for this simple example. Rather, a fixed number of iterations will be specified. Meanwhile, the residual</p>
 <div class="math notranslate nohighlight" id="equation-residual">
@@ -213,8 +213,8 @@
 </div>
 <p>where normalization (using <span class="math notranslate nohighlight">\(\lVert\mathbf E\rVert\)</span>) is also applied.</p>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Note that the quantity defined by Eq. <a class="reference internal" href="#equation-residual">(7)</a> is truly a residual. Indeed, it is the norm of the difference between the left- and right-hand side in Eq. <a class="reference internal" href="#equation-lippmann-schwinger">(3)</a>, since <span class="math notranslate nohighlight">\(\boldsymbol\varepsilon^{k+1}-\boldsymbol\varepsilon^k=\mathbf E-\boldsymbol\Gamma_0[\left(\mathbf C-\mathbf C_0\right):\boldsymbol\varepsilon^k]-\boldsymbol\varepsilon^k\)</span>.</p>
+<p class="admonition-title">Note</p>
+<p>Note that the quantity defined by Eq. <a class="reference internal" href="#equation-residual">(7)</a> is truly a residual. Indeed, it is the norm of the difference between the left- and right-hand side in Eq. <a class="reference internal" href="#equation-lippmann-schwinger">(3)</a>, since <span class="math notranslate nohighlight">\(\boldsymbol\varepsilon^{k+1}-\boldsymbol\varepsilon^k=\mathbf E-\boldsymbol\Gamma_0[\left(\mathbf C-\mathbf C_0\right):\boldsymbol\varepsilon^k]-\boldsymbol\varepsilon^k\)</span>.</p>
 </div>
 <p>The fixed-point iterations defined by Eq. <a class="reference internal" href="#equation-basic-scheme">(4)</a> are then implemented as follows</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>    <span class="n">num_iter</span> <span class="o">=</span> <span class="mi">400</span>
@@ -263,18 +263,18 @@
 </pre></div>
 </div>
 <p>and the map of the local strains is shown in <a class="reference internal" href="#fig-strains"><span class="std std-numref">Fig. 2</span></a>, while <a class="reference internal" href="#fig-residual"><span class="std std-numref">Fig. 3</span></a> shows that the residual decreases (albeit slowly) with the number of iterations. This completes this tutorial.</p>
-<div class="figure align-center" id="id2">
+<div class="figure align-center" id="id4">
 <span id="fig-strains"></span><img alt="../../_images/eps.png" src="../../_images/eps.png" />
-<p class="caption"><span class="caption-number">Fig. 2 </span><span class="caption-text">The maps of <span class="math notranslate nohighlight">\(\boldsymbol\varepsilon_{11}\)</span> (left), <span class="math notranslate nohighlight">\(\boldsymbol\varepsilon_{22}\)</span> (middle) and <span class="math notranslate nohighlight">\(\boldsymbol\varepsilon_{12}\)</span> (right). Different color scales were used for the left and middle map, and for the right map. Note that in the above representation, the <span class="math notranslate nohighlight">\(x_1\)</span> axis points to the bottom, while the <span class="math notranslate nohighlight">\(x_2\)</span> axis points to the right.</span></p>
+<p class="caption"><span class="caption-number">Fig. 2 </span><span class="caption-text">The maps of <span class="math notranslate nohighlight">\(\boldsymbol\varepsilon_{11}\)</span> (left), <span class="math notranslate nohighlight">\(\boldsymbol\varepsilon_{22}\)</span> (middle) and <span class="math notranslate nohighlight">\(\boldsymbol\varepsilon_{12}\)</span> (right). Different color scales were used for the left and middle map, and for the right map. Note that in the above representation, the <span class="math notranslate nohighlight">\(x_1\)</span> axis points to the bottom, while the <span class="math notranslate nohighlight">\(x_2\)</span> axis points to the right.</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
 </div>
-<div class="figure align-center" id="id3">
+<div class="figure align-center" id="id5">
 <span id="fig-residual"></span><img alt="../../_images/residual.png" src="../../_images/residual.png" />
-<p class="caption"><span class="caption-number">Fig. 3 </span><span class="caption-text">The normalized residual as a function of the number of iterations.</span></p>
+<p class="caption"><span class="caption-number">Fig. 3 </span><span class="caption-text">The normalized residual as a function of the number of iterations.</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="the-complete-program">
 <h2>The complete program<a class="headerlink" href="#the-complete-program" title="Permalink to this headline">¶</a></h2>
-<p>The complete program can be downloaded <a class="reference download internal" href="../../_downloads/square_basic.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">here</span></code></a>.</p>
+<p>The complete program can be downloaded <a class="reference download internal" download="" href="../../_downloads/9d0ea07c1b841b5c0e22412510f406d2/square_basic.py"><code class="xref download docutils literal notranslate"><span class="pre">here</span></code></a>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Begin: imports</span>
 <span class="kn">import</span> <span class="nn">itertools</span>
 
@@ -405,16 +405,36 @@
             <p class="logo"><a href="../../index.html">
               <img class="logo" src="../../_static/logo_janus-200x200.png" alt="Logo"/>
             </a></p>
-  <h3><a href="../../index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Square inclusion, basic scheme</a><ul>
-<li><a class="reference internal" href="#description-of-the-problem">Description of the problem</a></li>
-<li><a class="reference internal" href="#implementation-of-the-lippmann-schwinger-operator">Implementation of the Lippmann–Schwinger operator</a></li>
-<li><a class="reference internal" href="#the-main-block-of-the-script">The main block of the script</a></li>
-<li><a class="reference internal" href="#the-complete-program">The complete program</a></li>
+<h1 class="logo"><a href="../../index.html">Janus</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../operators.html">Operators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../materials.html">Materials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../fft_tutorial.html">Computing discrete Fourier transforms</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Square inclusion, basic scheme</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#description-of-the-problem">Description of the problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#implementation-of-the-lippmann-schwinger-operator">Implementation of the Lippmann–Schwinger operator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-main-block-of-the-script">The main block of the script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-complete-program">The complete program</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../todo.html">TODO List</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../mandel.html">Mandel notation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../bibliography.html">Bibliography</a></li>
 </ul>
+
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
@@ -424,25 +444,24 @@
   </ul></li>
 </ul>
 </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../../_sources/tutorials/square_basic/square_basic.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -451,8 +470,8 @@
       &copy;2013-2018, S. Brisard.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="../../_sources/tutorials/square_basic/square_basic.rst.txt"

@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>Installation &#8212; Janus 0.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -13,7 +11,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Operators" href="operators.html" />
@@ -41,71 +40,79 @@
 <div class="section" id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
 <p>Janus requires Python 3k. The serial version depends on <a class="reference external" href="http://www.fftw.org/">FFTW</a> (version 3) only, while the parallel (MPI-based) version also requires <a class="reference external" href="https://bitbucket.org/mpi4py/mpi4py/">mpi4py</a>.</p>
-<div class="admonition-todo admonition" id="index-0">
-<p class="first admonition-title">Todo</p>
-<p class="last">The present version of <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> tries to install the parallel version of the code if it detects that <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> is installed. In other words, if <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> is installed, the MPI-enabled version of <code class="docutils literal notranslate"><span class="pre">FFTW</span></code> <em>must</em> be installed.</p>
+<div class="admonition-todo admonition" id="id1">
+<p class="admonition-title">Todo</p>
+<p>The present version of <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> tries to install the parallel version of the code if it detects that <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> is installed. In other words, if <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> is installed, the MPI-enabled version of <code class="docutils literal notranslate"><span class="pre">FFTW</span></code> <em>must</em> be installed.</p>
 </div>
 </div>
-<div class="section" id="configuration">
-<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
-<p>Edit the section <code class="docutils literal notranslate"><span class="pre">[build_ext]</span></code> of the file <code class="docutils literal notranslate"><span class="pre">setup.cfg</span></code>. You must provide the following values:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">build_ext</span><span class="p">]</span>
-<span class="n">include_dirs</span> <span class="o">=</span> <span class="o">...</span>
-<span class="n">library_dirs</span> <span class="o">=</span> <span class="o">...</span>
-<span class="n">libraries</span> <span class="o">=</span> <span class="o">...</span>
+<div class="section" id="configuration-all-platforms">
+<h2>Configuration (all platforms)<a class="headerlink" href="#configuration-all-platforms" title="Permalink to this headline">¶</a></h2>
+<p>Compilation and installation is configured through the <code class="docutils literal notranslate"><span class="pre">setup.cfg</span></code> file, which must be created in the root directory of the project if necessary (this file must reside in the same directory as <code class="docutils literal notranslate"><span class="pre">setup.py</span></code>).</p>
+<p>Two sections of this file must be filed: <code class="docutils literal notranslate"><span class="pre">[fftw]</span></code> and <code class="docutils literal notranslate"><span class="pre">[fftw_mpi]</span></code> (if you are compiling the MPI-enabled version of Janus):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[fftw]
+include_dirs = …
+library_dirs = …
+libraries = …
+[fftw_mpi]
+include_dirs = …
+library_dirs = …
+libraries = …
 </pre></div>
 </div>
 <dl class="data">
 <dt id="include_dirs">
-<code class="descname">include_dirs</code><a class="headerlink" href="#include_dirs" title="Permalink to this definition">¶</a></dt>
-<dd><p>The path to the FFTW headers.</p>
+<code class="sig-name descname">include_dirs</code><a class="headerlink" href="#include_dirs" title="Permalink to this definition">¶</a></dt>
+<dd><p>The path to the FFTW headers files (optional).</p>
 </dd></dl>
 
 <dl class="data">
 <dt id="library_dirs">
-<code class="descname">library_dirs</code><a class="headerlink" href="#library_dirs" title="Permalink to this definition">¶</a></dt>
-<dd><p>The path to the FFTW shared library.</p>
+<code class="sig-name descname">library_dirs</code><a class="headerlink" href="#library_dirs" title="Permalink to this definition">¶</a></dt>
+<dd><p>The path to the FFTW shared libraries (optional).</p>
 </dd></dl>
 
 <dl class="data">
 <dt id="libraries">
-<code class="descname">libraries</code><a class="headerlink" href="#libraries" title="Permalink to this definition">¶</a></dt>
-<dd><p>The name of the FFTW libraries (comma separated), including the MPI-enabled version if necessary.</p>
+<code class="sig-name descname">libraries</code><a class="headerlink" href="#libraries" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the FFTW libraries.</p>
 </dd></dl>
 
+<p>All these entries can be (comma separated) <em>lists</em>. Examples are provided below for several platforms.</p>
 </div>
-<div class="section" id="compilation-and-installation-under-unix-like-systems-linux-osx">
-<h2>Compilation and installation under Unix-like systems (Linux, OSX)<a class="headerlink" href="#compilation-and-installation-under-unix-like-systems-linux-osx" title="Permalink to this headline">¶</a></h2>
-<p>Set the following values:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">build_ext</span><span class="p">]</span>
-<span class="n">include_dirs</span> <span class="o">=</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">headers</span>
-<span class="n">library_dirs</span> <span class="o">=</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">binaries</span>
-<span class="n">libraries</span> <span class="o">=</span> <span class="n">fftw3</span><span class="p">,</span> <span class="n">fftw3_mpi</span>
+<div class="section" id="compilation-and-installation-under-linux">
+<h2>Compilation and installation under Linux<a class="headerlink" href="#compilation-and-installation-under-linux" title="Permalink to this headline">¶</a></h2>
+<p>Make sure that the MPI and FFTW packages are properly installed, including the <code class="docutils literal notranslate"><span class="pre">dev</span></code> packages (that include header files). On Ubuntu platforms, the following packages must be installed:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">libopenmpi</span><span class="o">-</span><span class="n">dev</span> <span class="n">openmpi</span><span class="o">-</span><span class="nb">bin</span> <span class="n">libfftw3</span><span class="o">-</span><span class="nb">bin</span> <span class="n">libfftw3</span><span class="o">-</span><span class="n">dev</span> <span class="n">libfftw3</span><span class="o">-</span><span class="n">mpi</span><span class="o">-</span><span class="n">dev</span> <span class="n">libfftw3</span><span class="o">-</span><span class="n">mpi3</span> <span class="n">petsc</span><span class="o">-</span><span class="n">dev</span> <span class="n">cython3</span> <span class="n">python3</span><span class="o">-</span><span class="n">numpy</span> <span class="n">python3</span><span class="o">-</span><span class="n">h5py</span> <span class="n">python3</span><span class="o">-</span><span class="n">mpi4py</span> <span class="n">python3</span><span class="o">-</span><span class="n">petsc4py</span> <span class="n">python3</span><span class="o">-</span><span class="n">pytest</span> <span class="n">python3</span><span class="o">-</span><span class="n">scipy</span> <span class="n">python3</span><span class="o">-</span><span class="n">sphinx</span>
+</pre></div>
+</div>
+<p>Usually, for linux platforms, it is not necessary to set the <code class="docutils literal notranslate"><span class="pre">include_dirs</span></code> and <code class="docutils literal notranslate"><span class="pre">library_dirs</span></code> values. Also, the library names must be stripped of the <code class="docutils literal notranslate"><span class="pre">lib</span></code> prefix (<code class="docutils literal notranslate"><span class="pre">libfftw3.so.3.5.7</span></code> → <code class="docutils literal notranslate"><span class="pre">fftw3</span></code>). On Ubuntu platforms, the <code class="docutils literal notranslate"><span class="pre">setup.cfg</span></code> file can be as simple as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">fftw</span><span class="p">]</span>
+<span class="n">libraries</span> <span class="o">=</span> <span class="n">fftw3</span>
+<span class="p">[</span><span class="n">fftw_mpi</span><span class="p">]</span>
+<span class="n">libraries</span> <span class="o">=</span> <span class="n">fftw3_mpi</span>
 </pre></div>
 </div>
 <p>Then, issue the standard commands in a console:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span> <span class="o">--</span><span class="n">user</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span> <span class="o">--</span><span class="n">user</span>
 </pre></div>
 </div>
+</div>
+<div class="section" id="compilation-and-installation-under-macos">
+<h2>Compilation and installation under MacOS<a class="headerlink" href="#compilation-and-installation-under-macos" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="compilation-and-installation-under-windows">
 <h2>Compilation and installation under Windows<a class="headerlink" href="#compilation-and-installation-under-windows" title="Permalink to this headline">¶</a></h2>
-<p>The parallel version of this code is not tested under Windows. You must first download and install the <a class="reference external" href="http://www.fftw.org/install/windows.html">precompiled binaries of FFTW for Windows</a>.</p>
-<div class="section" id="compilation-with-the-windows-sdk-7-1">
-<h3>Compilation with the Windows SDK 7.1<a class="headerlink" href="#compilation-with-the-windows-sdk-7-1" title="Permalink to this headline">¶</a></h3>
-<p>Set the following values:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">build_ext</span><span class="p">]</span>
-<span class="n">include_dirs</span> <span class="o">=</span> <span class="n">C</span><span class="p">:</span>\<span class="n">PATH</span>\<span class="n">TO</span>\<span class="n">HEADERS</span>
-<span class="n">library_dirs</span> <span class="o">=</span> <span class="n">C</span><span class="p">:</span>\<span class="n">PATH</span>\<span class="n">TO</span>\<span class="n">BINARIES</span>
+<p>The parallel version of this code is not tested under Windows. You must first download and install the <a class="reference external" href="http://www.fftw.org/install/windows.html">precompiled binaries of FFTW for Windows</a>. Assuming you have uncompressed this archive in <code class="docutils literal notranslate"><span class="pre">C:\opt\fftw-3.3.4-dll64,</span> <span class="pre">the</span> <span class="pre">``setup.cfg</span></code> file reads:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">fftw</span><span class="p">]</span>
+<span class="n">include_dirs</span> <span class="o">=</span> <span class="n">C</span><span class="p">:</span>\<span class="n">opt</span>\<span class="n">fftw</span><span class="o">-</span><span class="mf">3.3</span><span class="o">.</span><span class="mi">4</span><span class="o">-</span><span class="n">dll64</span>
+<span class="n">library_dirs</span> <span class="o">=</span> <span class="n">C</span><span class="p">:</span>\<span class="n">opt</span>\<span class="n">fftw</span><span class="o">-</span><span class="mf">3.3</span><span class="o">.</span><span class="mi">4</span><span class="o">-</span><span class="n">dll64</span>
 <span class="n">libraries</span> <span class="o">=</span> <span class="n">libfftw3</span><span class="o">-</span><span class="mi">3</span>
 </pre></div>
 </div>
-<p>Then open the <em>Windows SDK 7.1 Command Prompt</em>, and issue the following command:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="n">DISTUTILS_USE_SDK</span><span class="o">=</span><span class="mi">1</span>
-<span class="n">setenv</span> <span class="o">/</span><span class="n">x64</span> <span class="o">/</span><span class="n">release</span>
-</pre></div>
-</div>
-<p>Change to the root directory of the Janus project, and issue the standard commands:</p>
+<p>Note that the library name <em>must not</em> be stripped of the <code class="docutils literal notranslate"><span class="pre">lib</span></code> prefix (<code class="docutils literal notranslate"><span class="pre">libfftw3-3.dll</span></code> → <code class="docutils literal notranslate"><span class="pre">libfftw3</span></code>).</p>
+<div class="section" id="compilation-with-anaconda-and-visual-studio">
+<h3>Compilation with Anaconda and Visual Studio<a class="headerlink" href="#compilation-with-anaconda-and-visual-studio" title="Permalink to this headline">¶</a></h3>
+<p>If you use <a class="reference external" href="https://www.anaconda.com/distribution/">Anaconda</a> (which is highly recommended) then open the Anaconda console and issue the standard command:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span> <span class="o">--</span><span class="n">user</span>
 </pre></div>
 </div>
@@ -119,9 +126,9 @@
 <span class="n">libraries</span> <span class="o">=</span> <span class="n">fftw3</span><span class="o">-</span><span class="mi">3</span>
 </pre></div>
 </div>
-<div class="admonition-todo admonition" id="index-1">
-<p class="first admonition-title">Todo</p>
-<p class="last">Complete installation procedure with MinGW.</p>
+<div class="admonition-todo admonition" id="id2">
+<p class="admonition-title">Todo</p>
+<p>Complete installation procedure with MinGW.</p>
 </div>
 </div>
 </div>
@@ -136,9 +143,9 @@
 </pre></div>
 </div>
 <p>where the total number of processes can be adjusted (an odd number should preferably be used, as it is more likely to reveal bugs).</p>
-<div class="admonition-todo admonition" id="index-2">
-<p class="first admonition-title">Todo</p>
-<p class="last">How to print only messages from root process with pytest?</p>
+<div class="admonition-todo admonition" id="id3">
+<p class="admonition-title">Todo</p>
+<p>How to print only messages from root process with pytest?</p>
 </div>
 </div>
 </div>
@@ -153,21 +160,38 @@
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/logo_janus-200x200.png" alt="Logo"/>
             </a></p>
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Installation</a><ul>
-<li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
-<li><a class="reference internal" href="#configuration">Configuration</a></li>
-<li><a class="reference internal" href="#compilation-and-installation-under-unix-like-systems-linux-osx">Compilation and installation under Unix-like systems (Linux, OSX)</a></li>
-<li><a class="reference internal" href="#compilation-and-installation-under-windows">Compilation and installation under Windows</a><ul>
-<li><a class="reference internal" href="#compilation-with-the-windows-sdk-7-1">Compilation with the Windows SDK 7.1</a></li>
-<li><a class="reference internal" href="#compilation-with-mingw-msys">Compilation with MinGW/MSYS</a></li>
+<h1 class="logo"><a href="index.html">Janus</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configuration-all-platforms">Configuration (all platforms)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#compilation-and-installation-under-linux">Compilation and installation under Linux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#compilation-and-installation-under-macos">Compilation and installation under MacOS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#compilation-and-installation-under-windows">Compilation and installation under Windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#test-your-installation">Test your installation</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#test-your-installation">Test your installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="operators.html">Operators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="materials.html">Materials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fft_tutorial.html">Computing discrete Fourier transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/square_basic/square_basic.html">Square inclusion, basic scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="todo.html">TODO List</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mandel.html">Mandel notation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
 </ul>
-</li>
-</ul>
+
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
@@ -177,25 +201,24 @@
   </ul></li>
 </ul>
 </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/installation.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -204,8 +227,8 @@
       &copy;2013-2018, S. Brisard.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/installation.rst.txt"

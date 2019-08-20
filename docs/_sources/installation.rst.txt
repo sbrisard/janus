@@ -15,63 +15,73 @@ Janus requires Python 3k. The serial version depends on `FFTW`_ (version 3) only
 
 .. todo:: The present version of ``setup.py`` tries to install the parallel version of the code if it detects that ``mpi4py`` is installed. In other words, if ``mpi4py`` is installed, the MPI-enabled version of ``FFTW`` *must* be installed.
 
-Configuration
-=============
+Configuration (all platforms)
+=============================
 
-Edit the section ``[build_ext]`` of the file ``setup.cfg``. You must provide the following values::
+Compilation and installation is configured through the ``setup.cfg`` file, which must be created in the root directory of the project if necessary (this file must reside in the same directory as ``setup.py``).
 
-  [build_ext]
-  include_dirs = ...
-  library_dirs = ...
-  libraries = ...
+Two sections of this file must be filed: ``[fftw]`` and ``[fftw_mpi]`` (if you are compiling the MPI-enabled version of Janus)::
+
+  [fftw]
+  include_dirs = …
+  library_dirs = …
+  libraries = …
+  [fftw_mpi]
+  include_dirs = …
+  library_dirs = …
+  libraries = …
 
 .. data:: include_dirs
 
-   The path to the FFTW headers.
+   The path to the FFTW headers files (optional).
 
 .. data:: library_dirs
 
-   The path to the FFTW shared library.
+   The path to the FFTW shared libraries (optional).
 
 .. data:: libraries
 
-   The name of the FFTW libraries (comma separated), including the MPI-enabled version if necessary.
+   The name of the FFTW libraries.
 
-Compilation and installation under Unix-like systems (Linux, OSX)
-=================================================================
+All these entries can be (comma separated) *lists*. Examples are provided below for several platforms.
 
-Set the following values::
+Compilation and installation under Linux
+========================================
 
-  [build_ext]
-  include_dirs = /path/to/headers
-  library_dirs = /path/to/binaries
-  libraries = fftw3, fftw3_mpi
+Make sure that the MPI and FFTW packages are properly installed, including the ``dev`` packages (that include header files). On Ubuntu platforms, the following packages must be installed::
+
+  sudo apt-get install libopenmpi-dev openmpi-bin libfftw3-bin libfftw3-dev libfftw3-mpi-dev libfftw3-mpi3 petsc-dev cython3 python3-numpy python3-h5py python3-mpi4py python3-petsc4py python3-pytest python3-scipy python3-sphinx
+
+Usually, for linux platforms, it is not necessary to set the ``include_dirs`` and ``library_dirs`` values. Also, the library names must be stripped of the ``lib`` prefix (``libfftw3.so.3.5.7`` → ``fftw3``). On Ubuntu platforms, the ``setup.cfg`` file can be as simple as::
+
+  [fftw]
+  libraries = fftw3
+  [fftw_mpi]
+  libraries = fftw3_mpi
 
 Then, issue the standard commands in a console::
 
-  python setup.py install --user
+  python3 setup.py install --user
+
+Compilation and installation under MacOS
+========================================
 
 Compilation and installation under Windows
 ==========================================
 
-The parallel version of this code is not tested under Windows. You must first download and install the `precompiled binaries of FFTW for Windows`_.
+The parallel version of this code is not tested under Windows. You must first download and install the `precompiled binaries of FFTW for Windows`_. Assuming you have uncompressed this archive in ``C:\opt\fftw-3.3.4-dll64, the ``setup.cfg`` file reads::
 
-Compilation with the Windows SDK 7.1
-------------------------------------
-
-Set the following values::
-
-  [build_ext]
-  include_dirs = C:\PATH\TO\HEADERS
-  library_dirs = C:\PATH\TO\BINARIES
+  [fftw]
+  include_dirs = C:\opt\fftw-3.3.4-dll64
+  library_dirs = C:\opt\fftw-3.3.4-dll64
   libraries = libfftw3-3
 
-Then open the *Windows SDK 7.1 Command Prompt*, and issue the following command::
+Note that the library name *must not* be stripped of the ``lib`` prefix (``libfftw3-3.dll`` → ``libfftw3``).
 
-  set DISTUTILS_USE_SDK=1
-  setenv /x64 /release
+Compilation with Anaconda and Visual Studio
+-------------------------------------------
 
-Change to the root directory of the Janus project, and issue the standard commands::
+If you use `Anaconda <https://www.anaconda.com/distribution/>`_ (which is highly recommended) then open the Anaconda console and issue the standard command::
 
   python setup.py install --user
 

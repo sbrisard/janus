@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>Introduction &#8212; Janus 0.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -13,7 +11,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Installation" href="installation.html" />
@@ -39,11 +38,11 @@
 <p>Janus is a Python library dedicated to the discretization of the Lippmann–Schwinger equation with periodic boundary conditions. The matrix of the resulting linear system is the sum of a block-diagonal matrix and a block-circulant matrix. Following the ideas initially introduced by <a class="reference internal" href="bibliography.html#moul1998"><span class="std std-ref">Moulinec &amp; Suquet (1998)</span></a> matrix-vector products can then be computed efficiently by means of the <a class="reference external" href="http://en.wikipedia.org/wiki/Fast_Fourier_transform">Fast Fourier Transform</a>. A matrix-free strategy is then adopted to solve the linear system iteratively, e.g. (non-exhaustive list)</p>
 <blockquote>
 <div><ul class="simple">
-<li>fixed-point iterations (<a class="reference internal" href="bibliography.html#moul1998"><span class="std std-ref">Moulinec &amp; Suquet, 1998</span></a>),</li>
-<li>accelerated schemes (<a class="reference internal" href="bibliography.html#eyre1999"><span class="std std-ref">Eyre &amp; Milton, 1999</span></a>),</li>
-<li>augmented Lagrangians (<a class="reference internal" href="bibliography.html#mich2001"><span class="std std-ref">Michel et al., 2001</span></a>),</li>
-<li>Krylov subspace linear sovers (<a class="reference internal" href="bibliography.html#bris2010a"><span class="std std-ref">Brisard &amp; Dormieux, 2010</span></a>),</li>
-<li>polarization-based schemes (<a class="reference internal" href="bibliography.html#monc2012"><span class="std std-ref">Monchiet &amp; Bonnet, 2012</span></a>),</li>
+<li><p>fixed-point iterations (<a class="reference internal" href="bibliography.html#moul1998"><span class="std std-ref">Moulinec &amp; Suquet, 1998</span></a>),</p></li>
+<li><p>accelerated schemes (<a class="reference internal" href="bibliography.html#eyre1999"><span class="std std-ref">Eyre &amp; Milton, 1999</span></a>),</p></li>
+<li><p>augmented Lagrangians (<a class="reference internal" href="bibliography.html#mich2001"><span class="std std-ref">Michel et al., 2001</span></a>),</p></li>
+<li><p>Krylov subspace linear sovers (<a class="reference internal" href="bibliography.html#bris2010a"><span class="std std-ref">Brisard &amp; Dormieux, 2010</span></a>),</p></li>
+<li><p>polarization-based schemes (<a class="reference internal" href="bibliography.html#monc2012"><span class="std std-ref">Monchiet &amp; Bonnet, 2012</span></a>),</p></li>
 </ul>
 </div></blockquote>
 <p>see also <a class="reference internal" href="bibliography.html#moul2014"><span class="std std-ref">Moulinec &amp; Silva (2014)</span></a> for a comparison of some of these iterative schemes.</p>
@@ -60,7 +59,32 @@
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/logo_janus-200x200.png" alt="Logo"/>
-            </a></p><div class="relations">
+            </a></p>
+<h1 class="logo"><a href="index.html">Janus</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="operators.html">Operators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="materials.html">Materials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fft_tutorial.html">Computing discrete Fourier transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/square_basic/square_basic.html">Square inclusion, basic scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="todo.html">TODO List</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mandel.html">Mandel notation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
+</ul>
+
+<div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
@@ -69,25 +93,24 @@
   </ul></li>
 </ul>
 </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/introduction.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -96,8 +119,8 @@
       &copy;2013-2018, S. Brisard.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/introduction.rst.txt"
