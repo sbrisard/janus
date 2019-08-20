@@ -1,4 +1,4 @@
-from fftw_mpi cimport *
+from .fftw_mpi cimport *
 from janus.fft.serial._serial_fft cimport _RealFFT2D
 from janus.fft.serial._serial_fft cimport _RealFFT3D
 
@@ -27,7 +27,7 @@ def create_real(shape, comm=MPI.COMM_WORLD, flags=FFTW_MEASURE):
 
 cdef create_real_2D(ptrdiff_t n0, ptrdiff_t n1, Comm comm, unsigned flags):
     cdef ptrdiff_t n0_loc, offset0
-    cdef ptrdiff_t size = 2 * fftw_mpi_local_size_2d(n0, n1 / 2 + 1,
+    cdef ptrdiff_t size = 2 * fftw_mpi_local_size_2d(n0, n1 // 2 + 1,
                                                      comm.ob_mpi,
                                                      &n0_loc,
                                                      &offset0)
@@ -46,7 +46,7 @@ cdef create_real_2D(ptrdiff_t n0, ptrdiff_t n1, Comm comm, unsigned flags):
 cdef create_real_3D(ptrdiff_t n0, ptrdiff_t n1, ptrdiff_t n2, Comm comm,
                     unsigned flags):
     cdef ptrdiff_t n0_loc, offset0
-    cdef ptrdiff_t size = 2 * fftw_mpi_local_size_3d(n0, n1, n2 / 2 + 1,
+    cdef ptrdiff_t size = 2 * fftw_mpi_local_size_3d(n0, n1, n2 // 2 + 1,
                                                      comm.ob_mpi,
                                                      &n0_loc,
                                                      &offset0)
