@@ -83,7 +83,7 @@ def extensions_and_packages():
         for key in ['include_dirs', 'library_dirs', 'libraries']:
             value = fftw.get(key, '')
             if value != '':
-                kwargs[key] = value.split(',')
+                kwargs[key] = [token.strip() for token in value.split(',')]
     serial_fft = Extension('janus.fft.serial._serial_fft',
                            sources=['janus/fft/serial/_serial_fft.pyx'],
                            **kwargs)
@@ -164,7 +164,8 @@ def extensions_and_packages_with_mpi():
             for key in ['include_dirs', 'library_dirs', 'libraries']:
                 value = fftw_mpi.get(key, '')
                 if value != '':
-                    kwargs[key] = kwargs.get(key, [])+value.split(',')
+                    kwargs[key] = (kwargs.get(key, [])
+                                   +[token.strip() for token in value.split(',')])
 
         parallel_fft = Extension('janus.fft.parallel._parallel_fft',
                                  sources=['janus/fft/parallel/_parallel_fft.pyx'],
