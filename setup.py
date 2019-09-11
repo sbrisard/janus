@@ -169,7 +169,7 @@ def extensions_and_packages_with_mpi():
 
         parallel_fft = Extension('janus.fft.parallel._parallel_fft',
                                  sources=['janus/fft/parallel/_parallel_fft.pyx'],
-                                 **mpicc_show())
+                                 **kwargs)
         return [parallel_fft], ['janus.fft.parallel']
     except ImportError:
         return [], []
