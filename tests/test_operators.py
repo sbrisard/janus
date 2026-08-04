@@ -40,6 +40,13 @@ class TestAbstractOperator:
         op.init_sizes(*self.valid_size())
         return op
 
+    # TODO: this dynamic-parametrization pattern (branching on
+    # metafunc.function.__name__ and introspecting the test's own argument
+    # names) reimplements what pytest.mark.parametrize already does natively,
+    # and is fragile (it relied on inspect.getargspec, removed in Python
+    # 3.11). Consider refactoring these test classes to use
+    # @pytest.mark.parametrize directly on each test method instead of
+    # overriding pytest_generate_tests down the inheritance chain.
     def pytest_generate_tests(self, metafunc):
         op = self.operator()
         args = None
@@ -58,7 +65,7 @@ class TestAbstractOperator:
             params = [(op,)]
         if params is not None:
             if args is None:
-                args = inspect.getargspec(metafunc.function)[0][1:]
+                args = inspect.getfullargspec(metafunc.function)[0][1:]
             metafunc.parametrize(args, params)
 
     def test_init_sizes(self, operator, isize, osize):
@@ -331,7 +338,7 @@ class TestFourthRankCubicTensor3D(AbstractTestFourthRankCubicTensor):
 
 class AbstractTestAbstractStructuredOperator:
     def pytest_generate_tests(self, metafunc):
-        args = inspect.getargspec(metafunc.function)[0][1:]
+        args = inspect.getfullargspec(metafunc.function)[0][1:]
         if metafunc.function.__name__ == 'test_init_shapes_invalid_params':
             ones = tuple(itertools.repeat(1, self.dim + 1))
             params = set(itertools.chain(itertools.permutations((0,) + ones),
@@ -427,7 +434,7 @@ class AbstractTestBlockDiagonalOperator(AbstractTestAbstractStructuredOperator):
         return block_diagonal_operator(self.local_operators())
 
     def pytest_generate_tests(self, metafunc):
-        args = inspect.getargspec(metafunc.function)[0][1:]
+        args = inspect.getfullargspec(metafunc.function)[0][1:]
         if metafunc.function.__name__ == 'test_apply':
             global_shape = self.valid_shape()[0:self.dim]
             loc = self.local_operators()
@@ -473,7 +480,7 @@ class AbstractTestBlockDiagonalLinearOperator(AbstractTestAbstractStructuredOper
         return block_diagonal_linear_operator(self.local_matrices())
 
     def pytest_generate_tests(self, metafunc):
-        args = inspect.getargspec(metafunc.function)[0][1:]
+        args = inspect.getfullargspec(metafunc.function)[0][1:]
         if metafunc.function.__name__ == 'test_apply':
             global_shape = self.valid_shape()[0:self.dim]
             a = self.local_matrices()
@@ -498,6 +505,14 @@ class AbstractTestBlockDiagonalLinearOperator(AbstractTestAbstractStructuredOper
         else:
             super().pytest_generate_tests(metafunc)
 
+    # TODO: y_expected is computed with np.dot (BLAS), while operator.apply
+    # runs a hand-written Cython accumulation loop (c_apply in
+    # BlockDiagonalLinearOperator2D/3D, janus/operators.pyx). The two are not
+    # guaranteed to sum in the same order (FMA/vectorization), so comparing
+    # them with rtol=0, atol=0 is inherently fragile: it happened to hold on
+    # the original NumPy/BLAS build but fails with 1-ULP differences on
+    # others (seen with NumPy 2.x here). Loosen the tolerance to a small
+    # multiple of ULP, consistent with the other tests in this file.
     def test_apply(self, operator, x, y_expected):
         y_actual = np.empty(operator.oshape, dtype=np.float64)
         operator.apply(x, y_actual)
