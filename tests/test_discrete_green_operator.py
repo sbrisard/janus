@@ -254,7 +254,7 @@ class TestFilteredGreenOperator(AbstractTestDiscreteGreenOperator):
         for i in itertools.product(*itertools.repeat(range(-1, 1), dim)):
             bb = b + i * n
             k = 2 * np.pi * bb / n
-            w = np.square(np.product(np.cos(0.25 * k)))
+            w = np.square(np.prod(np.cos(0.25 * k)))
             greenc.set_frequency(k)
             g += w * np.asarray(greenc.to_memoryview())
         return g
