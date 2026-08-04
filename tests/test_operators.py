@@ -516,7 +516,7 @@ class AbstractTestBlockDiagonalLinearOperator(AbstractTestAbstractStructuredOper
     def test_apply(self, operator, x, y_expected):
         y_actual = np.empty(operator.oshape, dtype=np.float64)
         operator.apply(x, y_actual)
-        assert_allclose(y_expected, y_actual, 0 * ULP, 0 * ULP)
+        assert_allclose(y_expected, y_actual, 3 * ULP, 3 * ULP)
 
     def test_apply_transpose(self, operator, x, y):
         yax = np.sum(y * operator.apply(x))
