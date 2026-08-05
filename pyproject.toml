@@ -1,3 +1,16 @@
 [build-system]
 requires = ["setuptools", "Cython"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "Janus"
+version = "0.1"
+authors = [
+    {name = "S. Brisard", email = "sebastien.brisard@ifsttar.fr"},
+]
+license = "BSD-3-Clause"
+license-files = ["LICENSE.txt"]
+
+[project.urls]
+Homepage = "https://github.com/sbrisard/janus"
+Download = "https://github.com/sbrisard/janus"

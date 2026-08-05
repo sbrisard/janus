@@ -14,14 +14,7 @@ from distutils.util import split_quoted
 
 from Cython.Build import cythonize
 
-NAME = 'Janus'
-DESCRIPTION = ''
-LONG_DESCRIPTION = ''
-AUTHOR = 'S. Brisard'
-AUTHOR_EMAIL = 'sebastien.brisard@ifsttar.fr'
-URL = 'https://github.com/sbrisard/janus'
-DOWNLOAD_URL = 'https://github.com/sbrisard/janus'
-LICENSE = 'BSD-3'
+# Project metadata lives in pyproject.toml ([project] table).
 
 
 class clean(distutils.command.clean.clean):
@@ -157,16 +150,7 @@ if __name__ == '__main__':
 
     extensions += extensions_mpi
     packages += packages_mpi
-    setup(name=NAME,
-          version='0.1',
-          description=DESCRIPTION,
-          long_description=LONG_DESCRIPTION,
-          author=AUTHOR,
-          author_email=AUTHOR_EMAIL,
-          url=URL,
-          download_url=DOWNLOAD_URL,
-          license=LICENSE,
-          packages=packages,
+    setup(packages=packages,
           ext_modules=cythonize(extensions,
                                 compiler_directives={'embedsignature': True,
                                                      'language_level': 3}),
