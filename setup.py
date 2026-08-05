@@ -60,6 +60,27 @@ class clean(distutils.command.clean.clean):
         return out
 
 
+def update_from_config(kwargs, section):
+    """Merge the specified section of ``setup.cfg`` into ``kwargs``.
+
+    The ``include_dirs``, ``library_dirs`` and ``libraries`` entries of the
+    section are read as comma-separated lists, and appended to the values
+    already stored in ``kwargs`` (a dictionary that can be passed to
+    Extension()). A missing section, or a missing/empty entry, is ignored.
+
+    ``kwargs`` is updated in place and returned.
+    """
+    config = configparser.ConfigParser()
+    config.read('setup.cfg')
+    if config.has_section(section):
+        for key in ['include_dirs', 'library_dirs', 'libraries']:
+            value = config[section].get(key, '')
+            if value != '':
+                kwargs[key] = (kwargs.get(key, [])
+                               +[token.strip() for token in value.split(',')])
+    return kwargs
+
+
 def extensions_and_packages():
     utils = Extension('janus.utils.checkarray',
                       sources=['janus/utils/checkarray.pyx'])
@@ -68,15 +89,7 @@ def extensions_and_packages():
     materials = Extension('janus.material.elastic.linear.isotropic',
                           sources=['janus/material/elastic/linear/isotropic.pyx'])
 
-    config = configparser.ConfigParser()
-    config.read('setup.cfg')
-    kwargs = {}
-    if config.has_section('fftw'):
-        fftw = config['fftw']
-        for key in ['include_dirs', 'library_dirs', 'libraries']:
-            value = fftw.get(key, '')
-            if value != '':
-                kwargs[key] = [token.strip() for token in value.split(',')]
+    kwargs = update_from_config({}, 'fftw')
     serial_fft = Extension('janus.fft.serial._serial_fft',
                            sources=['janus/fft/serial/_serial_fft.pyx'],
                            **kwargs)
@@ -125,17 +138,7 @@ def mpicc_show():
 
 def extensions_and_packages_with_mpi():
     try:
-        kwargs = mpicc_show()
-        config = configparser.ConfigParser()
-        config.read('setup.cfg')
-        if config.has_section('fftw_mpi'):
-            fftw_mpi = config['fftw_mpi']
-            for key in ['include_dirs', 'library_dirs', 'libraries']:
-                value = fftw_mpi.get(key, '')
-                if value != '':
-                    kwargs[key] = (kwargs.get(key, [])
-                                   +[token.strip() for token in value.split(',')])
-
+        kwargs = update_from_config(mpicc_show(), 'fftw_mpi')
         parallel_fft = Extension('janus.fft.parallel._parallel_fft',
                                  sources=['janus/fft/parallel/_parallel_fft.pyx'],
                                  **kwargs)
