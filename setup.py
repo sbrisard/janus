@@ -93,30 +93,6 @@ def extensions_and_packages():
     return extensions, packages
 
 
-def mpicc_showme():
-    """Use ``mpicc --showme`` to retrieve the mpicc arguments.
-
-    Works with openmpi, not mpich.
-    Returns a dictionary that can be passed to Extension().
-    """
-
-    import mpi4py
-    from subprocess import check_output
-    mpicc = mpi4py.get_config()['mpicc']
-
-    def call_mpicc_showme(arg):
-        out = check_output([mpicc, '--showme:'+arg])
-        return out.decode('ascii').split()
-
-    incdirs = call_mpicc_showme('incdirs')
-    incdirs.append(mpi4py.get_include())
-
-    return {'include_dirs': incdirs,
-            'library_dirs': call_mpicc_showme('libdirs'),
-            'extra_compile_args': call_mpicc_showme('compile'),
-            'extra_link_args': call_mpicc_showme('link')}
-
-
 def mpicc_show():
     """Use ``mpicc --show`` to retrieve the mpicc arguments.
 

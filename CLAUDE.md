@@ -43,8 +43,9 @@ python setup.py clean
 ```
 
 The MPI/parallel extension (`janus.fft.parallel._parallel_fft`) is only built if `mpi4py` is
-importable and `mpicc` can be located (`setup.py` probes `mpicc --show`/`--showme`); if `mpi4py`
-is missing, `setup.py` silently skips the parallel package.
+importable and `mpicc` can be located (`setup.py` parses the output of `mpicc -show`, sorting the
+tokens into `include_dirs`/`library_dirs`/`extra_link_args`); if `mpi4py` is missing, `setup.py`
+silently skips the parallel package.
 
 ## Tests
 
