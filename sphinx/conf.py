@@ -16,6 +16,7 @@ sys.path.insert(0, os.path.abspath('..'))
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.autosummary',
               'sphinx.ext.doctest',
+              'sphinx.ext.githubpages',
               'sphinx.ext.todo',
               'sphinx.ext.coverage',
               'sphinx.ext.mathjax',
@@ -45,10 +46,9 @@ numfig = True
 html_logo = './logo_janus-200x200.png'
 htmlhelp_basename = 'janusdoc'
 
-latex_elements = {'preamble': '',
-                  'inputenc': '',
-                  'fontenc': '',
-                  'utf8extra': ''}
+latex_engine = 'xelatex'
+# With xelatex, Sphinx uses xindy for the index by default; use makeindex instead.
+latex_use_xindy = False
 latex_documents = [
   ('index', 'janus.tex', 'Documentation of the Janus Library',
    'S. Brisard', 'manual'),

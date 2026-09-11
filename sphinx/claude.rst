@@ -4,6 +4,148 @@ Claude's contributions to `Janus`
 
 As of august 2026, `Janus` is revived by the author with the help of `Claude Code`. This page will collect all interactions between the author and Claude.
 
+
+2026-09-11 • Updating the online docs
+=====================================
+
+Report on the procedure for compiling the sphinx docs locally and updating the Github pages accordingly (the project lives in the following repo: https://github.com/sbrisard/janus while the github pages are: https://sbrisard.github.io/janus/).
+
+Claude's report
+---------------
+
+Current setup
+~~~~~~~~~~~~~
+
+- The HTML docs are versioned in the ``docs/`` directory of the ``master`` branch (since 2018), with a ``docs/.nojekyll`` file, so that GitHub does not process the files with Jekyll (which would ignore the ``_static``, ``_sources``… directories). There is no ``gh-pages`` branch, and no GitHub Actions workflow. GitHub Pages is therefore most likely configured as *Deploy from a branch*, ``master``, ``/docs``. This could not be checked directly (the corresponding GitHub API requires authentication); it can be checked in *Settings → Pages* of the repository.
+- The online docs are exactly the content of ``docs/``: they were last updated on 2019-08-20 (commit ``811359f``), with Sphinx 2.1.2. In particular, they do not contain the present page, nor the new installation procedure.
+- ``sphinx/make.bat html`` builds the docs *directly* into ``../docs`` (the doctrees go to ``sphinx/_build/doctrees``; both ``sphinx/_build`` and ``docs/.buildinfo`` are git-ignored). By contrast, ``sphinx/Makefile`` (Linux, macOS) builds into ``sphinx/_build/html``, and the files must then be copied to ``docs/``.
+
+Procedure
+~~~~~~~~~
+
+1. Activate the ``janus`` environment, where `Janus` must be compiled and installed (see *Installation on a windows machine*): ``autodoc`` imports the compiled modules.
+
+2. Empty the ``docs/`` directory (from the root of the project, in PowerShell). ``make.bat html`` does not remove files that Sphinx no longer produces; without this step, obsolete files would accumulate in ``docs/``. Since the ``sphinx.ext.githubpages`` extension was added (see follow-up below), ``docs/.nojekyll`` is recreated by the build, and the whole directory can be emptied::
+
+     Get-ChildItem -Force docs | Remove-Item -Recurse -Force
+
+3. Build the docs, from the ``sphinx/`` directory. ``make.bat clean`` deletes the cached doctrees, which forces a complete rebuild::
+
+     cd sphinx
+     .\make.bat clean
+     .\make.bat html
+
+   Equivalently, from the root of the project: ``python -m sphinx -b html -E -d sphinx/_build/doctrees sphinx docs``.
+
+4. Check the result: open ``docs/index.html`` in a browser, and review the changes with ``git status docs``.
+
+5. Commit the ``docs/`` directory, and push to ``master``::
+
+     git add -A docs
+     git commit -m "Update HTML docs"
+     git push
+
+   GitHub Pages then redeploys the site automatically (usually within a few minutes). The deployment can be followed in the *Actions* tab of the repository (*pages build and deployment*).
+
+What was checked
+~~~~~~~~~~~~~~~~
+
+Steps 2 and 3 were not run as such on ``docs/``, and step 5 was not run at all (no commit, no push). The following equivalent operations were performed instead.
+
+- A complete build (``python -m sphinx -b html -E``) in an empty temporary directory succeeds (2 warnings, both related to ``janus.fft.parallel``). Compared to the current ``docs/``, it adds 8 files (``claude.html``, ``_sources/claude.rst.txt``, 2 files in ``_downloads/``, 4 JavaScript/SVG files in ``_static/``) and makes 4 files obsolete (``jquery*.js`` and ``underscore*.js`` in ``_static/``), which step 2 removes.
+- Mirroring this build into a copy of ``docs/`` with ``robocopy <build> docs /MIR /XF .buildinfo .nojekyll`` (an alternative to steps 2 and 3) gives the same result, and keeps ``.nojekyll``. Note that ``robocopy`` returns non-zero exit codes on success (codes 1 to 7), which may confuse scripts.
+- ``make.bat html`` was also run as is, and wrote into ``docs/``: this is how Claude found out that it targets ``../docs``. Since this task only asked for a report, the ``docs/`` directory was then restored to its committed state (``git restore docs``, removal of the new files, of ``docs/.buildinfo`` and of ``sphinx/_build``). ``docs/`` is currently unchanged.
+
+Points to be aware of
+~~~~~~~~~~~~~~~~~~~~~
+
+- The API of ``janus.fft.parallel`` is absent from the docs built under Windows (the parallel extension is not compiled). This was already the case for the current online docs.
+- The present page (``claude.rst``) will be published. It contained an absolute local path, in the report of *Installation on a windows machine* (replaced since, see follow-up below).
+- The generated HTML files are versioned: each update of the docs adds all modified HTML files to the history of the repository.
+
+Follow-up: suggestions 2 and 4 applied
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+At the author's request, suggestions 2 and 4 below were applied.
+
+- ``sphinx.ext.githubpages`` was added to the ``extensions`` of ``sphinx/conf.py``. A complete build in a temporary directory succeeds (still 2 warnings, both related to ``janus.fft.parallel``), and now produces a ``.nojekyll`` file in the output directory. Step 2 of the above procedure was updated accordingly: the whole ``docs/`` directory can now be emptied before the build. The extension would also create a ``CNAME`` file if ``html_baseurl`` pointed to a custom domain, which is not the case here.
+- In the report of *Installation on a windows machine*, the absolute local paths of the ``setup.cfg`` example were replaced by ``C:\path\to\miniconda3\envs\janus\Library\…``. No other absolute local path remains in ``sphinx/``.
+
+Follow-up: inconsistency between ``Makefile`` and ``make.bat``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Both files were generated by ``sphinx-quickstart`` on 2013-09-17 (commit ``e2b3e81``), for Linux/macOS (``Makefile``) and Windows (``make.bat``) respectively. Originally, the ``html`` target of both files built the docs into ``_build/html`` (i.e. ``sphinx/_build/html`` today). When the HTML docs were moved to ``docs/`` to be served by GitHub Pages (commit ``f0f32ee``, 2018-07-13, which also renamed the source directory ``docs/`` → ``sphinx/``), the ``html`` target of ``make.bat`` was changed to build into ``../docs``, but ``Makefile`` was not modified. As a consequence:
+
+- under Windows, ``make.bat html`` updates ``docs/`` directly (and the changes show up in ``git status``);
+- under Linux/macOS, ``make html`` builds into ``sphinx/_build/html``, which is git-ignored: ``docs/`` is left untouched, and nothing shows up in ``git status``. The files must then be copied to ``docs/`` by hand (without ``.buildinfo``), which is easily forgotten.
+
+In both files, all other targets (``dirhtml``, ``latex``, ``epub``…) still build into ``_build/``, and ``clean`` only empties ``_build/`` (the doctrees), never ``docs/``. Both files also contain leftovers from another project: the ``qthelp`` and ``devhelp`` targets refer to ``HashTri`` (e.g. ``HashTri.qhcp``) instead of ``Janus``. Finally, both use the old ``sphinx-quickstart`` template, which lists every builder explicitly; current versions of ``sphinx-quickstart`` generate much shorter files, based on ``sphinx-build -M`` ("make mode").
+
+Possible fixes, from the smallest to the largest change:
+
+a. Change the ``html`` target of ``Makefile`` to build into ``../docs``, as ``make.bat`` does (two lines). The ``HashTri`` leftovers can be fixed at the same time.
+b. Replace both files with those generated by the current ``sphinx-quickstart`` (make mode), and add a dedicated target (e.g. ``ghpages``) that empties ``docs/`` and builds into it. This must be done twice (``make`` and batch syntax).
+c. Remove both files, and document a single command, identical on all platforms, run from the root of the project::
+
+     python -m sphinx -b html -E -d sphinx/_build/doctrees sphinx docs
+
+   Emptying ``docs/`` beforehand is still platform-dependent (``rm -rf docs/*`` vs. PowerShell); a small Python script (e.g. ``scripts/build_docs.py``) could perform both steps on all platforms.
+
+Claude would recommend c: the docs are only built as HTML, for GitHub Pages, so that the many other targets of the ``make`` files are not needed, and a single command (or script) avoids maintaining two files in two syntaxes. None of these fixes was applied.
+
+Follow-up: options b and c applied
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The author chose to combine b and c: the ``make`` files are updated according to b (the author wants to build the PDF version of the docs from time to time), but the procedure that is *documented* is c. This follow-up supersedes steps 2 and 3 of the above procedure.
+
+Changes:
+
+- ``scripts/empty_docs.py`` (new): empties ``docs/``, except ``docs/.nojekyll``. The ``docs/`` directory is located relative to the script (at the root of the project), not relative to the current directory, so that the script cannot empty another directory by mistake.
+- ``sphinx/Makefile`` and ``sphinx/make.bat`` were replaced by the files generated by the current ``sphinx-quickstart`` (Sphinx 9.1, "make mode": all targets are forwarded to ``sphinx-build -M``), with one additional target, ``ghpages``, which runs ``scripts/empty_docs.py``, then builds the HTML docs from scratch into ``../docs``. This fixes the inconsistency between both files, as well as the ``HashTri`` leftovers. Note the change of behavior: ``make.bat html`` now builds into ``sphinx/_build/html``, like ``make html``; it no longer writes into ``docs/``. ``make.bat`` was saved with CRLF line endings (git stores it with LF, as before).
+- ``sphinx/installation.rst``: new section *Build the documentation*, which documents the two commands of option c (run from the root of the project)::
+
+    python scripts/empty_docs.py
+    python -m sphinx -b html -E -d sphinx/_build/doctrees sphinx docs
+
+  followed by the commit and push of ``docs/``. The ``make`` files are not mentioned.
+- ``CLAUDE.md``: the note on ``docs/`` in *Repository layout notes* now gives the same commands (and mentions the ``ghpages`` target), and says that ``docs/`` should only be regenerated on request, since it is the published site.
+
+Tests (all performed on a copy of ``sphinx/``, ``scripts/`` and ``docs/`` in a temporary directory; the actual ``docs/`` directory was not modified):
+
+- The documented commands (option c): ``docs/`` is emptied, ``.nojekyll`` is kept, the obsolete files (``jquery*.js``, ``underscore*.js``) are removed, and the build succeeds (2 warnings, related to ``janus.fft.parallel``).
+- ``make.bat`` (help, including the description of the ``ghpages`` target), ``make.bat ghpages`` (same result as the documented commands) and ``make.bat html`` (builds into ``_build/html``) work as expected.
+- ``sphinx/Makefile`` was not tested: ``make`` is not available on this machine.
+- ``make.bat latexpdf`` (TeX Live 2026 is installed on this machine) **fails**, for a reason unrelated to the ``make`` files: with the default LaTeX engine (``pdflatex``), and the ``latex_elements`` of ``sphinx/conf.py`` (which empty ``inputenc`` and ``fontenc``), LaTeX stops on a Unicode character (``δ``, U+03B4). With ``-D latex_engine=xelatex``, the PDF is produced, but ``latexmk`` then fails on the index, because Sphinx uses ``xindy`` with ``xelatex``, and ``xindy`` fails on this machine. With ``-D latex_engine=xelatex -D latex_use_xindy=0`` (``makeindex`` is then used), the build succeeds: ``sphinx/_build/latex/janus.pdf``, 66 pages, no missing character. ``sphinx/conf.py`` was not modified (see suggestions).
+- Note that ``make.bat`` returns exit code 0 even when the build fails (this is also the case of the template generated by ``sphinx-quickstart``): the output must be read.
+
+Follow-up: PDF settings added to ``conf.py``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+At the author's request, ``latex_engine = 'xelatex'`` and ``latex_use_xindy = False`` (with a comment explaining the latter) were added to ``sphinx/conf.py``, just before ``latex_elements``, which was left unchanged. On a copy of ``sphinx/`` in a temporary directory, ``make.bat latexpdf`` (without any ``-D`` option) now succeeds: ``_build/latex/janus.pdf``, 66 pages, no missing character. The HTML build is unaffected (2 warnings, related to ``janus.fft.parallel``).
+
+Follow-up: ``latex_elements`` removed from ``conf.py``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+At the author's request, the ``latex_elements`` overrides were reviewed. The dictionary set ``preamble``, ``inputenc``, ``fontenc`` and ``utf8extra`` to empty strings. The last one was added in 2016 (commit ``18071f2``, *Remove* ``\DeclareUnicodeCharacter``), before Sphinx offered the ``latex_engine`` option (Sphinx 1.5): these overrides most likely allowed the generated ``.tex`` file to be compiled with ``xelatex`` by hand, by removing the ``pdflatex``-specific parts of the preamble.
+
+Now that ``latex_engine = 'xelatex'`` is set, Sphinx adapts these entries itself, and the overrides are either redundant or counterproductive:
+
+- ``preamble`` and ``inputenc``: the defaults are already empty strings (with ``xelatex``, for the latter);
+- ``fontenc``: with ``xelatex``, the default loads ``fontspec`` explicitly (``\usepackage{fontspec}`` and ``\defaultfontfeatures…``); the override removed these lines (``fontspec`` was still loaded indirectly, by ``polyglossia``);
+- ``utf8extra``: with ``xelatex``, the default makes the non-breaking space (U+00A0) behave as ``~``; the override removed this.
+
+The whole ``latex_elements`` dictionary was therefore removed from ``sphinx/conf.py``. On a copy of ``sphinx/`` in a temporary directory, ``make.bat latexpdf`` succeeds: 66 pages, no missing character. The only differences in the preamble of the generated ``janus.tex`` are the three lines listed above (``fontspec``, ``\defaultfontfeatures`` and non-breaking space), which are now present.
+
+Suggestions
+-----------
+
+- *Applied (options b and c), see above.* Make ``sphinx/Makefile`` consistent with ``sphinx/make.bat`` (build into ``../docs``), or replace both by a single documented command.
+- *Applied, see above.* Add the ``sphinx.ext.githubpages`` extension to ``sphinx/conf.py``: it creates ``.nojekyll`` in the output directory automatically, so that ``docs/`` can be emptied without special care.
+- In the longer term, a GitHub Actions workflow could build the docs on each push and deploy them to GitHub Pages. The generated HTML files would then no longer be versioned, and building under Linux (with MPI) would include the API of ``janus.fft.parallel``. This requires compiling `Janus` in the workflow.
+- *Applied, see above.* Replace the absolute local path in the report of *Installation on a windows machine* by a generic one (``C:\path\to\miniconda3\…``) before publishing.
+- *Applied, see above.* To build the PDF version of the docs, add ``latex_engine = 'xelatex'`` and ``latex_use_xindy = False`` to ``sphinx/conf.py`` (tested with TeX Live 2026, see above). The ``latex_elements`` overrides (empty ``inputenc``, ``fontenc`` and ``utf8extra``) could then be reviewed: they seem to date from an earlier attempt at supporting Unicode characters.
+
+
 2026-09-11 • Automatic creation of environments
 ===============================================
 
@@ -139,8 +281,8 @@ Procedure
 3. Create the ``setup.cfg`` file at the root of the project. FFTW is provided by `conda`, in ``%CONDA_PREFIX%\Library``. Environment variables are not expanded in ``setup.cfg``, so the absolute path must be written in full (``echo %CONDA_PREFIX%`` prints it). Note that the library name is ``fftw3`` (the `conda` package provides ``fftw3.lib`` and ``fftw3.dll``)::
 
      [fftw]
-     include_dirs = C:\Users\s.brisard\miniconda3\envs\janus\Library\include
-     library_dirs = C:\Users\s.brisard\miniconda3\envs\janus\Library\lib
+     include_dirs = C:\path\to\miniconda3\envs\janus\Library\include
+     library_dirs = C:\path\to\miniconda3\envs\janus\Library\lib
      libraries = fftw3
 
 4. Install `Janus` in development (editable) mode, from the root of the project::

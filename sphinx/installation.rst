@@ -133,6 +133,19 @@ where the total number of processes can be adjusted (an odd number should prefer
 
 .. todo:: How to print only messages from root process with pytest?
 
+Build the documentation
+=======================
+
+The documentation is written with `Sphinx`_, and its sources are located in the ``sphinx/`` directory. Since the API reference is extracted from the docstrings of the compiled modules, Janus must be compiled and installed first.
+
+The HTML version of the documentation is published on `GitHub Pages <https://sbrisard.github.io/janus/>`_, from the ``docs/`` directory of the ``master`` branch. To update it, issue the following commands at the root of the project::
+
+  python scripts/empty_docs.py
+  python -m sphinx -b html -E -d sphinx/_build/doctrees sphinx docs
+
+The first command empties the ``docs/`` directory, except the ``docs/.nojekyll`` file (which tells GitHub Pages not to process the site with Jekyll), so that the files that Sphinx no longer produces are removed. The second command builds the HTML documentation from scratch into ``docs/``. Check the result (open ``docs/index.html`` in a browser), then commit the ``docs/`` directory and push it to the ``master`` branch: GitHub Pages then redeploys the site automatically.
+
 .. _FFTW: http://www.fftw.org/
 .. _mpi4py: https://bitbucket.org/mpi4py/mpi4py/
 .. _pytest: http://pytest.org/
+.. _Sphinx: https://www.sphinx-doc.org/
