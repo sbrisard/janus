@@ -1,18 +1,18 @@
-
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
     <title>Mandel notation &#8212; Janus 0.0 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=837179f8"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Bibliography" href="bibliography.html" />
@@ -20,8 +20,9 @@
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   
@@ -33,14 +34,14 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="mandel-notation">
-<span id="id1"></span><h1>Mandel notation<a class="headerlink" href="#mandel-notation" title="Permalink to this headline">¶</a></h1>
+  <section id="mandel-notation">
+<span id="id1"></span><h1>Mandel notation<a class="headerlink" href="#mandel-notation" title="Link to this heading">¶</a></h1>
 <p>Janus makes havy use of Mandel’s representation of symmetric, second rank tensors as column vectors, and fourth rank tensors with minor symmetries as matrices. This representation is defined below. Furthermore, the properties of the matrix representation are summarized (see also <a class="reference external" href="https://en.wikipedia.org/wiki/Voigt_notation#Mandel_notation">Wikipedia</a>).</p>
-<div class="section" id="mandel-notation-in-3d">
-<h2>Mandel notation in 3D<a class="headerlink" href="#mandel-notation-in-3d" title="Permalink to this headline">¶</a></h2>
+<section id="mandel-notation-in-3d">
+<h2>Mandel notation in 3D<a class="headerlink" href="#mandel-notation-in-3d" title="Link to this heading">¶</a></h2>
 <p>In this section, the notation is introduced for tensors of the three dimensional space.</p>
-<div class="section" id="second-rank-symmetric-tensors">
-<h3>Second rank, symmetric tensors<a class="headerlink" href="#second-rank-symmetric-tensors" title="Permalink to this headline">¶</a></h3>
+<section id="second-rank-symmetric-tensors">
+<h3>Second rank, symmetric tensors<a class="headerlink" href="#second-rank-symmetric-tensors" title="Link to this heading">¶</a></h3>
 <p>Let <span class="math notranslate nohighlight">\(\boldsymbol\varepsilon\)</span> be a second rank, symmetric tensor</p>
 <div class="math notranslate nohighlight">
 \[\varepsilon_{ij}=\varepsilon_{ji}.\]</div>
@@ -56,9 +57,9 @@
 \boldsymbol\sigma:\boldsymbol\varepsilon&amp;=\sigma_{ij}\varepsilon_{ij},\\
 &amp;=\sigma_{11}\varepsilon_{11}+\sigma_{22}\varepsilon_{22}+\sigma_{33}\varepsilon_{33}+2\sigma_{23}\varepsilon_{23}+2\sigma_{31}\varepsilon_{31}+2\sigma_{12}\varepsilon_{12},\\
 &amp;=[\boldsymbol\sigma]^\mathrm{T}\cdot[\boldsymbol\varepsilon].
-\end{align*}</div></div>
-<div class="section" id="fourth-rank-tensors-with-minor-symmetries">
-<h3>Fourth rank tensors with minor symmetries<a class="headerlink" href="#fourth-rank-tensors-with-minor-symmetries" title="Permalink to this headline">¶</a></h3>
+\end{align*}</div></section>
+<section id="fourth-rank-tensors-with-minor-symmetries">
+<h3>Fourth rank tensors with minor symmetries<a class="headerlink" href="#fourth-rank-tensors-with-minor-symmetries" title="Link to this heading">¶</a></h3>
 <p>Let <span class="math notranslate nohighlight">\(\mathbf C\)</span> be a fourth rank tensor with minor symmetries</p>
 <div class="math notranslate nohighlight">
 \[C_{ijkl}=C_{jikl}=C_{ijlk}.\]</div>
@@ -86,19 +87,19 @@
 <p>Finally, it is readily verified that the Mandel representation of the transpose is the transpose of the Mandel representation</p>
 <div class="math notranslate nohighlight">
 \[[\mathbf C^\mathrm{T}]=[\mathbf C]^\mathrm{T}.\]</div>
-</div>
-</div>
-<div class="section" id="mandel-notation-in-2d">
-<h2>Mandel notation in 2D<a class="headerlink" href="#mandel-notation-in-2d" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="mandel-notation-in-2d">
+<h2>Mandel notation in 2D<a class="headerlink" href="#mandel-notation-in-2d" title="Link to this heading">¶</a></h2>
 <p>The above formulas are readily extended to two dimensions, so that we only recall the matrix representation of second rank, symmetric tensors and fourth rank tensors with minor symmetries. The properties of these matrix representations are unchanged.</p>
-<div class="section" id="id2">
-<h3>Second rank, symmetric tensors<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<section id="id2">
+<h3>Second rank, symmetric tensors<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
 <p>The Mandel representation <span class="math notranslate nohighlight">\([\boldsymbol\varepsilon]\)</span> (as a column-vector) of any second rank, symmetric tensor <span class="math notranslate nohighlight">\(\boldsymbol\varepsilon\)</span> is defined as follows</p>
 <div class="math notranslate nohighlight">
 \[[\boldsymbol\varepsilon] = [\varepsilon_{11}, \varepsilon_{22}, \sqrt2\varepsilon_{12}]^\mathrm{T}.\]</div>
-</div>
-<div class="section" id="id3">
-<h3>Fourth rank tensors with minor symmetries<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="id3">
+<h3>Fourth rank tensors with minor symmetries<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
 <p>The Mandel representation <span class="math notranslate nohighlight">\([\mathbf C]\)</span> (as a square matrix) of any fourth rank tensor <span class="math notranslate nohighlight">\(\mathbf C\)</span> with minor symmetries is defined as follows</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}[\mathbf C] =
@@ -107,19 +108,19 @@
     C_{2211} &amp; C_{2222} &amp; \sqrt{2}C_{2212}\\
     \sqrt{2}C_{1211} &amp; \sqrt{2}C_{1222} &amp; 2C_{1212}
 \end{bmatrix}.\end{split}\]</div>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
           </div>
           
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
-              <img class="logo" src="_static/logo_janus-200x200.png" alt="Logo"/>
+              <img class="logo" src="_static/logo_janus-200x200.png" alt="Logo of Janus"/>
             </a></p>
 <h1 class="logo"><a href="index.html">Janus</a></h1>
 
@@ -130,7 +131,16 @@
 
 
 
-<h3>Navigation</h3>
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
@@ -147,6 +157,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
+<li class="toctree-l1"><a class="reference internal" href="claude.html">Claude’s contributions to <cite>Janus</cite></a></li>
 </ul>
 
 <div class="relations">
@@ -158,16 +169,6 @@
   </ul></li>
 </ul>
 </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
 
 
 
@@ -181,11 +182,11 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2013-2018, S. Brisard.
+      &#169;2013-2018, S. Brisard.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
       
       |
       <a href="_sources/mandel.rst.txt"

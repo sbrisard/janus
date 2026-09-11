@@ -1,18 +1,17 @@
-
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
     <title>API Reference &#8212; Janus 0.0 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=837179f8"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="TODO List" href="todo.html" />
@@ -20,8 +19,9 @@
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   
@@ -33,15 +33,15 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="api-reference">
-<h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-janus.fft">
-<span id="api-of-module-janus-fft"></span><h2>API of module <code class="docutils literal notranslate"><span class="pre">janus.fft</span></code><a class="headerlink" href="#module-janus.fft" title="Permalink to this headline">¶</a></h2>
+  <section id="api-reference">
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading">¶</a></h1>
+<section id="module-janus.fft">
+<span id="api-of-module-janus-fft"></span><h2>API of module <code class="docutils literal notranslate"><span class="pre">janus.fft</span></code><a class="headerlink" href="#module-janus.fft" title="Link to this heading">¶</a></h2>
 <p>This module is a Python wrapper around the FFTW library. The core of the
 wrapper is located in the two submodules <a class="reference internal" href="#module-janus.fft.serial" title="janus.fft.serial"><code class="xref py py-mod docutils literal notranslate"><span class="pre">janus.fft.serial</span></code></a> and
 <code class="xref py py-mod docutils literal notranslate"><span class="pre">janus.fft.parallel</span></code>, which should be imported explicitely.</p>
-<div class="section" id="planner-flags">
-<span id="id1"></span><h3>Planner flags<a class="headerlink" href="#planner-flags" title="Permalink to this headline">¶</a></h3>
+<section id="planner-flags">
+<span id="id1"></span><h3>Planner flags<a class="headerlink" href="#planner-flags" title="Link to this heading">¶</a></h3>
 <p>From the FFTW manual (Sec. <a class="reference external" href="http://www.fftw.org/fftw3_doc/Planner-Flags.html#Planner-Flags">Planner Flags</a>)</p>
 <blockquote>
 <div><p>All of the planner routines in FFTW accept an integer <code class="docutils literal notranslate"><span class="pre">flags</span></code> argument,
@@ -52,72 +52,72 @@ transform algorithm that is employed.</p>
 </div></blockquote>
 <p>Only the names of the flags are reproduced below. The reader should refer to
 the FFTW manual for a complete description.</p>
-<div class="section" id="planning-rigor-flags">
-<h4>Planning-rigor flags<a class="headerlink" href="#planning-rigor-flags" title="Permalink to this headline">¶</a></h4>
-<dl class="data">
-<dt id="janus.fft.FFTW_ESTIMATE">
-<code class="sig-prename descclassname">janus.fft.</code><code class="sig-name descname">FFTW_ESTIMATE</code><a class="headerlink" href="#janus.fft.FFTW_ESTIMATE" title="Permalink to this definition">¶</a></dt>
+<section id="planning-rigor-flags">
+<h4>Planning-rigor flags<a class="headerlink" href="#planning-rigor-flags" title="Link to this heading">¶</a></h4>
+<dl class="py data">
+<dt class="sig sig-object py" id="janus.fft.FFTW_ESTIMATE">
+<span class="sig-prename descclassname"><span class="pre">janus.fft.</span></span><span class="sig-name descname"><span class="pre">FFTW_ESTIMATE</span></span><a class="headerlink" href="#janus.fft.FFTW_ESTIMATE" title="Link to this definition">¶</a></dt>
 <dd><p>Use simple heuristic to pick a plan.</p>
 </dd></dl>
 
-<dl class="data">
-<dt id="janus.fft.FFTW_MEASURE">
-<code class="sig-prename descclassname">janus.fft.</code><code class="sig-name descname">FFTW_MEASURE</code><a class="headerlink" href="#janus.fft.FFTW_MEASURE" title="Permalink to this definition">¶</a></dt>
+<dl class="py data">
+<dt class="sig sig-object py" id="janus.fft.FFTW_MEASURE">
+<span class="sig-prename descclassname"><span class="pre">janus.fft.</span></span><span class="sig-name descname"><span class="pre">FFTW_MEASURE</span></span><a class="headerlink" href="#janus.fft.FFTW_MEASURE" title="Link to this definition">¶</a></dt>
 <dd><p>More accurate selection of a plan (default planning option).</p>
 </dd></dl>
 
-<dl class="data">
-<dt id="janus.fft.FFTW_PATIENT">
-<code class="sig-prename descclassname">janus.fft.</code><code class="sig-name descname">FFTW_PATIENT</code><a class="headerlink" href="#janus.fft.FFTW_PATIENT" title="Permalink to this definition">¶</a></dt>
+<dl class="py data">
+<dt class="sig sig-object py" id="janus.fft.FFTW_PATIENT">
+<span class="sig-prename descclassname"><span class="pre">janus.fft.</span></span><span class="sig-name descname"><span class="pre">FFTW_PATIENT</span></span><a class="headerlink" href="#janus.fft.FFTW_PATIENT" title="Link to this definition">¶</a></dt>
 <dd><p>Even more accurate selection of a plan.</p>
 </dd></dl>
 
-<dl class="data">
-<dt id="janus.fft.FFTW_EXHAUSTIVE">
-<code class="sig-prename descclassname">janus.fft.</code><code class="sig-name descname">FFTW_EXHAUSTIVE</code><a class="headerlink" href="#janus.fft.FFTW_EXHAUSTIVE" title="Permalink to this definition">¶</a></dt>
+<dl class="py data">
+<dt class="sig sig-object py" id="janus.fft.FFTW_EXHAUSTIVE">
+<span class="sig-prename descclassname"><span class="pre">janus.fft.</span></span><span class="sig-name descname"><span class="pre">FFTW_EXHAUSTIVE</span></span><a class="headerlink" href="#janus.fft.FFTW_EXHAUSTIVE" title="Link to this definition">¶</a></dt>
 <dd><p>Even more accurate selection of a plan.</p>
 </dd></dl>
 
-<dl class="data">
-<dt id="janus.fft.FFTW_WISDOM_ONLY">
-<code class="sig-prename descclassname">janus.fft.</code><code class="sig-name descname">FFTW_WISDOM_ONLY</code><a class="headerlink" href="#janus.fft.FFTW_WISDOM_ONLY" title="Permalink to this definition">¶</a></dt>
+<dl class="py data">
+<dt class="sig sig-object py" id="janus.fft.FFTW_WISDOM_ONLY">
+<span class="sig-prename descclassname"><span class="pre">janus.fft.</span></span><span class="sig-name descname"><span class="pre">FFTW_WISDOM_ONLY</span></span><a class="headerlink" href="#janus.fft.FFTW_WISDOM_ONLY" title="Link to this definition">¶</a></dt>
 <dd><p>Should be used only to check whether wisdom <em>is</em> available.</p>
 </dd></dl>
 
-</div>
-<div class="section" id="algorithm-restriction-flags">
-<h4>Algorithm-restriction flags<a class="headerlink" href="#algorithm-restriction-flags" title="Permalink to this headline">¶</a></h4>
+</section>
+<section id="algorithm-restriction-flags">
+<h4>Algorithm-restriction flags<a class="headerlink" href="#algorithm-restriction-flags" title="Link to this heading">¶</a></h4>
 <p>These flags are exposed for future extensions of the module. They are not used
 for the time being.</p>
-<dl class="data">
-<dt id="janus.fft.FFTW_DESTROY_INPUT">
-<code class="sig-prename descclassname">janus.fft.</code><code class="sig-name descname">FFTW_DESTROY_INPUT</code><a class="headerlink" href="#janus.fft.FFTW_DESTROY_INPUT" title="Permalink to this definition">¶</a></dt>
+<dl class="py data">
+<dt class="sig sig-object py" id="janus.fft.FFTW_DESTROY_INPUT">
+<span class="sig-prename descclassname"><span class="pre">janus.fft.</span></span><span class="sig-name descname"><span class="pre">FFTW_DESTROY_INPUT</span></span><a class="headerlink" href="#janus.fft.FFTW_DESTROY_INPUT" title="Link to this definition">¶</a></dt>
 <dd><p>Unused.</p>
 </dd></dl>
 
-<dl class="data">
-<dt id="janus.fft.FFTW_PRESERVE_INPUT">
-<code class="sig-prename descclassname">janus.fft.</code><code class="sig-name descname">FFTW_PRESERVE_INPUT</code><a class="headerlink" href="#janus.fft.FFTW_PRESERVE_INPUT" title="Permalink to this definition">¶</a></dt>
+<dl class="py data">
+<dt class="sig sig-object py" id="janus.fft.FFTW_PRESERVE_INPUT">
+<span class="sig-prename descclassname"><span class="pre">janus.fft.</span></span><span class="sig-name descname"><span class="pre">FFTW_PRESERVE_INPUT</span></span><a class="headerlink" href="#janus.fft.FFTW_PRESERVE_INPUT" title="Link to this definition">¶</a></dt>
 <dd><p>Unused.</p>
 </dd></dl>
 
-<dl class="data">
-<dt id="janus.fft.FFTW_UNALIGNED">
-<code class="sig-prename descclassname">janus.fft.</code><code class="sig-name descname">FFTW_UNALIGNED</code><a class="headerlink" href="#janus.fft.FFTW_UNALIGNED" title="Permalink to this definition">¶</a></dt>
+<dl class="py data">
+<dt class="sig sig-object py" id="janus.fft.FFTW_UNALIGNED">
+<span class="sig-prename descclassname"><span class="pre">janus.fft.</span></span><span class="sig-name descname"><span class="pre">FFTW_UNALIGNED</span></span><a class="headerlink" href="#janus.fft.FFTW_UNALIGNED" title="Link to this definition">¶</a></dt>
 <dd><p>Unused.</p>
 </dd></dl>
 
-</div>
-</div>
-<div class="section" id="module-janus.fft.serial">
-<span id="api-of-module-janus-fft-serial"></span><h3>API of module <code class="docutils literal notranslate"><span class="pre">janus.fft.serial</span></code><a class="headerlink" href="#module-janus.fft.serial" title="Permalink to this headline">¶</a></h3>
+</section>
+</section>
+<section id="module-janus.fft.serial">
+<span id="api-of-module-janus-fft-serial"></span><h3>API of module <code class="docutils literal notranslate"><span class="pre">janus.fft.serial</span></code><a class="headerlink" href="#module-janus.fft.serial" title="Link to this heading">¶</a></h3>
 <p>This module is a Python wrapper around the serial version of FFTW.</p>
-<dl class="function">
-<dt id="janus.fft.serial.create_real">
-<code class="sig-prename descclassname">janus.fft.serial.</code><code class="sig-name descname">create_real</code><span class="sig-paren">(</span><em class="sig-param">shape</em>, <em class="sig-param">flags=FFTW_MEASURE</em><span class="sig-paren">)</span><a class="headerlink" href="#janus.fft.serial.create_real" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="janus.fft.serial.create_real">
+<span class="sig-prename descclassname"><span class="pre">janus.fft.serial.</span></span><span class="sig-name descname"><span class="pre">create_real</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">FFTW_MEASURE</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#janus.fft.serial.create_real" title="Link to this definition">¶</a></dt>
 <dd><p>Return a new FFT object to compute real-to-complex transforms.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>shape</strong> (<em>tuple</em>) – the global shape of the input data.</p></li>
 <li><p><strong>flags</strong> (<em>int</em>) – “or” combination of <a class="reference internal" href="#planner-flags"><span class="std std-ref">Planner flags</span></a>.</p></li>
@@ -126,15 +126,15 @@ for the time being.</p>
 </dl>
 </dd></dl>
 
-</div>
-<div class="section" id="api-of-module-janus-fft-parallel">
-<h3>API of module <code class="docutils literal notranslate"><span class="pre">janus.fft.parallel</span></code><a class="headerlink" href="#api-of-module-janus-fft-parallel" title="Permalink to this headline">¶</a></h3>
-</div>
-</div>
-<div class="section" id="api-of-module-janus-material">
-<h2>API of module <code class="docutils literal notranslate"><span class="pre">janus.material</span></code><a class="headerlink" href="#api-of-module-janus-material" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="module-janus.material.elastic.linear.isotropic">
-<span id="api-of-module-janus-material-elastic-linear-isotropic"></span><h3>API of module <code class="docutils literal notranslate"><span class="pre">janus.material.elastic.linear.isotropic</span></code><a class="headerlink" href="#module-janus.material.elastic.linear.isotropic" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="api-of-module-janus-fft-parallel">
+<h3>API of module <code class="docutils literal notranslate"><span class="pre">janus.fft.parallel</span></code><a class="headerlink" href="#api-of-module-janus-fft-parallel" title="Link to this heading">¶</a></h3>
+</section>
+</section>
+<section id="api-of-module-janus-material">
+<h2>API of module <code class="docutils literal notranslate"><span class="pre">janus.material</span></code><a class="headerlink" href="#api-of-module-janus-material" title="Link to this heading">¶</a></h2>
+<section id="module-janus.material.elastic.linear.isotropic">
+<span id="api-of-module-janus-material-elastic-linear-isotropic"></span><h3>API of module <code class="docutils literal notranslate"><span class="pre">janus.material.elastic.linear.isotropic</span></code><a class="headerlink" href="#module-janus.material.elastic.linear.isotropic" title="Link to this heading">¶</a></h3>
 <p>This module defines isotropic, linear elastic materials.</p>
 <p>Materials defined in this module can operate on physical space of
 dimension 2 or 3; all functions and methods defined in this module refer to
@@ -146,9 +146,9 @@ this dimension as <cite>dim</cite>, which is therefore <em>not documented in det
 <p>To create a plane stress material with shear modulus <code class="docutils literal notranslate"><span class="pre">g</span></code> and Poisson ratio
 <code class="docutils literal notranslate"><span class="pre">nu</span></code>, a plane strain material should be created, with same shear modulus
 <code class="docutils literal notranslate"><span class="pre">g</span></code>, and fictitious Poisson ratio <code class="docutils literal notranslate"><span class="pre">nu/(1+nu)</span></code>.</p>
-<dl class="class">
-<dt id="janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial">
-<em class="property">class </em><code class="sig-prename descclassname">janus.material.elastic.linear.isotropic.</code><code class="sig-name descname">IsotropicLinearElasticMaterial</code><a class="headerlink" href="#janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">janus.material.elastic.linear.isotropic.</span></span><span class="sig-name descname"><span class="pre">IsotropicLinearElasticMaterial</span></span><a class="headerlink" href="#janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Isotropic, linear and elastic materials.</p>
 <p>New instances are created as follows:</p>
@@ -158,44 +158,44 @@ this dimension as <cite>dim</cite>, which is therefore <em>not documented in det
 <p>where <cite>g</cite> is the shear modulus (<code class="docutils literal notranslate"><span class="pre">float</span></code>), <cite>nu</cite> the Poisson ratio
 (<code class="docutils literal notranslate"><span class="pre">float</span></code>) and <cite>dim</cite> the dimension of the physical space (<code class="docutils literal notranslate"><span class="pre">ìnt</span></code>,
 default: 3).</p>
-<dl class="method">
-<dt id="janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial.green_operator">
-<code class="sig-name descname">green_operator</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial.green_operator" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial.green_operator">
+<span class="sig-name descname"><span class="pre">green_operator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial.green_operator" title="Link to this definition">¶</a></dt>
 <dd><p>Return a new Green operator for this material.</p>
 <p>The returned Green operator is the periodic Green operator for
 strains, which is given in Fourier space.</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial.dim">
-<code class="sig-name descname">dim</code><a class="headerlink" href="#janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial.dim" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial.dim">
+<span class="sig-name descname"><span class="pre">dim</span></span><a class="headerlink" href="#janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial.dim" title="Link to this definition">¶</a></dt>
 <dd><p>Dimension of the physical space (<code class="docutils literal notranslate"><span class="pre">int</span></code>, read-only).</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial.g">
-<code class="sig-name descname">g</code><a class="headerlink" href="#janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial.g" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial.g">
+<span class="sig-name descname"><span class="pre">g</span></span><a class="headerlink" href="#janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial.g" title="Link to this definition">¶</a></dt>
 <dd><p>Shear modulus (<code class="docutils literal notranslate"><span class="pre">float</span></code>, read-only).</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial.k">
-<code class="sig-name descname">k</code><a class="headerlink" href="#janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial.k" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial.k">
+<span class="sig-name descname"><span class="pre">k</span></span><a class="headerlink" href="#janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial.k" title="Link to this definition">¶</a></dt>
 <dd><p>Bulk modulus (<code class="docutils literal notranslate"><span class="pre">float</span></code>, read-only).</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial.nu">
-<code class="sig-name descname">nu</code><a class="headerlink" href="#janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial.nu" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial.nu">
+<span class="sig-name descname"><span class="pre">nu</span></span><a class="headerlink" href="#janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial.nu" title="Link to this definition">¶</a></dt>
 <dd><p>Poisson ratio (<code class="docutils literal notranslate"><span class="pre">float</span></code>, read-only).</p>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="class">
-<dt id="janus.material.elastic.linear.isotropic._GreenOperatorForStrains">
-<em class="property">class </em><code class="sig-prename descclassname">janus.material.elastic.linear.isotropic.</code><code class="sig-name descname">_GreenOperatorForStrains</code><a class="headerlink" href="#janus.material.elastic.linear.isotropic._GreenOperatorForStrains" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">janus.green.AbstractGreenOperator</span></code></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="janus.material.elastic.linear.isotropic._GreenOperatorForStrains">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">janus.material.elastic.linear.isotropic.</span></span><span class="sig-name descname"><span class="pre">_GreenOperatorForStrains</span></span><a class="headerlink" href="#janus.material.elastic.linear.isotropic._GreenOperatorForStrains" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractGreenOperator</span></code></p>
 <p>Periodic Green operator for strains.</p>
 <p>Instances of this class are associated to isotropic, linear elastic
 materials.</p>
@@ -206,62 +206,62 @@ materials.</p>
 </div>
 <p>where <cite>mat</cite> is the reference material
 (<a class="reference internal" href="#janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial" title="janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial"><code class="xref py py-class docutils literal notranslate"><span class="pre">IsotropicLinearElasticMaterial</span></code></a>).</p>
-<dl class="attribute">
-<dt id="janus.material.elastic.linear.isotropic._GreenOperatorForStrains.mat">
-<code class="sig-name descname">mat</code><a class="headerlink" href="#janus.material.elastic.linear.isotropic._GreenOperatorForStrains.mat" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="janus.material.elastic.linear.isotropic._GreenOperatorForStrains.mat">
+<span class="sig-name descname"><span class="pre">mat</span></span><a class="headerlink" href="#janus.material.elastic.linear.isotropic._GreenOperatorForStrains.mat" title="Link to this definition">¶</a></dt>
 <dd><p>Reference material (<a class="reference internal" href="#janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial" title="janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial"><code class="xref py py-class docutils literal notranslate"><span class="pre">IsotropicLinearElasticMaterial</span></code></a>).</p>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="class">
-<dt id="janus.material.elastic.linear.isotropic._GreenOperatorForStrains2D">
-<em class="property">class </em><code class="sig-prename descclassname">janus.material.elastic.linear.isotropic.</code><code class="sig-name descname">_GreenOperatorForStrains2D</code><a class="headerlink" href="#janus.material.elastic.linear.isotropic._GreenOperatorForStrains2D" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#janus.material.elastic.linear.isotropic._GreenOperatorForStrains" title="janus.material.elastic.linear.isotropic._GreenOperatorForStrains"><code class="xref py py-class docutils literal notranslate"><span class="pre">janus.material.elastic.linear.isotropic._GreenOperatorForStrains</span></code></a></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="janus.material.elastic.linear.isotropic._GreenOperatorForStrains2D">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">janus.material.elastic.linear.isotropic.</span></span><span class="sig-name descname"><span class="pre">_GreenOperatorForStrains2D</span></span><a class="headerlink" href="#janus.material.elastic.linear.isotropic._GreenOperatorForStrains2D" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#janus.material.elastic.linear.isotropic._GreenOperatorForStrains" title="janus.material.elastic.linear.isotropic._GreenOperatorForStrains"><code class="xref py py-class docutils literal notranslate"><span class="pre">_GreenOperatorForStrains</span></code></a></p>
 <p>2D periodic Green operator for strains.</p>
 <p>This is the Green operator associated to a
 <a class="reference internal" href="#janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial" title="janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial"><code class="xref py py-class docutils literal notranslate"><span class="pre">IsotropicLinearElasticMaterial</span></code></a> (with <code class="docutils literal notranslate"><span class="pre">dim</span> <span class="pre">==</span> <span class="pre">2</span></code>).</p>
 </dd></dl>
 
-<dl class="class">
-<dt id="janus.material.elastic.linear.isotropic._GreenOperatorForStrains3D">
-<em class="property">class </em><code class="sig-prename descclassname">janus.material.elastic.linear.isotropic.</code><code class="sig-name descname">_GreenOperatorForStrains3D</code><a class="headerlink" href="#janus.material.elastic.linear.isotropic._GreenOperatorForStrains3D" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#janus.material.elastic.linear.isotropic._GreenOperatorForStrains" title="janus.material.elastic.linear.isotropic._GreenOperatorForStrains"><code class="xref py py-class docutils literal notranslate"><span class="pre">janus.material.elastic.linear.isotropic._GreenOperatorForStrains</span></code></a></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="janus.material.elastic.linear.isotropic._GreenOperatorForStrains3D">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">janus.material.elastic.linear.isotropic.</span></span><span class="sig-name descname"><span class="pre">_GreenOperatorForStrains3D</span></span><a class="headerlink" href="#janus.material.elastic.linear.isotropic._GreenOperatorForStrains3D" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#janus.material.elastic.linear.isotropic._GreenOperatorForStrains" title="janus.material.elastic.linear.isotropic._GreenOperatorForStrains"><code class="xref py py-class docutils literal notranslate"><span class="pre">_GreenOperatorForStrains</span></code></a></p>
 <p>3D periodic Green operator for strains.</p>
 <p>This is the Green operator associated to a
 <a class="reference internal" href="#janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial" title="janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial"><code class="xref py py-class docutils literal notranslate"><span class="pre">IsotropicLinearElasticMaterial</span></code></a> (with <code class="docutils literal notranslate"><span class="pre">dim</span> <span class="pre">==</span> <span class="pre">3</span></code>).</p>
 </dd></dl>
 
-<dl class="function">
-<dt id="janus.material.elastic.linear.isotropic.create">
-<code class="sig-prename descclassname">janus.material.elastic.linear.isotropic.</code><code class="sig-name descname">create</code><span class="sig-paren">(</span><em class="sig-param">g</em>, <em class="sig-param">nu</em>, <em class="sig-param">dim=3</em><span class="sig-paren">)</span><a class="headerlink" href="#janus.material.elastic.linear.isotropic.create" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="janus.material.elastic.linear.isotropic.create">
+<span class="sig-prename descclassname"><span class="pre">janus.material.elastic.linear.isotropic.</span></span><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">g</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#janus.material.elastic.linear.isotropic.create" title="Link to this definition">¶</a></dt>
 <dd><p>Create a new isotropic, linear and elastic material.</p>
 <p>Returns a new instance of <a class="reference internal" href="#janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial" title="janus.material.elastic.linear.isotropic.IsotropicLinearElasticMaterial"><code class="xref py py-class docutils literal notranslate"><span class="pre">IsotropicLinearElasticMaterial</span></code></a>
 with shear modulus <cite>g</cite> and Poisson ratio <cite>nu</cite>.</p>
 </dd></dl>
 
-<dl class="function">
-<dt id="janus.material.elastic.linear.isotropic.poisson_from_bulk_and_shear_moduli">
-<code class="sig-prename descclassname">janus.material.elastic.linear.isotropic.</code><code class="sig-name descname">poisson_from_bulk_and_shear_moduli</code><span class="sig-paren">(</span><em class="sig-param">double k</em>, <em class="sig-param">double g</em>, <em class="sig-param">int dim=3</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#janus.material.elastic.linear.isotropic.poisson_from_bulk_and_shear_moduli" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="janus.material.elastic.linear.isotropic.poisson_from_bulk_and_shear_moduli">
+<span class="sig-prename descclassname"><span class="pre">janus.material.elastic.linear.isotropic.</span></span><span class="sig-name descname"><span class="pre">poisson_from_bulk_and_shear_moduli</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">g</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">int</span> <span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">double</span></span></span><a class="headerlink" href="#janus.material.elastic.linear.isotropic.poisson_from_bulk_and_shear_moduli" title="Link to this definition">¶</a></dt>
 <dd><p>Compute the Poisson ratio from the bulk and shear moduli.</p>
 <p>No checks are performed on the positivity of the bulk modulus <cite>k</cite> and
 shear modulus <cite>g</cite>, or on the validity of the returned Poisson ratio
 (which should lie between -1 and 1/2).</p>
 </dd></dl>
 
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
           </div>
           
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
-              <img class="logo" src="_static/logo_janus-200x200.png" alt="Logo"/>
+              <img class="logo" src="_static/logo_janus-200x200.png" alt="Logo of Janus"/>
             </a></p>
 <h1 class="logo"><a href="index.html">Janus</a></h1>
 
@@ -272,7 +272,16 @@ shear modulus <cite>g</cite>, or on the validity of the returned Poisson ratio
 
 
 
-<h3>Navigation</h3>
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
@@ -289,6 +298,7 @@ shear modulus <cite>g</cite>, or on the validity of the returned Poisson ratio
 <li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mandel.html">Mandel notation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
+<li class="toctree-l1"><a class="reference internal" href="claude.html">Claude’s contributions to <cite>Janus</cite></a></li>
 </ul>
 
 <div class="relations">
@@ -300,16 +310,6 @@ shear modulus <cite>g</cite>, or on the validity of the returned Poisson ratio
   </ul></li>
 </ul>
 </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
 
 
 
@@ -323,11 +323,11 @@ shear modulus <cite>g</cite>, or on the validity of the returned Poisson ratio
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2013-2018, S. Brisard.
+      &#169;2013-2018, S. Brisard.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
       
       |
       <a href="_sources/api.rst.txt"

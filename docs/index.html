@@ -1,26 +1,26 @@
-
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
     <title>User’s guide &#8212; Janus 0.0 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=837179f8"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Introduction" href="introduction.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   
@@ -32,8 +32,8 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="user-s-guide">
-<h1>User’s guide<a class="headerlink" href="#user-s-guide" title="Permalink to this headline">¶</a></h1>
+  <section id="user-s-guide">
+<h1>User’s guide<a class="headerlink" href="#user-s-guide" title="Link to this heading">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
@@ -44,6 +44,7 @@
 <li class="toctree-l2"><a class="reference internal" href="installation.html#compilation-and-installation-under-macos">Compilation and installation under MacOS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#compilation-and-installation-under-windows">Compilation and installation under Windows</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#test-your-installation">Test your installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#build-the-documentation">Build the documentation</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="operators.html">Operators</a><ul>
@@ -82,27 +83,34 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
+<li class="toctree-l1"><a class="reference internal" href="claude.html">Claude’s contributions to <cite>Janus</cite></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="claude.html#updating-the-online-docs">2026-09-11 • Updating the online docs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="claude.html#automatic-creation-of-environments">2026-09-11 • Automatic creation of environments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="claude.html#installation-on-a-windows-machine-miniconda-environment">2026-09-11 • Installation on a windows machine (<cite>Miniconda</cite> environment)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="claude.html#how-to-update-this-page">2026-09-11 • How to update this page</a></li>
+</ul>
+</li>
 </ul>
 </div>
-<div class="section" id="indices-and-tables">
-<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
+<section id="indices-and-tables">
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
 <li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
 <li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
 </ul>
-</div>
-</div>
+</section>
+</section>
 
 
           </div>
           
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="#">
-              <img class="logo" src="_static/logo_janus-200x200.png" alt="Logo"/>
+              <img class="logo" src="_static/logo_janus-200x200.png" alt="Logo of Janus"/>
             </a></p>
 <h1 class="logo"><a href="#">Janus</a></h1>
 
@@ -113,7 +121,16 @@
 
 
 
-<h3>Navigation</h3>
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
@@ -126,6 +143,7 @@
 <li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mandel.html">Mandel notation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
+<li class="toctree-l1"><a class="reference internal" href="claude.html">Claude’s contributions to <cite>Janus</cite></a></li>
 </ul>
 
 <div class="relations">
@@ -136,16 +154,6 @@
   </ul></li>
 </ul>
 </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
 
 
 
@@ -159,11 +167,11 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2013-2018, S. Brisard.
+      &#169;2013-2018, S. Brisard.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
       
       |
       <a href="_sources/index.rst.txt"

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Claude’s contributions to Janus &#8212; Janus 0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=837179f8"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Bibliography" href="bibliography.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="claude-s-contributions-to-janus">
+<h1>Claude’s contributions to <cite>Janus</cite><a class="headerlink" href="#claude-s-contributions-to-janus" title="Link to this heading">¶</a></h1>
+<p>As of august 2026, <cite>Janus</cite> is revived by the author with the help of <cite>Claude Code</cite>. This page will collect all interactions between the author and Claude.</p>
+<section id="updating-the-online-docs">
+<h2>2026-09-11 • Updating the online docs<a class="headerlink" href="#updating-the-online-docs" title="Link to this heading">¶</a></h2>
+<p>Report on the procedure for compiling the sphinx docs locally and updating the Github pages accordingly (the project lives in the following repo: <a class="reference external" href="https://github.com/sbrisard/janus">https://github.com/sbrisard/janus</a> while the github pages are: <a class="reference external" href="https://sbrisard.github.io/janus/">https://sbrisard.github.io/janus/</a>).</p>
+<section id="claude-s-report">
+<h3>Claude’s report<a class="headerlink" href="#claude-s-report" title="Link to this heading">¶</a></h3>
+<section id="current-setup">
+<h4>Current setup<a class="headerlink" href="#current-setup" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>The HTML docs are versioned in the <code class="docutils literal notranslate"><span class="pre">docs/</span></code> directory of the <code class="docutils literal notranslate"><span class="pre">master</span></code> branch (since 2018), with a <code class="docutils literal notranslate"><span class="pre">docs/.nojekyll</span></code> file, so that GitHub does not process the files with Jekyll (which would ignore the <code class="docutils literal notranslate"><span class="pre">_static</span></code>, <code class="docutils literal notranslate"><span class="pre">_sources</span></code>… directories). There is no <code class="docutils literal notranslate"><span class="pre">gh-pages</span></code> branch, and no GitHub Actions workflow. GitHub Pages is therefore most likely configured as <em>Deploy from a branch</em>, <code class="docutils literal notranslate"><span class="pre">master</span></code>, <code class="docutils literal notranslate"><span class="pre">/docs</span></code>. This could not be checked directly (the corresponding GitHub API requires authentication); it can be checked in <em>Settings → Pages</em> of the repository.</p></li>
+<li><p>The online docs are exactly the content of <code class="docutils literal notranslate"><span class="pre">docs/</span></code>: they were last updated on 2019-08-20 (commit <code class="docutils literal notranslate"><span class="pre">811359f</span></code>), with Sphinx 2.1.2. In particular, they do not contain the present page, nor the new installation procedure.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sphinx/make.bat</span> <span class="pre">html</span></code> builds the docs <em>directly</em> into <code class="docutils literal notranslate"><span class="pre">../docs</span></code> (the doctrees go to <code class="docutils literal notranslate"><span class="pre">sphinx/_build/doctrees</span></code>; both <code class="docutils literal notranslate"><span class="pre">sphinx/_build</span></code> and <code class="docutils literal notranslate"><span class="pre">docs/.buildinfo</span></code> are git-ignored). By contrast, <code class="docutils literal notranslate"><span class="pre">sphinx/Makefile</span></code> (Linux, macOS) builds into <code class="docutils literal notranslate"><span class="pre">sphinx/_build/html</span></code>, and the files must then be copied to <code class="docutils literal notranslate"><span class="pre">docs/</span></code>.</p></li>
+</ul>
+</section>
+<section id="procedure">
+<h4>Procedure<a class="headerlink" href="#procedure" title="Link to this heading">¶</a></h4>
+<ol class="arabic">
+<li><p>Activate the <code class="docutils literal notranslate"><span class="pre">janus</span></code> environment, where <cite>Janus</cite> must be compiled and installed (see <em>Installation on a windows machine</em>): <code class="docutils literal notranslate"><span class="pre">autodoc</span></code> imports the compiled modules.</p></li>
+<li><p>Empty the <code class="docutils literal notranslate"><span class="pre">docs/</span></code> directory (from the root of the project, in PowerShell). <code class="docutils literal notranslate"><span class="pre">make.bat</span> <span class="pre">html</span></code> does not remove files that Sphinx no longer produces; without this step, obsolete files would accumulate in <code class="docutils literal notranslate"><span class="pre">docs/</span></code>. Since the <code class="docutils literal notranslate"><span class="pre">sphinx.ext.githubpages</span></code> extension was added (see follow-up below), <code class="docutils literal notranslate"><span class="pre">docs/.nojekyll</span></code> is recreated by the build, and the whole directory can be emptied:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Get</span><span class="o">-</span><span class="n">ChildItem</span> <span class="o">-</span><span class="n">Force</span> <span class="n">docs</span> <span class="o">|</span> <span class="n">Remove</span><span class="o">-</span><span class="n">Item</span> <span class="o">-</span><span class="n">Recurse</span> <span class="o">-</span><span class="n">Force</span>
+</pre></div>
+</div>
+</li>
+<li><p>Build the docs, from the <code class="docutils literal notranslate"><span class="pre">sphinx/</span></code> directory. <code class="docutils literal notranslate"><span class="pre">make.bat</span> <span class="pre">clean</span></code> deletes the cached doctrees, which forces a complete rebuild:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">sphinx</span>
+<span class="o">.</span>\<span class="n">make</span><span class="o">.</span><span class="n">bat</span> <span class="n">clean</span>
+<span class="o">.</span>\<span class="n">make</span><span class="o">.</span><span class="n">bat</span> <span class="n">html</span>
+</pre></div>
+</div>
+<p>Equivalently, from the root of the project: <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">sphinx</span> <span class="pre">-b</span> <span class="pre">html</span> <span class="pre">-E</span> <span class="pre">-d</span> <span class="pre">sphinx/_build/doctrees</span> <span class="pre">sphinx</span> <span class="pre">docs</span></code>.</p>
+</li>
+<li><p>Check the result: open <code class="docutils literal notranslate"><span class="pre">docs/index.html</span></code> in a browser, and review the changes with <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">status</span> <span class="pre">docs</span></code>.</p></li>
+<li><p>Commit the <code class="docutils literal notranslate"><span class="pre">docs/</span></code> directory, and push to <code class="docutils literal notranslate"><span class="pre">master</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">add</span> <span class="o">-</span><span class="n">A</span> <span class="n">docs</span>
+<span class="n">git</span> <span class="n">commit</span> <span class="o">-</span><span class="n">m</span> <span class="s2">&quot;Update HTML docs&quot;</span>
+<span class="n">git</span> <span class="n">push</span>
+</pre></div>
+</div>
+<p>GitHub Pages then redeploys the site automatically (usually within a few minutes). The deployment can be followed in the <em>Actions</em> tab of the repository (<em>pages build and deployment</em>).</p>
+</li>
+</ol>
+</section>
+<section id="what-was-checked">
+<h4>What was checked<a class="headerlink" href="#what-was-checked" title="Link to this heading">¶</a></h4>
+<p>Steps 2 and 3 were not run as such on <code class="docutils literal notranslate"><span class="pre">docs/</span></code>, and step 5 was not run at all (no commit, no push). The following equivalent operations were performed instead.</p>
+<ul class="simple">
+<li><p>A complete build (<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">sphinx</span> <span class="pre">-b</span> <span class="pre">html</span> <span class="pre">-E</span></code>) in an empty temporary directory succeeds (2 warnings, both related to <code class="docutils literal notranslate"><span class="pre">janus.fft.parallel</span></code>). Compared to the current <code class="docutils literal notranslate"><span class="pre">docs/</span></code>, it adds 8 files (<code class="docutils literal notranslate"><span class="pre">claude.html</span></code>, <code class="docutils literal notranslate"><span class="pre">_sources/claude.rst.txt</span></code>, 2 files in <code class="docutils literal notranslate"><span class="pre">_downloads/</span></code>, 4 JavaScript/SVG files in <code class="docutils literal notranslate"><span class="pre">_static/</span></code>) and makes 4 files obsolete (<code class="docutils literal notranslate"><span class="pre">jquery*.js</span></code> and <code class="docutils literal notranslate"><span class="pre">underscore*.js</span></code> in <code class="docutils literal notranslate"><span class="pre">_static/</span></code>), which step 2 removes.</p></li>
+<li><p>Mirroring this build into a copy of <code class="docutils literal notranslate"><span class="pre">docs/</span></code> with <code class="docutils literal notranslate"><span class="pre">robocopy</span> <span class="pre">&lt;build&gt;</span> <span class="pre">docs</span> <span class="pre">/MIR</span> <span class="pre">/XF</span> <span class="pre">.buildinfo</span> <span class="pre">.nojekyll</span></code> (an alternative to steps 2 and 3) gives the same result, and keeps <code class="docutils literal notranslate"><span class="pre">.nojekyll</span></code>. Note that <code class="docutils literal notranslate"><span class="pre">robocopy</span></code> returns non-zero exit codes on success (codes 1 to 7), which may confuse scripts.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">make.bat</span> <span class="pre">html</span></code> was also run as is, and wrote into <code class="docutils literal notranslate"><span class="pre">docs/</span></code>: this is how Claude found out that it targets <code class="docutils literal notranslate"><span class="pre">../docs</span></code>. Since this task only asked for a report, the <code class="docutils literal notranslate"><span class="pre">docs/</span></code> directory was then restored to its committed state (<code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">restore</span> <span class="pre">docs</span></code>, removal of the new files, of <code class="docutils literal notranslate"><span class="pre">docs/.buildinfo</span></code> and of <code class="docutils literal notranslate"><span class="pre">sphinx/_build</span></code>). <code class="docutils literal notranslate"><span class="pre">docs/</span></code> is currently unchanged.</p></li>
+</ul>
+</section>
+<section id="points-to-be-aware-of">
+<h4>Points to be aware of<a class="headerlink" href="#points-to-be-aware-of" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>The API of <code class="docutils literal notranslate"><span class="pre">janus.fft.parallel</span></code> is absent from the docs built under Windows (the parallel extension is not compiled). This was already the case for the current online docs.</p></li>
+<li><p>The present page (<code class="docutils literal notranslate"><span class="pre">claude.rst</span></code>) will be published. It contained an absolute local path, in the report of <em>Installation on a windows machine</em> (replaced since, see follow-up below).</p></li>
+<li><p>The generated HTML files are versioned: each update of the docs adds all modified HTML files to the history of the repository.</p></li>
+</ul>
+</section>
+<section id="follow-up-suggestions-2-and-4-applied">
+<h4>Follow-up: suggestions 2 and 4 applied<a class="headerlink" href="#follow-up-suggestions-2-and-4-applied" title="Link to this heading">¶</a></h4>
+<p>At the author’s request, suggestions 2 and 4 below were applied.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sphinx.ext.githubpages</span></code> was added to the <code class="docutils literal notranslate"><span class="pre">extensions</span></code> of <code class="docutils literal notranslate"><span class="pre">sphinx/conf.py</span></code>. A complete build in a temporary directory succeeds (still 2 warnings, both related to <code class="docutils literal notranslate"><span class="pre">janus.fft.parallel</span></code>), and now produces a <code class="docutils literal notranslate"><span class="pre">.nojekyll</span></code> file in the output directory. Step 2 of the above procedure was updated accordingly: the whole <code class="docutils literal notranslate"><span class="pre">docs/</span></code> directory can now be emptied before the build. The extension would also create a <code class="docutils literal notranslate"><span class="pre">CNAME</span></code> file if <code class="docutils literal notranslate"><span class="pre">html_baseurl</span></code> pointed to a custom domain, which is not the case here.</p></li>
+<li><p>In the report of <em>Installation on a windows machine</em>, the absolute local paths of the <code class="docutils literal notranslate"><span class="pre">setup.cfg</span></code> example were replaced by <code class="docutils literal notranslate"><span class="pre">C:\path\to\miniconda3\envs\janus\Library\…</span></code>. No other absolute local path remains in <code class="docutils literal notranslate"><span class="pre">sphinx/</span></code>.</p></li>
+</ul>
+</section>
+<section id="follow-up-inconsistency-between-makefile-and-make-bat">
+<h4>Follow-up: inconsistency between <code class="docutils literal notranslate"><span class="pre">Makefile</span></code> and <code class="docutils literal notranslate"><span class="pre">make.bat</span></code><a class="headerlink" href="#follow-up-inconsistency-between-makefile-and-make-bat" title="Link to this heading">¶</a></h4>
+<p>Both files were generated by <code class="docutils literal notranslate"><span class="pre">sphinx-quickstart</span></code> on 2013-09-17 (commit <code class="docutils literal notranslate"><span class="pre">e2b3e81</span></code>), for Linux/macOS (<code class="docutils literal notranslate"><span class="pre">Makefile</span></code>) and Windows (<code class="docutils literal notranslate"><span class="pre">make.bat</span></code>) respectively. Originally, the <code class="docutils literal notranslate"><span class="pre">html</span></code> target of both files built the docs into <code class="docutils literal notranslate"><span class="pre">_build/html</span></code> (i.e. <code class="docutils literal notranslate"><span class="pre">sphinx/_build/html</span></code> today). When the HTML docs were moved to <code class="docutils literal notranslate"><span class="pre">docs/</span></code> to be served by GitHub Pages (commit <code class="docutils literal notranslate"><span class="pre">f0f32ee</span></code>, 2018-07-13, which also renamed the source directory <code class="docutils literal notranslate"><span class="pre">docs/</span></code> → <code class="docutils literal notranslate"><span class="pre">sphinx/</span></code>), the <code class="docutils literal notranslate"><span class="pre">html</span></code> target of <code class="docutils literal notranslate"><span class="pre">make.bat</span></code> was changed to build into <code class="docutils literal notranslate"><span class="pre">../docs</span></code>, but <code class="docutils literal notranslate"><span class="pre">Makefile</span></code> was not modified. As a consequence:</p>
+<ul class="simple">
+<li><p>under Windows, <code class="docutils literal notranslate"><span class="pre">make.bat</span> <span class="pre">html</span></code> updates <code class="docutils literal notranslate"><span class="pre">docs/</span></code> directly (and the changes show up in <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">status</span></code>);</p></li>
+<li><p>under Linux/macOS, <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">html</span></code> builds into <code class="docutils literal notranslate"><span class="pre">sphinx/_build/html</span></code>, which is git-ignored: <code class="docutils literal notranslate"><span class="pre">docs/</span></code> is left untouched, and nothing shows up in <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">status</span></code>. The files must then be copied to <code class="docutils literal notranslate"><span class="pre">docs/</span></code> by hand (without <code class="docutils literal notranslate"><span class="pre">.buildinfo</span></code>), which is easily forgotten.</p></li>
+</ul>
+<p>In both files, all other targets (<code class="docutils literal notranslate"><span class="pre">dirhtml</span></code>, <code class="docutils literal notranslate"><span class="pre">latex</span></code>, <code class="docutils literal notranslate"><span class="pre">epub</span></code>…) still build into <code class="docutils literal notranslate"><span class="pre">_build/</span></code>, and <code class="docutils literal notranslate"><span class="pre">clean</span></code> only empties <code class="docutils literal notranslate"><span class="pre">_build/</span></code> (the doctrees), never <code class="docutils literal notranslate"><span class="pre">docs/</span></code>. Both files also contain leftovers from another project: the <code class="docutils literal notranslate"><span class="pre">qthelp</span></code> and <code class="docutils literal notranslate"><span class="pre">devhelp</span></code> targets refer to <code class="docutils literal notranslate"><span class="pre">HashTri</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">HashTri.qhcp</span></code>) instead of <code class="docutils literal notranslate"><span class="pre">Janus</span></code>. Finally, both use the old <code class="docutils literal notranslate"><span class="pre">sphinx-quickstart</span></code> template, which lists every builder explicitly; current versions of <code class="docutils literal notranslate"><span class="pre">sphinx-quickstart</span></code> generate much shorter files, based on <code class="docutils literal notranslate"><span class="pre">sphinx-build</span> <span class="pre">-M</span></code> (“make mode”).</p>
+<p>Possible fixes, from the smallest to the largest change:</p>
+<ol class="loweralpha">
+<li><p>Change the <code class="docutils literal notranslate"><span class="pre">html</span></code> target of <code class="docutils literal notranslate"><span class="pre">Makefile</span></code> to build into <code class="docutils literal notranslate"><span class="pre">../docs</span></code>, as <code class="docutils literal notranslate"><span class="pre">make.bat</span></code> does (two lines). The <code class="docutils literal notranslate"><span class="pre">HashTri</span></code> leftovers can be fixed at the same time.</p></li>
+<li><p>Replace both files with those generated by the current <code class="docutils literal notranslate"><span class="pre">sphinx-quickstart</span></code> (make mode), and add a dedicated target (e.g. <code class="docutils literal notranslate"><span class="pre">ghpages</span></code>) that empties <code class="docutils literal notranslate"><span class="pre">docs/</span></code> and builds into it. This must be done twice (<code class="docutils literal notranslate"><span class="pre">make</span></code> and batch syntax).</p></li>
+<li><p>Remove both files, and document a single command, identical on all platforms, run from the root of the project:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">sphinx</span> <span class="o">-</span><span class="n">b</span> <span class="n">html</span> <span class="o">-</span><span class="n">E</span> <span class="o">-</span><span class="n">d</span> <span class="n">sphinx</span><span class="o">/</span><span class="n">_build</span><span class="o">/</span><span class="n">doctrees</span> <span class="n">sphinx</span> <span class="n">docs</span>
+</pre></div>
+</div>
+<p>Emptying <code class="docutils literal notranslate"><span class="pre">docs/</span></code> beforehand is still platform-dependent (<code class="docutils literal notranslate"><span class="pre">rm</span> <span class="pre">-rf</span> <span class="pre">docs/*</span></code> vs. PowerShell); a small Python script (e.g. <code class="docutils literal notranslate"><span class="pre">scripts/build_docs.py</span></code>) could perform both steps on all platforms.</p>
+</li>
+</ol>
+<p>Claude would recommend c: the docs are only built as HTML, for GitHub Pages, so that the many other targets of the <code class="docutils literal notranslate"><span class="pre">make</span></code> files are not needed, and a single command (or script) avoids maintaining two files in two syntaxes. None of these fixes was applied.</p>
+</section>
+<section id="follow-up-options-b-and-c-applied">
+<h4>Follow-up: options b and c applied<a class="headerlink" href="#follow-up-options-b-and-c-applied" title="Link to this heading">¶</a></h4>
+<p>The author chose to combine b and c: the <code class="docutils literal notranslate"><span class="pre">make</span></code> files are updated according to b (the author wants to build the PDF version of the docs from time to time), but the procedure that is <em>documented</em> is c. This follow-up supersedes steps 2 and 3 of the above procedure.</p>
+<p>Changes:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">scripts/empty_docs.py</span></code> (new): empties <code class="docutils literal notranslate"><span class="pre">docs/</span></code>, except <code class="docutils literal notranslate"><span class="pre">docs/.nojekyll</span></code>. The <code class="docutils literal notranslate"><span class="pre">docs/</span></code> directory is located relative to the script (at the root of the project), not relative to the current directory, so that the script cannot empty another directory by mistake.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sphinx/Makefile</span></code> and <code class="docutils literal notranslate"><span class="pre">sphinx/make.bat</span></code> were replaced by the files generated by the current <code class="docutils literal notranslate"><span class="pre">sphinx-quickstart</span></code> (Sphinx 9.1, “make mode”: all targets are forwarded to <code class="docutils literal notranslate"><span class="pre">sphinx-build</span> <span class="pre">-M</span></code>), with one additional target, <code class="docutils literal notranslate"><span class="pre">ghpages</span></code>, which runs <code class="docutils literal notranslate"><span class="pre">scripts/empty_docs.py</span></code>, then builds the HTML docs from scratch into <code class="docutils literal notranslate"><span class="pre">../docs</span></code>. This fixes the inconsistency between both files, as well as the <code class="docutils literal notranslate"><span class="pre">HashTri</span></code> leftovers. Note the change of behavior: <code class="docutils literal notranslate"><span class="pre">make.bat</span> <span class="pre">html</span></code> now builds into <code class="docutils literal notranslate"><span class="pre">sphinx/_build/html</span></code>, like <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">html</span></code>; it no longer writes into <code class="docutils literal notranslate"><span class="pre">docs/</span></code>. <code class="docutils literal notranslate"><span class="pre">make.bat</span></code> was saved with CRLF line endings (git stores it with LF, as before).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sphinx/installation.rst</span></code>: new section <em>Build the documentation</em>, which documents the two commands of option c (run from the root of the project):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">scripts</span><span class="o">/</span><span class="n">empty_docs</span><span class="o">.</span><span class="n">py</span>
+<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">sphinx</span> <span class="o">-</span><span class="n">b</span> <span class="n">html</span> <span class="o">-</span><span class="n">E</span> <span class="o">-</span><span class="n">d</span> <span class="n">sphinx</span><span class="o">/</span><span class="n">_build</span><span class="o">/</span><span class="n">doctrees</span> <span class="n">sphinx</span> <span class="n">docs</span>
+</pre></div>
+</div>
+<p>followed by the commit and push of <code class="docutils literal notranslate"><span class="pre">docs/</span></code>. The <code class="docutils literal notranslate"><span class="pre">make</span></code> files are not mentioned.</p>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">CLAUDE.md</span></code>: the note on <code class="docutils literal notranslate"><span class="pre">docs/</span></code> in <em>Repository layout notes</em> now gives the same commands (and mentions the <code class="docutils literal notranslate"><span class="pre">ghpages</span></code> target), and says that <code class="docutils literal notranslate"><span class="pre">docs/</span></code> should only be regenerated on request, since it is the published site.</p></li>
+</ul>
+<p>Tests (all performed on a copy of <code class="docutils literal notranslate"><span class="pre">sphinx/</span></code>, <code class="docutils literal notranslate"><span class="pre">scripts/</span></code> and <code class="docutils literal notranslate"><span class="pre">docs/</span></code> in a temporary directory; the actual <code class="docutils literal notranslate"><span class="pre">docs/</span></code> directory was not modified):</p>
+<ul class="simple">
+<li><p>The documented commands (option c): <code class="docutils literal notranslate"><span class="pre">docs/</span></code> is emptied, <code class="docutils literal notranslate"><span class="pre">.nojekyll</span></code> is kept, the obsolete files (<code class="docutils literal notranslate"><span class="pre">jquery*.js</span></code>, <code class="docutils literal notranslate"><span class="pre">underscore*.js</span></code>) are removed, and the build succeeds (2 warnings, related to <code class="docutils literal notranslate"><span class="pre">janus.fft.parallel</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">make.bat</span></code> (help, including the description of the <code class="docutils literal notranslate"><span class="pre">ghpages</span></code> target), <code class="docutils literal notranslate"><span class="pre">make.bat</span> <span class="pre">ghpages</span></code> (same result as the documented commands) and <code class="docutils literal notranslate"><span class="pre">make.bat</span> <span class="pre">html</span></code> (builds into <code class="docutils literal notranslate"><span class="pre">_build/html</span></code>) work as expected.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sphinx/Makefile</span></code> was not tested: <code class="docutils literal notranslate"><span class="pre">make</span></code> is not available on this machine.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">make.bat</span> <span class="pre">latexpdf</span></code> (TeX Live 2026 is installed on this machine) <strong>fails</strong>, for a reason unrelated to the <code class="docutils literal notranslate"><span class="pre">make</span></code> files: with the default LaTeX engine (<code class="docutils literal notranslate"><span class="pre">pdflatex</span></code>), and the <code class="docutils literal notranslate"><span class="pre">latex_elements</span></code> of <code class="docutils literal notranslate"><span class="pre">sphinx/conf.py</span></code> (which empty <code class="docutils literal notranslate"><span class="pre">inputenc</span></code> and <code class="docutils literal notranslate"><span class="pre">fontenc</span></code>), LaTeX stops on a Unicode character (<code class="docutils literal notranslate"><span class="pre">δ</span></code>, U+03B4). With <code class="docutils literal notranslate"><span class="pre">-D</span> <span class="pre">latex_engine=xelatex</span></code>, the PDF is produced, but <code class="docutils literal notranslate"><span class="pre">latexmk</span></code> then fails on the index, because Sphinx uses <code class="docutils literal notranslate"><span class="pre">xindy</span></code> with <code class="docutils literal notranslate"><span class="pre">xelatex</span></code>, and <code class="docutils literal notranslate"><span class="pre">xindy</span></code> fails on this machine. With <code class="docutils literal notranslate"><span class="pre">-D</span> <span class="pre">latex_engine=xelatex</span> <span class="pre">-D</span> <span class="pre">latex_use_xindy=0</span></code> (<code class="docutils literal notranslate"><span class="pre">makeindex</span></code> is then used), the build succeeds: <code class="docutils literal notranslate"><span class="pre">sphinx/_build/latex/janus.pdf</span></code>, 66 pages, no missing character. <code class="docutils literal notranslate"><span class="pre">sphinx/conf.py</span></code> was not modified (see suggestions).</p></li>
+<li><p>Note that <code class="docutils literal notranslate"><span class="pre">make.bat</span></code> returns exit code 0 even when the build fails (this is also the case of the template generated by <code class="docutils literal notranslate"><span class="pre">sphinx-quickstart</span></code>): the output must be read.</p></li>
+</ul>
+</section>
+<section id="follow-up-pdf-settings-added-to-conf-py">
+<h4>Follow-up: PDF settings added to <code class="docutils literal notranslate"><span class="pre">conf.py</span></code><a class="headerlink" href="#follow-up-pdf-settings-added-to-conf-py" title="Link to this heading">¶</a></h4>
+<p>At the author’s request, <code class="docutils literal notranslate"><span class="pre">latex_engine</span> <span class="pre">=</span> <span class="pre">'xelatex'</span></code> and <code class="docutils literal notranslate"><span class="pre">latex_use_xindy</span> <span class="pre">=</span> <span class="pre">False</span></code> (with a comment explaining the latter) were added to <code class="docutils literal notranslate"><span class="pre">sphinx/conf.py</span></code>, just before <code class="docutils literal notranslate"><span class="pre">latex_elements</span></code>, which was left unchanged. On a copy of <code class="docutils literal notranslate"><span class="pre">sphinx/</span></code> in a temporary directory, <code class="docutils literal notranslate"><span class="pre">make.bat</span> <span class="pre">latexpdf</span></code> (without any <code class="docutils literal notranslate"><span class="pre">-D</span></code> option) now succeeds: <code class="docutils literal notranslate"><span class="pre">_build/latex/janus.pdf</span></code>, 66 pages, no missing character. The HTML build is unaffected (2 warnings, related to <code class="docutils literal notranslate"><span class="pre">janus.fft.parallel</span></code>).</p>
+</section>
+<section id="follow-up-latex-elements-removed-from-conf-py">
+<h4>Follow-up: <code class="docutils literal notranslate"><span class="pre">latex_elements</span></code> removed from <code class="docutils literal notranslate"><span class="pre">conf.py</span></code><a class="headerlink" href="#follow-up-latex-elements-removed-from-conf-py" title="Link to this heading">¶</a></h4>
+<p>At the author’s request, the <code class="docutils literal notranslate"><span class="pre">latex_elements</span></code> overrides were reviewed. The dictionary set <code class="docutils literal notranslate"><span class="pre">preamble</span></code>, <code class="docutils literal notranslate"><span class="pre">inputenc</span></code>, <code class="docutils literal notranslate"><span class="pre">fontenc</span></code> and <code class="docutils literal notranslate"><span class="pre">utf8extra</span></code> to empty strings. The last one was added in 2016 (commit <code class="docutils literal notranslate"><span class="pre">18071f2</span></code>, <em>Remove</em> <code class="docutils literal notranslate"><span class="pre">\DeclareUnicodeCharacter</span></code>), before Sphinx offered the <code class="docutils literal notranslate"><span class="pre">latex_engine</span></code> option (Sphinx 1.5): these overrides most likely allowed the generated <code class="docutils literal notranslate"><span class="pre">.tex</span></code> file to be compiled with <code class="docutils literal notranslate"><span class="pre">xelatex</span></code> by hand, by removing the <code class="docutils literal notranslate"><span class="pre">pdflatex</span></code>-specific parts of the preamble.</p>
+<p>Now that <code class="docutils literal notranslate"><span class="pre">latex_engine</span> <span class="pre">=</span> <span class="pre">'xelatex'</span></code> is set, Sphinx adapts these entries itself, and the overrides are either redundant or counterproductive:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">preamble</span></code> and <code class="docutils literal notranslate"><span class="pre">inputenc</span></code>: the defaults are already empty strings (with <code class="docutils literal notranslate"><span class="pre">xelatex</span></code>, for the latter);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fontenc</span></code>: with <code class="docutils literal notranslate"><span class="pre">xelatex</span></code>, the default loads <code class="docutils literal notranslate"><span class="pre">fontspec</span></code> explicitly (<code class="docutils literal notranslate"><span class="pre">\usepackage{fontspec}</span></code> and <code class="docutils literal notranslate"><span class="pre">\defaultfontfeatures…</span></code>); the override removed these lines (<code class="docutils literal notranslate"><span class="pre">fontspec</span></code> was still loaded indirectly, by <code class="docutils literal notranslate"><span class="pre">polyglossia</span></code>);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">utf8extra</span></code>: with <code class="docutils literal notranslate"><span class="pre">xelatex</span></code>, the default makes the non-breaking space (U+00A0) behave as <code class="docutils literal notranslate"><span class="pre">~</span></code>; the override removed this.</p></li>
+</ul>
+<p>The whole <code class="docutils literal notranslate"><span class="pre">latex_elements</span></code> dictionary was therefore removed from <code class="docutils literal notranslate"><span class="pre">sphinx/conf.py</span></code>. On a copy of <code class="docutils literal notranslate"><span class="pre">sphinx/</span></code> in a temporary directory, <code class="docutils literal notranslate"><span class="pre">make.bat</span> <span class="pre">latexpdf</span></code> succeeds: 66 pages, no missing character. The only differences in the preamble of the generated <code class="docutils literal notranslate"><span class="pre">janus.tex</span></code> are the three lines listed above (<code class="docutils literal notranslate"><span class="pre">fontspec</span></code>, <code class="docutils literal notranslate"><span class="pre">\defaultfontfeatures</span></code> and non-breaking space), which are now present.</p>
+</section>
+</section>
+<section id="suggestions">
+<h3>Suggestions<a class="headerlink" href="#suggestions" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><em>Applied (options b and c), see above.</em> Make <code class="docutils literal notranslate"><span class="pre">sphinx/Makefile</span></code> consistent with <code class="docutils literal notranslate"><span class="pre">sphinx/make.bat</span></code> (build into <code class="docutils literal notranslate"><span class="pre">../docs</span></code>), or replace both by a single documented command.</p></li>
+<li><p><em>Applied, see above.</em> Add the <code class="docutils literal notranslate"><span class="pre">sphinx.ext.githubpages</span></code> extension to <code class="docutils literal notranslate"><span class="pre">sphinx/conf.py</span></code>: it creates <code class="docutils literal notranslate"><span class="pre">.nojekyll</span></code> in the output directory automatically, so that <code class="docutils literal notranslate"><span class="pre">docs/</span></code> can be emptied without special care.</p></li>
+<li><p>In the longer term, a GitHub Actions workflow could build the docs on each push and deploy them to GitHub Pages. The generated HTML files would then no longer be versioned, and building under Linux (with MPI) would include the API of <code class="docutils literal notranslate"><span class="pre">janus.fft.parallel</span></code>. This requires compiling <cite>Janus</cite> in the workflow.</p></li>
+<li><p><em>Applied, see above.</em> Replace the absolute local path in the report of <em>Installation on a windows machine</em> by a generic one (<code class="docutils literal notranslate"><span class="pre">C:\path\to\miniconda3\…</span></code>) before publishing.</p></li>
+<li><p><em>Applied, see above.</em> To build the PDF version of the docs, add <code class="docutils literal notranslate"><span class="pre">latex_engine</span> <span class="pre">=</span> <span class="pre">'xelatex'</span></code> and <code class="docutils literal notranslate"><span class="pre">latex_use_xindy</span> <span class="pre">=</span> <span class="pre">False</span></code> to <code class="docutils literal notranslate"><span class="pre">sphinx/conf.py</span></code> (tested with TeX Live 2026, see above). The <code class="docutils literal notranslate"><span class="pre">latex_elements</span></code> overrides (empty <code class="docutils literal notranslate"><span class="pre">inputenc</span></code>, <code class="docutils literal notranslate"><span class="pre">fontenc</span></code> and <code class="docutils literal notranslate"><span class="pre">utf8extra</span></code>) could then be reviewed: they seem to date from an earlier attempt at supporting Unicode characters.</p></li>
+</ul>
+</section>
+</section>
+<section id="automatic-creation-of-environments">
+<h2>2026-09-11 • Automatic creation of environments<a class="headerlink" href="#automatic-creation-of-environments" title="Link to this heading">¶</a></h2>
+<p>Following your suggestion, add an <code class="docutils literal notranslate"><span class="pre">environment.yml</span></code> file, to create the <cite>conda</cite> environment in one command.</p>
+<p>This environment should also include the packages that are required to compile the Sphinx docs.</p>
+<section id="id1">
+<h3>Claude’s report<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
+<p>Claude created the file <code class="docutils literal notranslate"><span class="pre">environment.yml</span></code> at the root of the project. It defines the <code class="docutils literal notranslate"><span class="pre">janus</span></code> environment (channel <code class="docutils literal notranslate"><span class="pre">defaults</span></code>, as the existing environment), with the following packages: <code class="docutils literal notranslate"><span class="pre">python=3.14</span></code>, <code class="docutils literal notranslate"><span class="pre">pip</span></code>, <code class="docutils literal notranslate"><span class="pre">setuptools</span></code>, <code class="docutils literal notranslate"><span class="pre">cython</span></code>, <code class="docutils literal notranslate"><span class="pre">fftw</span></code> (build), <code class="docutils literal notranslate"><span class="pre">numpy</span></code> (run), <code class="docutils literal notranslate"><span class="pre">pytest</span></code> (tests) and <code class="docutils literal notranslate"><span class="pre">sphinx</span></code> (documentation). The environment is created with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">environment</span><span class="o">.</span><span class="n">yml</span>
+<span class="n">conda</span> <span class="n">activate</span> <span class="n">janus</span>
+</pre></div>
+</div>
+<p>and an existing environment is synchronized with the file with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">update</span> <span class="o">-</span><span class="n">n</span> <span class="n">janus</span> <span class="o">-</span><span class="n">f</span> <span class="n">environment</span><span class="o">.</span><span class="n">yml</span>
+</pre></div>
+</div>
+<p>Only the Python version is pinned; the other packages take the latest version available in the channel.</p>
+<p>The documentation only requires <code class="docutils literal notranslate"><span class="pre">sphinx</span></code>: all extensions listed in <code class="docutils literal notranslate"><span class="pre">sphinx/conf.py</span></code> are bundled with Sphinx (including <code class="docutils literal notranslate"><span class="pre">sphinx.ext.napoleon</span></code>), the default theme (<code class="docutils literal notranslate"><span class="pre">alabaster</span></code>) is installed as a dependency of Sphinx, and the tutorials only include static figures and source files (<code class="docutils literal notranslate"><span class="pre">literalinclude</span></code>), which are not executed. Note however that <code class="docutils literal notranslate"><span class="pre">autodoc</span></code> imports <cite>Janus</cite>, which must therefore be compiled and installed first.</p>
+<p><cite>Janus</cite> itself is not installed by <code class="docutils literal notranslate"><span class="pre">environment.yml</span></code>: the build requires <code class="docutils literal notranslate"><span class="pre">setup.cfg</span></code> and the <code class="docutils literal notranslate"><span class="pre">--no-build-isolation</span></code> flag, neither of which can be expressed in the <code class="docutils literal notranslate"><span class="pre">pip</span></code> section of an environment file. The comments at the top of the file recall the remaining steps, and warn against adding <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> on Windows.</p>
+<p>The file was checked as follows.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">-f</span> <span class="pre">environment.yml</span> <span class="pre">-n</span> <span class="pre">janus-envcheck</span> <span class="pre">--dry-run</span></code>: the environment resolves (Sphinx 9.1.0).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">update</span> <span class="pre">-n</span> <span class="pre">janus</span> <span class="pre">-f</span> <span class="pre">environment.yml</span></code>: this added Sphinx to the existing <code class="docutils literal notranslate"><span class="pre">janus</span></code> environment, and upgraded <code class="docutils literal notranslate"><span class="pre">cython</span></code> (3.2.5 → 3.2.9) and <code class="docutils literal notranslate"><span class="pre">fftw</span></code> (3.3.10 → 3.3.11). The serial tests still pass (3043 passed, 111 skipped).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">sphinx</span> <span class="pre">-b</span> <span class="pre">html</span> <span class="pre">-E</span> <span class="pre">sphinx</span> <span class="pre">&lt;temporary</span> <span class="pre">directory&gt;</span></code>: the build succeeds, with 3 warnings. The <code class="docutils literal notranslate"><span class="pre">_static</span></code> directory listed in <code class="docutils literal notranslate"><span class="pre">html_static_path</span></code> does not exist (1 warning), and <code class="docutils literal notranslate"><span class="pre">janus.fft.parallel</span></code> cannot be imported by <code class="docutils literal notranslate"><span class="pre">autodoc</span></code>, since the parallel extension is not built (2 warnings). The documentation of this module is therefore missing from the API page. The <code class="docutils literal notranslate"><span class="pre">docs/</span></code> directory was not modified.</p></li>
+</ul>
+<section id="follow-up-first-two-suggestions-applied">
+<h4>Follow-up: first two suggestions applied<a class="headerlink" href="#follow-up-first-two-suggestions-applied" title="Link to this heading">¶</a></h4>
+<p>At the author’s request, the first two suggestions below were applied.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sphinx/requirements.txt</span></code> was deleted. In <code class="docutils literal notranslate"><span class="pre">sphinx/conf.py</span></code>, the test on <code class="docutils literal notranslate"><span class="pre">sphinx.__version__</span></code> was removed, and <code class="docutils literal notranslate"><span class="pre">sphinx.ext.napoleon</span></code> was added directly to the list of <code class="docutils literal notranslate"><span class="pre">extensions</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">html_static_path</span></code> was removed from <code class="docutils literal notranslate"><span class="pre">sphinx/conf.py</span></code>, rather than creating an empty <code class="docutils literal notranslate"><span class="pre">sphinx/_static</span></code> directory (an empty directory cannot be tracked by git; besides, <code class="docutils literal notranslate"><span class="pre">_static</span></code> is listed in <code class="docutils literal notranslate"><span class="pre">sphinx/.gitignore</span></code>).</p></li>
+</ul>
+<p>The documentation was built again: the build succeeds, with 2 warnings (both related to <code class="docutils literal notranslate"><span class="pre">janus.fft.parallel</span></code>, see above). The docstrings are still processed by <code class="docutils literal notranslate"><span class="pre">napoleon</span></code> (the <em>Parameters</em> and <em>Returns</em> sections are rendered in the API page).</p>
+</section>
+<section id="follow-up-proposed-text-for-sphinx-installation-rst">
+<h4>Follow-up: proposed text for <code class="docutils literal notranslate"><span class="pre">sphinx/installation.rst</span></code><a class="headerlink" href="#follow-up-proposed-text-for-sphinx-installation-rst" title="Link to this heading">¶</a></h4>
+<p>The following sub-section is proposed as a replacement for the current <em>Compilation with Anaconda and Visual Studio</em> sub-section of <code class="docutils literal notranslate"><span class="pre">sphinx/installation.rst</span></code>. It has not been applied. It summarizes the procedure of the task <em>Installation on a windows machine</em>, which was only tested under Windows (hence its location in the Windows section):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Compilation with Miniconda and Visual Studio (recommended)
+----------------------------------------------------------
+
+This procedure was tested with Miniconda, Python 3.14 and Visual Studio Build Tools 2026.
+
+1. Install the `Visual Studio Build Tools`_, with the *Desktop development with C++* workload. The compiler is located automatically by ``setuptools``: there is no need to use a *Developer Command Prompt*.
+
+2. From the root of the project, create and activate the ``janus`` environment. It provides all the dependencies of Janus (including FFTW), as well as the packages that are required to run the tests and build the documentation::
+
+     conda env create -f environment.yml
+     conda activate janus
+
+   To synchronize an existing environment with ``environment.yml``, use ``conda env update -n janus -f environment.yml`` instead.
+
+3. Create the ``setup.cfg`` file. FFTW is installed in the ``Library`` subdirectory of the environment, whose path is printed by ``echo %CONDA_PREFIX%``. Environment variables are not expanded in ``setup.cfg``: this path must be written in full::
+
+     [fftw]
+     include_dirs = C:\path\to\miniconda3\envs\janus\Library\include
+     library_dirs = C:\path\to\miniconda3\envs\janus\Library\lib
+     libraries = fftw3
+
+   Note that, unlike the precompiled binaries downloaded from fftw.org, the library provided by conda is called ``fftw3`` (without the ``lib`` prefix).
+
+4. Install Janus in development (editable) mode::
+
+     pip install --no-build-isolation -e .
+
+   The ``--no-build-isolation`` flag ensures that the versions of Cython and setuptools installed in the environment are used for the build (otherwise, pip downloads the latest versions from PyPI).
+
+   After modifying a ``*.pyx`` or ``*.pxd`` file, recompile the extension modules in place with ``python setup.py build_ext --inplace``.
+
+.. warning:: Do not install ``mpi4py`` in this environment: ``setup.py`` would then try to build the parallel version of Janus, which is not tested under Windows, and requires ``mpicc``.
+
+.. _Visual Studio Build Tools: https://visualstudio.microsoft.com/visual-cpp-build-tools/
+</pre></div>
+</div>
+<p>If this text is adopted, the note on the <code class="docutils literal notranslate"><span class="pre">lib</span></code> prefix in <code class="docutils literal notranslate"><span class="pre">CLAUDE.md</span></code> should be updated accordingly.</p>
+</section>
+<section id="follow-up-proposed-text-applied-claude-md-corrected">
+<h4>Follow-up: proposed text applied, <code class="docutils literal notranslate"><span class="pre">CLAUDE.md</span></code> corrected<a class="headerlink" href="#follow-up-proposed-text-applied-claude-md-corrected" title="Link to this heading">¶</a></h4>
+<p>The author approved the above text, which now replaces the <em>Compilation with Anaconda and Visual Studio</em> sub-section of <code class="docutils literal notranslate"><span class="pre">sphinx/installation.rst</span></code>.</p>
+<p>The <em>Build</em> section of <code class="docutils literal notranslate"><span class="pre">CLAUDE.md</span></code> was corrected as follows.</p>
+<ul class="simple">
+<li><p>The FFTW library name on Windows depends on where FFTW comes from: <code class="docutils literal notranslate"><span class="pre">fftw3</span></code> with <cite>conda</cite>’s <code class="docutils literal notranslate"><span class="pre">fftw</span></code> package (recommended), <code class="docutils literal notranslate"><span class="pre">libfftw3-3</span></code> with the precompiled DLLs from fftw.org. <code class="docutils literal notranslate"><span class="pre">CLAUDE.md</span></code> previously stated that the <code class="docutils literal notranslate"><span class="pre">lib</span></code> prefix must always be kept.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">environment.yml</span></code> and the editable install (<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--no-build-isolation</span> <span class="pre">-e</span> <span class="pre">.</span></code>) are mentioned, instead of <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span> <span class="pre">--user</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">clean</span></code> does not remove the compiled files any more (commit <code class="docutils literal notranslate"><span class="pre">40eee5e</span></code>): <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clean</span> <span class="pre">-Xfd</span> <span class="pre">janus/</span></code> is mentioned instead.</p></li>
+<li><p>If <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> is installed but <code class="docutils literal notranslate"><span class="pre">mpicc</span></code> cannot be found, the build most likely fails (<code class="docutils literal notranslate"><span class="pre">CLAUDE.md</span></code> stated that the parallel extension was then silently skipped).</p></li>
+</ul>
+<p>The documentation was built again, without new warnings.</p>
+<p>Note that the introduction of the Windows section of <code class="docutils literal notranslate"><span class="pre">sphinx/installation.rst</span></code> still reads “You must first download and install the precompiled binaries of FFTW for Windows”. This is not required by the new (recommended) procedure, where FFTW is provided by <cite>conda</cite>. At the author’s request, this sentence was removed, together with the <code class="docutils literal notranslate"><span class="pre">setup.cfg</span></code> example and the note on the <code class="docutils literal notranslate"><span class="pre">lib</span></code> prefix that it introduced (and the now unused link to the precompiled binaries). The Windows section now only covers the <cite>conda</cite> procedure (and the unfinished MinGW/MSYS procedure).</p>
+</section>
+</section>
+<section id="id2">
+<h3>Suggestions<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><em>Applied, see above.</em> <code class="docutils literal notranslate"><span class="pre">sphinx/requirements.txt</span></code> only lists <code class="docutils literal notranslate"><span class="pre">sphinxcontrib-napoleon</span></code>, which has been bundled with Sphinx (as <code class="docutils literal notranslate"><span class="pre">sphinx.ext.napoleon</span></code>) since version 1.3. This file, as well as the corresponding test on <code class="docutils literal notranslate"><span class="pre">sphinx.__version__</span></code> in <code class="docutils literal notranslate"><span class="pre">sphinx/conf.py</span></code>, could be removed.</p></li>
+<li><p><em>Applied, see above.</em> Remove <code class="docutils literal notranslate"><span class="pre">html_static_path</span></code> from <code class="docutils literal notranslate"><span class="pre">sphinx/conf.py</span></code> (or create the <code class="docutils literal notranslate"><span class="pre">sphinx/_static</span></code> directory) to get rid of the corresponding warning.</p></li>
+<li><p><em>Applied, see above.</em> Once the installation procedure is stabilized, mention <code class="docutils literal notranslate"><span class="pre">environment.yml</span></code> in <code class="docutils literal notranslate"><span class="pre">sphinx/installation.rst</span></code>.</p></li>
+</ul>
+</section>
+</section>
+<section id="installation-on-a-windows-machine-miniconda-environment">
+<h2>2026-09-11 • Installation on a windows machine (<cite>Miniconda</cite> environment)<a class="headerlink" href="#installation-on-a-windows-machine-miniconda-environment" title="Link to this heading">¶</a></h2>
+<p>Following the update of the installation procedure, I am not sure how to install <cite>Janus</cite> on a windows machine. Use the <cite>conda</cite> environment <cite>janus</cite> to install the local version of <cite>janus</cite> in development mode. Add all required packages. Write down the procedure in your report. In particular, identify the fragile steps of the procedure (if any).</p>
+<section id="id3">
+<h3>Claude’s report<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
+<section id="what-was-done">
+<h4>What was done<a class="headerlink" href="#what-was-done" title="Link to this heading">¶</a></h4>
+<p><cite>Janus</cite> was already installed in the <cite>janus</cite> environment, in editable mode. To check the procedure from scratch, Claude uninstalled it (<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">uninstall</span> <span class="pre">janus</span></code>), removed all build artifacts (<code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clean</span> <span class="pre">-Xfd</span> <span class="pre">janus/</span></code>, plus the <code class="docutils literal notranslate"><span class="pre">build/</span></code> and <code class="docutils literal notranslate"><span class="pre">Janus.egg-info/</span></code> directories at the root), then reinstalled it with the procedure below. The build succeeded, and the serial tests pass (3043 passed, 111 skipped; all skipped tests are 3D, fourth-rank cubic tensors, which are not implemented yet).</p>
+<p>No package had to be added: the environment already contained everything required (<code class="docutils literal notranslate"><span class="pre">python</span></code> 3.14, <code class="docutils literal notranslate"><span class="pre">cython</span></code>, <code class="docutils literal notranslate"><span class="pre">setuptools</span></code>, <code class="docutils literal notranslate"><span class="pre">pip</span></code>, <code class="docutils literal notranslate"><span class="pre">numpy</span></code>, <code class="docutils literal notranslate"><span class="pre">fftw</span></code>, <code class="docutils literal notranslate"><span class="pre">pytest</span></code>, all from the <code class="docutils literal notranslate"><span class="pre">pkgs/main</span></code> channel). The parallel version was not installed (<code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> is absent, see below).</p>
+</section>
+<section id="id4">
+<h4>Procedure<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h4>
+<ol class="arabic">
+<li><p>Install the Microsoft C/C++ compiler: <em>Visual Studio Build Tools</em>, with the <em>Desktop development with C++</em> workload. It is not provided by <cite>conda</cite>, but <cite>setuptools</cite> locates it automatically (no need for a <em>Developer Command Prompt</em>). <em>Visual Studio Build Tools 2026</em> was used here.</p></li>
+<li><p>Create and activate the environment (the creation command was checked with <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">create</span> <span class="pre">--dry-run</span></code>):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">janus</span> <span class="n">python</span><span class="o">=</span><span class="mf">3.14</span> <span class="n">cython</span> <span class="n">fftw</span> <span class="n">numpy</span> <span class="n">pytest</span> <span class="n">setuptools</span> <span class="n">pip</span>
+<span class="n">conda</span> <span class="n">activate</span> <span class="n">janus</span>
+</pre></div>
+</div>
+</li>
+<li><p>Create the <code class="docutils literal notranslate"><span class="pre">setup.cfg</span></code> file at the root of the project. FFTW is provided by <cite>conda</cite>, in <code class="docutils literal notranslate"><span class="pre">%CONDA_PREFIX%\Library</span></code>. Environment variables are not expanded in <code class="docutils literal notranslate"><span class="pre">setup.cfg</span></code>, so the absolute path must be written in full (<code class="docutils literal notranslate"><span class="pre">echo</span> <span class="pre">%CONDA_PREFIX%</span></code> prints it). Note that the library name is <code class="docutils literal notranslate"><span class="pre">fftw3</span></code> (the <cite>conda</cite> package provides <code class="docutils literal notranslate"><span class="pre">fftw3.lib</span></code> and <code class="docutils literal notranslate"><span class="pre">fftw3.dll</span></code>):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">fftw</span><span class="p">]</span>
+<span class="n">include_dirs</span> <span class="o">=</span> <span class="n">C</span><span class="p">:</span>\<span class="n">path</span>\<span class="n">to</span>\<span class="n">miniconda3</span>\<span class="n">envs</span>\<span class="n">janus</span>\<span class="n">Library</span>\<span class="n">include</span>
+<span class="n">library_dirs</span> <span class="o">=</span> <span class="n">C</span><span class="p">:</span>\<span class="n">path</span>\<span class="n">to</span>\<span class="n">miniconda3</span>\<span class="n">envs</span>\<span class="n">janus</span>\<span class="n">Library</span>\<span class="n">lib</span>
+<span class="n">libraries</span> <span class="o">=</span> <span class="n">fftw3</span>
+</pre></div>
+</div>
+</li>
+<li><p>Install <cite>Janus</cite> in development (editable) mode, from the root of the project:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">build</span><span class="o">-</span><span class="n">isolation</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span>
+</pre></div>
+</div>
+<p>The extension modules (<code class="docutils literal notranslate"><span class="pre">*.pyd</span></code>) are compiled in place, next to the <code class="docutils literal notranslate"><span class="pre">*.pyx</span></code> sources. Changes to the <code class="docutils literal notranslate"><span class="pre">*.py</span></code> files are picked up immediately.</p>
+</li>
+<li><p>Run the tests:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pytest</span> <span class="n">tests</span>
+</pre></div>
+</div>
+</li>
+<li><p>After editing a <code class="docutils literal notranslate"><span class="pre">*.pyx</span></code> or <code class="docutils literal notranslate"><span class="pre">*.pxd</span></code> file, recompile the modified extensions in place (only the modified modules are recompiled):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">build_ext</span> <span class="o">--</span><span class="n">inplace</span>
+</pre></div>
+</div>
+<p>Re-running <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--no-build-isolation</span> <span class="pre">-e</span> <span class="pre">.</span></code> also works.</p>
+</li>
+</ol>
+</section>
+<section id="fragile-steps">
+<h4>Fragile steps<a class="headerlink" href="#fragile-steps" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><p><strong>The</strong> <code class="docutils literal notranslate"><span class="pre">setup.cfg</span></code> <strong>file.</strong> It is git-ignored, written by hand, and contains absolute paths that depend on the machine and on the name of the environment. It must be rewritten on each new machine, or if the environment is renamed.</p></li>
+<li><p><strong>The FFTW library name.</strong> With the <cite>conda</cite> package, the library name is <code class="docutils literal notranslate"><span class="pre">fftw3</span></code>. The Windows section of <code class="docutils literal notranslate"><span class="pre">sphinx/installation.rst</span></code> (and <code class="docutils literal notranslate"><span class="pre">CLAUDE.md</span></code>) state that the <code class="docutils literal notranslate"><span class="pre">lib</span></code> prefix must be kept (<code class="docutils literal notranslate"><span class="pre">libfftw3-3</span></code>): this is true only for the precompiled DLLs downloaded from fftw.org.</p></li>
+<li><p><strong>Build isolation.</strong> Plain <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code> also works, but pip then downloads the latest <cite>setuptools</cite> and <cite>Cython</cite> from PyPI (84.0.0 and 3.3.0 at the time of writing), instead of using the versions installed by <cite>conda</cite> (83.0.0 and 3.2.5). This requires network access, and the versions used for the build are not pinned. Hence the <code class="docutils literal notranslate"><span class="pre">--no-build-isolation</span></code> flag.</p></li>
+<li><p><strong>mpi4py.</strong> It must <em>not</em> be installed in the environment. <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> tries to build the parallel extension as soon as <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> can be imported, and only catches <code class="docutils literal notranslate"><span class="pre">ImportError</span></code>. On Windows, there is usually no <code class="docutils literal notranslate"><span class="pre">mpicc</span></code>, and the build would most likely fail. This was inferred from reading <code class="docutils literal notranslate"><span class="pre">setup.py</span></code>, not tested.</p></li>
+<li><p><strong>distutils.</strong> <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> imports <code class="docutils literal notranslate"><span class="pre">distutils</span></code>, which was removed from the standard library in Python 3.12. It currently works only because <cite>setuptools</cite> provides a replacement <code class="docutils literal notranslate"><span class="pre">distutils</span></code> module; a future version of <cite>setuptools</cite> might drop it. <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> also raises a <code class="docutils literal notranslate"><span class="pre">SyntaxWarning</span></code> (invalid escape sequence <code class="docutils literal notranslate"><span class="pre">&quot;\S&quot;</span></code>, line 86).</p></li>
+<li><p><strong>The</strong> <code class="docutils literal notranslate"><span class="pre">packages</span></code> <strong>list in</strong> <code class="docutils literal notranslate"><span class="pre">setup.py</span></code>. It omits <code class="docutils literal notranslate"><span class="pre">janus.material</span></code>, <code class="docutils literal notranslate"><span class="pre">janus.material.elastic</span></code> and <code class="docutils literal notranslate"><span class="pre">janus.material.elastic.linear</span></code>, and <cite>setuptools</cite> issues several “Package would be ignored” warnings. This is harmless for an editable install (the whole <code class="docutils literal notranslate"><span class="pre">janus/</span></code> directory is mapped), but a regular (non-editable) install would probably lack these subpackages. Not tested.</p></li>
+<li><p><strong>Stale compiled files.</strong> The <code class="docutils literal notranslate"><span class="pre">*.c</span></code> and <code class="docutils literal notranslate"><span class="pre">*.pyd</span></code> files live in the source tree. They must be rebuilt after editing <code class="docutils literal notranslate"><span class="pre">*.pyx</span></code>/<code class="docutils literal notranslate"><span class="pre">*.pxd</span></code> files, or after upgrading Python. <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">clean</span></code> does not remove them; use <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clean</span> <span class="pre">-Xfd</span> <span class="pre">janus/</span></code>.</p></li>
+</ul>
+<p>Some points turned out <em>not</em> to be fragile. The FFTW DLL (<code class="docutils literal notranslate"><span class="pre">fftw3.dll</span></code>) is found at import time even when the environment is not activated (checked with <code class="docutils literal notranslate"><span class="pre">conda</span></code> directories removed from <code class="docutils literal notranslate"><span class="pre">PATH</span></code>): <cite>conda</cite>’s Python adds <code class="docutils literal notranslate"><span class="pre">Library\bin</span></code> to the DLL search path. The compiler emits many <code class="docutils literal notranslate"><span class="pre">C4244</span></code> warnings (conversions from <code class="docutils literal notranslate"><span class="pre">Py_ssize_t</span></code>/<code class="docutils literal notranslate"><span class="pre">ptrdiff_t</span></code> to <code class="docutils literal notranslate"><span class="pre">int</span></code>), which do not prevent the build.</p>
+</section>
+</section>
+<section id="id5">
+<h3>Suggestions<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Update the Windows section of <code class="docutils literal notranslate"><span class="pre">sphinx/installation.rst</span></code> with the above procedure, and fix the note on the <code class="docutils literal notranslate"><span class="pre">lib</span></code> prefix in <code class="docutils literal notranslate"><span class="pre">CLAUDE.md</span></code>.</p></li>
+<li><p>Add an <code class="docutils literal notranslate"><span class="pre">environment.yml</span></code> file, to create the environment in one command.</p></li>
+<li><p>In <code class="docutils literal notranslate"><span class="pre">setup.py</span></code>, replace the <code class="docutils literal notranslate"><span class="pre">distutils</span></code> imports with their <cite>setuptools</cite> counterparts, fix the <code class="docutils literal notranslate"><span class="pre">&quot;\S&quot;</span></code> escape sequence (raw string), complete the <code class="docutils literal notranslate"><span class="pre">packages</span></code> list, and make the build of the parallel extension skip gracefully when <code class="docutils literal notranslate"><span class="pre">mpicc</span></code> cannot be found.</p></li>
+<li><p>In <code class="docutils literal notranslate"><span class="pre">setup.py</span></code>, default the FFTW paths to <code class="docutils literal notranslate"><span class="pre">sys.prefix\Library</span></code> when running in a <cite>conda</cite> environment on Windows, so that <code class="docutils literal notranslate"><span class="pre">setup.cfg</span></code> becomes optional.</p></li>
+</ul>
+</section>
+</section>
+<section id="how-to-update-this-page">
+<h2>2026-09-11 • How to update this page<a class="headerlink" href="#how-to-update-this-page" title="Link to this heading">¶</a></h2>
+<p>&#64;Claude: this paragraph describe how we are to interact for the development of <cite>Janus</cite>. Take note of these instructions so that I don’t have to repeat myself at each new session.</p>
+<p>Each time you are invoked in a console, you will read the present file and find the paragraphs that are marked <cite>TODO</cite>.</p>
+<p>These are your instructions for the current session: each paragraph is an elementary task. As far as possible, each task will be given its own section with a short, unique title.</p>
+<p>After completion of a task, report on what you did in a sub-paragraph called <cite>Claude’s report</cite> of the <cite>claude.rst</cite> file.</p>
+<p>Once I have validated your changes, I will ask you to mark the task as done. This means you will replace the <cite>TODO</cite> flag with the date in yyyy-mm-dd format. You will then move to the next task. For tasks that cannot be completed in one session, use an <cite>IN PROGRESS</cite> flag, so that the state of the task is visible in the present file.</p>
+<p>Unless otherwise stated, you will never commit your changes.</p>
+<p>Before you mark the present task as done, you can collect in a sub-paragraph any suggestions that might improve our interactions.</p>
+<p>For these instructions to apply on any machine, add the following pointer in <cite>CLAUDE.md</cite></p>
+<blockquote>
+<div><p>at session start, read <cite>sphinx/claude.rst</cite> and process the <cite>TODO</cite> sections according to the <cite>How to update this page</cite> section</p>
+</div></blockquote>
+<section id="id6">
+<h3>Claude’s report<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h3>
+<p>The pointer above was added to <cite>CLAUDE.md</cite>, in a new <cite>Session workflow</cite> section at the top of the file. Since <cite>CLAUDE.md</cite> is loaded at the start of every session, the present file is now the single source of truth for our workflow, on any machine.</p>
+<p>The copy of these instructions that had been saved in Claude Code’s local memory (under <cite>~/.claude/projects/</cite>, on the author’s machine only) was deleted: it duplicated the present file and was already out of date (it did not require the author’s validation before marking a task as done).</p>
+<p>The author validated these changes on 2026-09-11, and the task was marked as done.</p>
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo_janus-200x200.png" alt="Logo of Janus"/>
+            </a></p>
+<h1 class="logo"><a href="index.html">Janus</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="operators.html">Operators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="materials.html">Materials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fft_tutorial.html">Computing discrete Fourier transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/square_basic/square_basic.html">Square inclusion, basic scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="todo.html">TODO List</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mandel.html">Mandel notation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Claude’s contributions to <cite>Janus</cite></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#updating-the-online-docs">2026-09-11 • Updating the online docs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#automatic-creation-of-environments">2026-09-11 • Automatic creation of environments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installation-on-a-windows-machine-miniconda-environment">2026-09-11 • Installation on a windows machine (<cite>Miniconda</cite> environment)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-update-this-page">2026-09-11 • How to update this page</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="bibliography.html" title="previous chapter">Bibliography</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2013-2018, S. Brisard.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/claude.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

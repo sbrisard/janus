@@ -1,18 +1,17 @@
-
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
     <title>Installation &#8212; Janus 0.0 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=837179f8"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Operators" href="operators.html" />
@@ -20,8 +19,9 @@
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   
@@ -33,20 +33,20 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+  <section id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h1>
 <p>For the moment, no precompiled binaries are available, and Janus must be compiled from sources, using <code class="docutils literal notranslate"><span class="pre">setuptools</span></code>.</p>
 <p>The sources can be retrieved from Github, <a class="reference external" href="https://github.com/sbrisard/janus.git">https://github.com/sbrisard/janus.git</a>.</p>
-<div class="section" id="prerequisites">
-<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">¶</a></h2>
 <p>Janus requires Python 3k. The serial version depends on <a class="reference external" href="http://www.fftw.org/">FFTW</a> (version 3) only, while the parallel (MPI-based) version also requires <a class="reference external" href="https://bitbucket.org/mpi4py/mpi4py/">mpi4py</a>.</p>
 <div class="admonition-todo admonition" id="id1">
 <p class="admonition-title">Todo</p>
 <p>The present version of <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> tries to install the parallel version of the code if it detects that <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> is installed. In other words, if <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> is installed, the MPI-enabled version of <code class="docutils literal notranslate"><span class="pre">FFTW</span></code> <em>must</em> be installed.</p>
 </div>
-</div>
-<div class="section" id="configuration-all-platforms">
-<h2>Configuration (all platforms)<a class="headerlink" href="#configuration-all-platforms" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="configuration-all-platforms">
+<h2>Configuration (all platforms)<a class="headerlink" href="#configuration-all-platforms" title="Link to this heading">¶</a></h2>
 <p>Compilation and installation is configured through the <code class="docutils literal notranslate"><span class="pre">setup.cfg</span></code> file, which must be created in the root directory of the project if necessary (this file must reside in the same directory as <code class="docutils literal notranslate"><span class="pre">setup.py</span></code>).</p>
 <p>Two sections of this file must be filed: <code class="docutils literal notranslate"><span class="pre">[fftw]</span></code> and <code class="docutils literal notranslate"><span class="pre">[fftw_mpi]</span></code> (if you are compiling the MPI-enabled version of Janus):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[fftw]
@@ -59,28 +59,28 @@ library_dirs = …
 libraries = …
 </pre></div>
 </div>
-<dl class="data">
-<dt id="include_dirs">
-<code class="sig-name descname">include_dirs</code><a class="headerlink" href="#include_dirs" title="Permalink to this definition">¶</a></dt>
+<dl class="py data">
+<dt class="sig sig-object py" id="include_dirs">
+<span class="sig-name descname"><span class="pre">include_dirs</span></span><a class="headerlink" href="#include_dirs" title="Link to this definition">¶</a></dt>
 <dd><p>The path to the FFTW headers files (optional).</p>
 </dd></dl>
 
-<dl class="data">
-<dt id="library_dirs">
-<code class="sig-name descname">library_dirs</code><a class="headerlink" href="#library_dirs" title="Permalink to this definition">¶</a></dt>
+<dl class="py data">
+<dt class="sig sig-object py" id="library_dirs">
+<span class="sig-name descname"><span class="pre">library_dirs</span></span><a class="headerlink" href="#library_dirs" title="Link to this definition">¶</a></dt>
 <dd><p>The path to the FFTW shared libraries (optional).</p>
 </dd></dl>
 
-<dl class="data">
-<dt id="libraries">
-<code class="sig-name descname">libraries</code><a class="headerlink" href="#libraries" title="Permalink to this definition">¶</a></dt>
+<dl class="py data">
+<dt class="sig sig-object py" id="libraries">
+<span class="sig-name descname"><span class="pre">libraries</span></span><a class="headerlink" href="#libraries" title="Link to this definition">¶</a></dt>
 <dd><p>The name of the FFTW libraries.</p>
 </dd></dl>
 
 <p>All these entries can be (comma separated) <em>lists</em>. Examples are provided below for several platforms.</p>
-</div>
-<div class="section" id="compilation-and-installation-under-linux">
-<h2>Compilation and installation under Linux<a class="headerlink" href="#compilation-and-installation-under-linux" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="compilation-and-installation-under-linux">
+<h2>Compilation and installation under Linux<a class="headerlink" href="#compilation-and-installation-under-linux" title="Link to this heading">¶</a></h2>
 <p>Make sure that the MPI and FFTW packages are properly installed, including the <code class="docutils literal notranslate"><span class="pre">dev</span></code> packages (that include header files). On Ubuntu platforms, the following packages must be installed:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">libopenmpi</span><span class="o">-</span><span class="n">dev</span> <span class="n">openmpi</span><span class="o">-</span><span class="nb">bin</span> <span class="n">libfftw3</span><span class="o">-</span><span class="nb">bin</span> <span class="n">libfftw3</span><span class="o">-</span><span class="n">dev</span> <span class="n">libfftw3</span><span class="o">-</span><span class="n">mpi</span><span class="o">-</span><span class="n">dev</span> <span class="n">libfftw3</span><span class="o">-</span><span class="n">mpi3</span> <span class="n">petsc</span><span class="o">-</span><span class="n">dev</span> <span class="n">cython3</span> <span class="n">python3</span><span class="o">-</span><span class="n">numpy</span> <span class="n">python3</span><span class="o">-</span><span class="n">h5py</span> <span class="n">python3</span><span class="o">-</span><span class="n">mpi4py</span> <span class="n">python3</span><span class="o">-</span><span class="n">petsc4py</span> <span class="n">python3</span><span class="o">-</span><span class="n">pytest</span> <span class="n">python3</span><span class="o">-</span><span class="n">scipy</span> <span class="n">python3</span><span class="o">-</span><span class="n">sphinx</span>
 </pre></div>
@@ -96,29 +96,49 @@ libraries = …
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span> <span class="o">--</span><span class="n">user</span>
 </pre></div>
 </div>
+</section>
+<section id="compilation-and-installation-under-macos">
+<h2>Compilation and installation under MacOS<a class="headerlink" href="#compilation-and-installation-under-macos" title="Link to this heading">¶</a></h2>
+</section>
+<section id="compilation-and-installation-under-windows">
+<h2>Compilation and installation under Windows<a class="headerlink" href="#compilation-and-installation-under-windows" title="Link to this heading">¶</a></h2>
+<p>The parallel version of this code is not tested under Windows.</p>
+<section id="compilation-with-miniconda-and-visual-studio-recommended">
+<h3>Compilation with Miniconda and Visual Studio (recommended)<a class="headerlink" href="#compilation-with-miniconda-and-visual-studio-recommended" title="Link to this heading">¶</a></h3>
+<p>This procedure was tested with Miniconda, Python 3.14 and Visual Studio Build Tools 2026.</p>
+<ol class="arabic">
+<li><p>Install the <a class="reference external" href="https://visualstudio.microsoft.com/visual-cpp-build-tools/">Visual Studio Build Tools</a>, with the <em>Desktop development with C++</em> workload. The compiler is located automatically by <code class="docutils literal notranslate"><span class="pre">setuptools</span></code>: there is no need to use a <em>Developer Command Prompt</em>.</p></li>
+<li><p>From the root of the project, create and activate the <code class="docutils literal notranslate"><span class="pre">janus</span></code> environment. It provides all the dependencies of Janus (including FFTW), as well as the packages that are required to run the tests and build the documentation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">environment</span><span class="o">.</span><span class="n">yml</span>
+<span class="n">conda</span> <span class="n">activate</span> <span class="n">janus</span>
+</pre></div>
 </div>
-<div class="section" id="compilation-and-installation-under-macos">
-<h2>Compilation and installation under MacOS<a class="headerlink" href="#compilation-and-installation-under-macos" title="Permalink to this headline">¶</a></h2>
-</div>
-<div class="section" id="compilation-and-installation-under-windows">
-<h2>Compilation and installation under Windows<a class="headerlink" href="#compilation-and-installation-under-windows" title="Permalink to this headline">¶</a></h2>
-<p>The parallel version of this code is not tested under Windows. You must first download and install the <a class="reference external" href="http://www.fftw.org/install/windows.html">precompiled binaries of FFTW for Windows</a>. Assuming you have uncompressed this archive in <code class="docutils literal notranslate"><span class="pre">C:\opt\fftw-3.3.4-dll64,</span> <span class="pre">the</span> <span class="pre">``setup.cfg</span></code> file reads:</p>
+<p>To synchronize an existing environment with <code class="docutils literal notranslate"><span class="pre">environment.yml</span></code>, use <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">update</span> <span class="pre">-n</span> <span class="pre">janus</span> <span class="pre">-f</span> <span class="pre">environment.yml</span></code> instead.</p>
+</li>
+<li><p>Create the <code class="docutils literal notranslate"><span class="pre">setup.cfg</span></code> file. FFTW is installed in the <code class="docutils literal notranslate"><span class="pre">Library</span></code> subdirectory of the environment, whose path is printed by <code class="docutils literal notranslate"><span class="pre">echo</span> <span class="pre">%CONDA_PREFIX%</span></code>. Environment variables are not expanded in <code class="docutils literal notranslate"><span class="pre">setup.cfg</span></code>: this path must be written in full:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">fftw</span><span class="p">]</span>
-<span class="n">include_dirs</span> <span class="o">=</span> <span class="n">C</span><span class="p">:</span>\<span class="n">opt</span>\<span class="n">fftw</span><span class="o">-</span><span class="mf">3.3</span><span class="o">.</span><span class="mi">4</span><span class="o">-</span><span class="n">dll64</span>
-<span class="n">library_dirs</span> <span class="o">=</span> <span class="n">C</span><span class="p">:</span>\<span class="n">opt</span>\<span class="n">fftw</span><span class="o">-</span><span class="mf">3.3</span><span class="o">.</span><span class="mi">4</span><span class="o">-</span><span class="n">dll64</span>
-<span class="n">libraries</span> <span class="o">=</span> <span class="n">libfftw3</span><span class="o">-</span><span class="mi">3</span>
+<span class="n">include_dirs</span> <span class="o">=</span> <span class="n">C</span><span class="p">:</span>\<span class="n">path</span>\<span class="n">to</span>\<span class="n">miniconda3</span>\<span class="n">envs</span>\<span class="n">janus</span>\<span class="n">Library</span>\<span class="n">include</span>
+<span class="n">library_dirs</span> <span class="o">=</span> <span class="n">C</span><span class="p">:</span>\<span class="n">path</span>\<span class="n">to</span>\<span class="n">miniconda3</span>\<span class="n">envs</span>\<span class="n">janus</span>\<span class="n">Library</span>\<span class="n">lib</span>
+<span class="n">libraries</span> <span class="o">=</span> <span class="n">fftw3</span>
 </pre></div>
 </div>
-<p>Note that the library name <em>must not</em> be stripped of the <code class="docutils literal notranslate"><span class="pre">lib</span></code> prefix (<code class="docutils literal notranslate"><span class="pre">libfftw3-3.dll</span></code> → <code class="docutils literal notranslate"><span class="pre">libfftw3</span></code>).</p>
-<div class="section" id="compilation-with-anaconda-and-visual-studio">
-<h3>Compilation with Anaconda and Visual Studio<a class="headerlink" href="#compilation-with-anaconda-and-visual-studio" title="Permalink to this headline">¶</a></h3>
-<p>If you use <a class="reference external" href="https://www.anaconda.com/distribution/">Anaconda</a> (which is highly recommended) then open the Anaconda console and issue the standard command:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span> <span class="o">--</span><span class="n">user</span>
+<p>Note that, unlike the precompiled binaries downloaded from fftw.org, the library provided by conda is called <code class="docutils literal notranslate"><span class="pre">fftw3</span></code> (without the <code class="docutils literal notranslate"><span class="pre">lib</span></code> prefix).</p>
+</li>
+<li><p>Install Janus in development (editable) mode:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">build</span><span class="o">-</span><span class="n">isolation</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span>
 </pre></div>
 </div>
+<p>The <code class="docutils literal notranslate"><span class="pre">--no-build-isolation</span></code> flag ensures that the versions of Cython and setuptools installed in the environment are used for the build (otherwise, pip downloads the latest versions from PyPI).</p>
+<p>After modifying a <code class="docutils literal notranslate"><span class="pre">*.pyx</span></code> or <code class="docutils literal notranslate"><span class="pre">*.pxd</span></code> file, recompile the extension modules in place with <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">build_ext</span> <span class="pre">--inplace</span></code>.</p>
+</li>
+</ol>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Do not install <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> in this environment: <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> would then try to build the parallel version of Janus, which is not tested under Windows, and requires <code class="docutils literal notranslate"><span class="pre">mpicc</span></code>.</p>
 </div>
-<div class="section" id="compilation-with-mingw-msys">
-<h3>Compilation with MinGW/MSYS<a class="headerlink" href="#compilation-with-mingw-msys" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="compilation-with-mingw-msys">
+<h3>Compilation with MinGW/MSYS<a class="headerlink" href="#compilation-with-mingw-msys" title="Link to this heading">¶</a></h3>
 <p>Set the following values:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">build_ext</span><span class="p">]</span>
 <span class="n">include_dirs</span> <span class="o">=</span> <span class="n">C</span><span class="p">:</span>\<span class="n">PATH</span>\<span class="n">TO</span>\<span class="n">HEADERS</span>
@@ -130,10 +150,10 @@ libraries = …
 <p class="admonition-title">Todo</p>
 <p>Complete installation procedure with MinGW.</p>
 </div>
-</div>
-</div>
-<div class="section" id="test-your-installation">
-<h2>Test your installation<a class="headerlink" href="#test-your-installation" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="test-your-installation">
+<h2>Test your installation<a class="headerlink" href="#test-your-installation" title="Link to this heading">¶</a></h2>
 <p>Testing the installation of Janus requires <a class="reference external" href="http://pytest.org/">pytest</a>. To run all serial tests, issue the following command at the root of the project:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pytest</span> <span class="n">tests</span>
 </pre></div>
@@ -147,18 +167,28 @@ libraries = …
 <p class="admonition-title">Todo</p>
 <p>How to print only messages from root process with pytest?</p>
 </div>
+</section>
+<section id="build-the-documentation">
+<h2>Build the documentation<a class="headerlink" href="#build-the-documentation" title="Link to this heading">¶</a></h2>
+<p>The documentation is written with <a class="reference external" href="https://www.sphinx-doc.org/">Sphinx</a>, and its sources are located in the <code class="docutils literal notranslate"><span class="pre">sphinx/</span></code> directory. Since the API reference is extracted from the docstrings of the compiled modules, Janus must be compiled and installed first.</p>
+<p>The HTML version of the documentation is published on <a class="reference external" href="https://sbrisard.github.io/janus/">GitHub Pages</a>, from the <code class="docutils literal notranslate"><span class="pre">docs/</span></code> directory of the <code class="docutils literal notranslate"><span class="pre">master</span></code> branch. To update it, issue the following commands at the root of the project:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">scripts</span><span class="o">/</span><span class="n">empty_docs</span><span class="o">.</span><span class="n">py</span>
+<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">sphinx</span> <span class="o">-</span><span class="n">b</span> <span class="n">html</span> <span class="o">-</span><span class="n">E</span> <span class="o">-</span><span class="n">d</span> <span class="n">sphinx</span><span class="o">/</span><span class="n">_build</span><span class="o">/</span><span class="n">doctrees</span> <span class="n">sphinx</span> <span class="n">docs</span>
+</pre></div>
 </div>
-</div>
+<p>The first command empties the <code class="docutils literal notranslate"><span class="pre">docs/</span></code> directory, except the <code class="docutils literal notranslate"><span class="pre">docs/.nojekyll</span></code> file (which tells GitHub Pages not to process the site with Jekyll), so that the files that Sphinx no longer produces are removed. The second command builds the HTML documentation from scratch into <code class="docutils literal notranslate"><span class="pre">docs/</span></code>. Check the result (open <code class="docutils literal notranslate"><span class="pre">docs/index.html</span></code> in a browser), then commit the <code class="docutils literal notranslate"><span class="pre">docs/</span></code> directory and push it to the <code class="docutils literal notranslate"><span class="pre">master</span></code> branch: GitHub Pages then redeploys the site automatically.</p>
+</section>
+</section>
 
 
           </div>
           
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="index.html">
-              <img class="logo" src="_static/logo_janus-200x200.png" alt="Logo"/>
+              <img class="logo" src="_static/logo_janus-200x200.png" alt="Logo of Janus"/>
             </a></p>
 <h1 class="logo"><a href="index.html">Janus</a></h1>
 
@@ -169,7 +199,16 @@ libraries = …
 
 
 
-<h3>Navigation</h3>
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
@@ -179,6 +218,7 @@ libraries = …
 <li class="toctree-l2"><a class="reference internal" href="#compilation-and-installation-under-macos">Compilation and installation under MacOS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#compilation-and-installation-under-windows">Compilation and installation under Windows</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#test-your-installation">Test your installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#build-the-documentation">Build the documentation</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="operators.html">Operators</a></li>
@@ -190,6 +230,7 @@ libraries = …
 <li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mandel.html">Mandel notation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
+<li class="toctree-l1"><a class="reference internal" href="claude.html">Claude’s contributions to <cite>Janus</cite></a></li>
 </ul>
 
 <div class="relations">
@@ -201,16 +242,6 @@ libraries = …
   </ul></li>
 </ul>
 </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
 
 
 
@@ -224,11 +255,11 @@ libraries = …
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2013-2018, S. Brisard.
+      &#169;2013-2018, S. Brisard.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
       
       |
       <a href="_sources/installation.rst.txt"

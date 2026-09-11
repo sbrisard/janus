@@ -1,0 +1,354 @@
+*********************************
+Claude's contributions to `Janus`
+*********************************
+
+As of august 2026, `Janus` is revived by the author with the help of `Claude Code`. This page will collect all interactions between the author and Claude.
+
+
+2026-09-11 • Updating the online docs
+=====================================
+
+Report on the procedure for compiling the sphinx docs locally and updating the Github pages accordingly (the project lives in the following repo: https://github.com/sbrisard/janus while the github pages are: https://sbrisard.github.io/janus/).
+
+Claude's report
+---------------
+
+Current setup
+~~~~~~~~~~~~~
+
+- The HTML docs are versioned in the ``docs/`` directory of the ``master`` branch (since 2018), with a ``docs/.nojekyll`` file, so that GitHub does not process the files with Jekyll (which would ignore the ``_static``, ``_sources``… directories). There is no ``gh-pages`` branch, and no GitHub Actions workflow. GitHub Pages is therefore most likely configured as *Deploy from a branch*, ``master``, ``/docs``. This could not be checked directly (the corresponding GitHub API requires authentication); it can be checked in *Settings → Pages* of the repository.
+- The online docs are exactly the content of ``docs/``: they were last updated on 2019-08-20 (commit ``811359f``), with Sphinx 2.1.2. In particular, they do not contain the present page, nor the new installation procedure.
+- ``sphinx/make.bat html`` builds the docs *directly* into ``../docs`` (the doctrees go to ``sphinx/_build/doctrees``; both ``sphinx/_build`` and ``docs/.buildinfo`` are git-ignored). By contrast, ``sphinx/Makefile`` (Linux, macOS) builds into ``sphinx/_build/html``, and the files must then be copied to ``docs/``.
+
+Procedure
+~~~~~~~~~
+
+1. Activate the ``janus`` environment, where `Janus` must be compiled and installed (see *Installation on a windows machine*): ``autodoc`` imports the compiled modules.
+
+2. Empty the ``docs/`` directory (from the root of the project, in PowerShell). ``make.bat html`` does not remove files that Sphinx no longer produces; without this step, obsolete files would accumulate in ``docs/``. Since the ``sphinx.ext.githubpages`` extension was added (see follow-up below), ``docs/.nojekyll`` is recreated by the build, and the whole directory can be emptied::
+
+     Get-ChildItem -Force docs | Remove-Item -Recurse -Force
+
+3. Build the docs, from the ``sphinx/`` directory. ``make.bat clean`` deletes the cached doctrees, which forces a complete rebuild::
+
+     cd sphinx
+     .\make.bat clean
+     .\make.bat html
+
+   Equivalently, from the root of the project: ``python -m sphinx -b html -E -d sphinx/_build/doctrees sphinx docs``.
+
+4. Check the result: open ``docs/index.html`` in a browser, and review the changes with ``git status docs``.
+
+5. Commit the ``docs/`` directory, and push to ``master``::
+
+     git add -A docs
+     git commit -m "Update HTML docs"
+     git push
+
+   GitHub Pages then redeploys the site automatically (usually within a few minutes). The deployment can be followed in the *Actions* tab of the repository (*pages build and deployment*).
+
+What was checked
+~~~~~~~~~~~~~~~~
+
+Steps 2 and 3 were not run as such on ``docs/``, and step 5 was not run at all (no commit, no push). The following equivalent operations were performed instead.
+
+- A complete build (``python -m sphinx -b html -E``) in an empty temporary directory succeeds (2 warnings, both related to ``janus.fft.parallel``). Compared to the current ``docs/``, it adds 8 files (``claude.html``, ``_sources/claude.rst.txt``, 2 files in ``_downloads/``, 4 JavaScript/SVG files in ``_static/``) and makes 4 files obsolete (``jquery*.js`` and ``underscore*.js`` in ``_static/``), which step 2 removes.
+- Mirroring this build into a copy of ``docs/`` with ``robocopy <build> docs /MIR /XF .buildinfo .nojekyll`` (an alternative to steps 2 and 3) gives the same result, and keeps ``.nojekyll``. Note that ``robocopy`` returns non-zero exit codes on success (codes 1 to 7), which may confuse scripts.
+- ``make.bat html`` was also run as is, and wrote into ``docs/``: this is how Claude found out that it targets ``../docs``. Since this task only asked for a report, the ``docs/`` directory was then restored to its committed state (``git restore docs``, removal of the new files, of ``docs/.buildinfo`` and of ``sphinx/_build``). ``docs/`` is currently unchanged.
+
+Points to be aware of
+~~~~~~~~~~~~~~~~~~~~~
+
+- The API of ``janus.fft.parallel`` is absent from the docs built under Windows (the parallel extension is not compiled). This was already the case for the current online docs.
+- The present page (``claude.rst``) will be published. It contained an absolute local path, in the report of *Installation on a windows machine* (replaced since, see follow-up below).
+- The generated HTML files are versioned: each update of the docs adds all modified HTML files to the history of the repository.
+
+Follow-up: suggestions 2 and 4 applied
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+At the author's request, suggestions 2 and 4 below were applied.
+
+- ``sphinx.ext.githubpages`` was added to the ``extensions`` of ``sphinx/conf.py``. A complete build in a temporary directory succeeds (still 2 warnings, both related to ``janus.fft.parallel``), and now produces a ``.nojekyll`` file in the output directory. Step 2 of the above procedure was updated accordingly: the whole ``docs/`` directory can now be emptied before the build. The extension would also create a ``CNAME`` file if ``html_baseurl`` pointed to a custom domain, which is not the case here.
+- In the report of *Installation on a windows machine*, the absolute local paths of the ``setup.cfg`` example were replaced by ``C:\path\to\miniconda3\envs\janus\Library\…``. No other absolute local path remains in ``sphinx/``.
+
+Follow-up: inconsistency between ``Makefile`` and ``make.bat``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Both files were generated by ``sphinx-quickstart`` on 2013-09-17 (commit ``e2b3e81``), for Linux/macOS (``Makefile``) and Windows (``make.bat``) respectively. Originally, the ``html`` target of both files built the docs into ``_build/html`` (i.e. ``sphinx/_build/html`` today). When the HTML docs were moved to ``docs/`` to be served by GitHub Pages (commit ``f0f32ee``, 2018-07-13, which also renamed the source directory ``docs/`` → ``sphinx/``), the ``html`` target of ``make.bat`` was changed to build into ``../docs``, but ``Makefile`` was not modified. As a consequence:
+
+- under Windows, ``make.bat html`` updates ``docs/`` directly (and the changes show up in ``git status``);
+- under Linux/macOS, ``make html`` builds into ``sphinx/_build/html``, which is git-ignored: ``docs/`` is left untouched, and nothing shows up in ``git status``. The files must then be copied to ``docs/`` by hand (without ``.buildinfo``), which is easily forgotten.
+
+In both files, all other targets (``dirhtml``, ``latex``, ``epub``…) still build into ``_build/``, and ``clean`` only empties ``_build/`` (the doctrees), never ``docs/``. Both files also contain leftovers from another project: the ``qthelp`` and ``devhelp`` targets refer to ``HashTri`` (e.g. ``HashTri.qhcp``) instead of ``Janus``. Finally, both use the old ``sphinx-quickstart`` template, which lists every builder explicitly; current versions of ``sphinx-quickstart`` generate much shorter files, based on ``sphinx-build -M`` ("make mode").
+
+Possible fixes, from the smallest to the largest change:
+
+a. Change the ``html`` target of ``Makefile`` to build into ``../docs``, as ``make.bat`` does (two lines). The ``HashTri`` leftovers can be fixed at the same time.
+b. Replace both files with those generated by the current ``sphinx-quickstart`` (make mode), and add a dedicated target (e.g. ``ghpages``) that empties ``docs/`` and builds into it. This must be done twice (``make`` and batch syntax).
+c. Remove both files, and document a single command, identical on all platforms, run from the root of the project::
+
+     python -m sphinx -b html -E -d sphinx/_build/doctrees sphinx docs
+
+   Emptying ``docs/`` beforehand is still platform-dependent (``rm -rf docs/*`` vs. PowerShell); a small Python script (e.g. ``scripts/build_docs.py``) could perform both steps on all platforms.
+
+Claude would recommend c: the docs are only built as HTML, for GitHub Pages, so that the many other targets of the ``make`` files are not needed, and a single command (or script) avoids maintaining two files in two syntaxes. None of these fixes was applied.
+
+Follow-up: options b and c applied
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The author chose to combine b and c: the ``make`` files are updated according to b (the author wants to build the PDF version of the docs from time to time), but the procedure that is *documented* is c. This follow-up supersedes steps 2 and 3 of the above procedure.
+
+Changes:
+
+- ``scripts/empty_docs.py`` (new): empties ``docs/``, except ``docs/.nojekyll``. The ``docs/`` directory is located relative to the script (at the root of the project), not relative to the current directory, so that the script cannot empty another directory by mistake.
+- ``sphinx/Makefile`` and ``sphinx/make.bat`` were replaced by the files generated by the current ``sphinx-quickstart`` (Sphinx 9.1, "make mode": all targets are forwarded to ``sphinx-build -M``), with one additional target, ``ghpages``, which runs ``scripts/empty_docs.py``, then builds the HTML docs from scratch into ``../docs``. This fixes the inconsistency between both files, as well as the ``HashTri`` leftovers. Note the change of behavior: ``make.bat html`` now builds into ``sphinx/_build/html``, like ``make html``; it no longer writes into ``docs/``. ``make.bat`` was saved with CRLF line endings (git stores it with LF, as before).
+- ``sphinx/installation.rst``: new section *Build the documentation*, which documents the two commands of option c (run from the root of the project)::
+
+    python scripts/empty_docs.py
+    python -m sphinx -b html -E -d sphinx/_build/doctrees sphinx docs
+
+  followed by the commit and push of ``docs/``. The ``make`` files are not mentioned.
+- ``CLAUDE.md``: the note on ``docs/`` in *Repository layout notes* now gives the same commands (and mentions the ``ghpages`` target), and says that ``docs/`` should only be regenerated on request, since it is the published site.
+
+Tests (all performed on a copy of ``sphinx/``, ``scripts/`` and ``docs/`` in a temporary directory; the actual ``docs/`` directory was not modified):
+
+- The documented commands (option c): ``docs/`` is emptied, ``.nojekyll`` is kept, the obsolete files (``jquery*.js``, ``underscore*.js``) are removed, and the build succeeds (2 warnings, related to ``janus.fft.parallel``).
+- ``make.bat`` (help, including the description of the ``ghpages`` target), ``make.bat ghpages`` (same result as the documented commands) and ``make.bat html`` (builds into ``_build/html``) work as expected.
+- ``sphinx/Makefile`` was not tested: ``make`` is not available on this machine.
+- ``make.bat latexpdf`` (TeX Live 2026 is installed on this machine) **fails**, for a reason unrelated to the ``make`` files: with the default LaTeX engine (``pdflatex``), and the ``latex_elements`` of ``sphinx/conf.py`` (which empty ``inputenc`` and ``fontenc``), LaTeX stops on a Unicode character (``δ``, U+03B4). With ``-D latex_engine=xelatex``, the PDF is produced, but ``latexmk`` then fails on the index, because Sphinx uses ``xindy`` with ``xelatex``, and ``xindy`` fails on this machine. With ``-D latex_engine=xelatex -D latex_use_xindy=0`` (``makeindex`` is then used), the build succeeds: ``sphinx/_build/latex/janus.pdf``, 66 pages, no missing character. ``sphinx/conf.py`` was not modified (see suggestions).
+- Note that ``make.bat`` returns exit code 0 even when the build fails (this is also the case of the template generated by ``sphinx-quickstart``): the output must be read.
+
+Follow-up: PDF settings added to ``conf.py``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+At the author's request, ``latex_engine = 'xelatex'`` and ``latex_use_xindy = False`` (with a comment explaining the latter) were added to ``sphinx/conf.py``, just before ``latex_elements``, which was left unchanged. On a copy of ``sphinx/`` in a temporary directory, ``make.bat latexpdf`` (without any ``-D`` option) now succeeds: ``_build/latex/janus.pdf``, 66 pages, no missing character. The HTML build is unaffected (2 warnings, related to ``janus.fft.parallel``).
+
+Follow-up: ``latex_elements`` removed from ``conf.py``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+At the author's request, the ``latex_elements`` overrides were reviewed. The dictionary set ``preamble``, ``inputenc``, ``fontenc`` and ``utf8extra`` to empty strings. The last one was added in 2016 (commit ``18071f2``, *Remove* ``\DeclareUnicodeCharacter``), before Sphinx offered the ``latex_engine`` option (Sphinx 1.5): these overrides most likely allowed the generated ``.tex`` file to be compiled with ``xelatex`` by hand, by removing the ``pdflatex``-specific parts of the preamble.
+
+Now that ``latex_engine = 'xelatex'`` is set, Sphinx adapts these entries itself, and the overrides are either redundant or counterproductive:
+
+- ``preamble`` and ``inputenc``: the defaults are already empty strings (with ``xelatex``, for the latter);
+- ``fontenc``: with ``xelatex``, the default loads ``fontspec`` explicitly (``\usepackage{fontspec}`` and ``\defaultfontfeatures…``); the override removed these lines (``fontspec`` was still loaded indirectly, by ``polyglossia``);
+- ``utf8extra``: with ``xelatex``, the default makes the non-breaking space (U+00A0) behave as ``~``; the override removed this.
+
+The whole ``latex_elements`` dictionary was therefore removed from ``sphinx/conf.py``. On a copy of ``sphinx/`` in a temporary directory, ``make.bat latexpdf`` succeeds: 66 pages, no missing character. The only differences in the preamble of the generated ``janus.tex`` are the three lines listed above (``fontspec``, ``\defaultfontfeatures`` and non-breaking space), which are now present.
+
+Suggestions
+-----------
+
+- *Applied (options b and c), see above.* Make ``sphinx/Makefile`` consistent with ``sphinx/make.bat`` (build into ``../docs``), or replace both by a single documented command.
+- *Applied, see above.* Add the ``sphinx.ext.githubpages`` extension to ``sphinx/conf.py``: it creates ``.nojekyll`` in the output directory automatically, so that ``docs/`` can be emptied without special care.
+- In the longer term, a GitHub Actions workflow could build the docs on each push and deploy them to GitHub Pages. The generated HTML files would then no longer be versioned, and building under Linux (with MPI) would include the API of ``janus.fft.parallel``. This requires compiling `Janus` in the workflow.
+- *Applied, see above.* Replace the absolute local path in the report of *Installation on a windows machine* by a generic one (``C:\path\to\miniconda3\…``) before publishing.
+- *Applied, see above.* To build the PDF version of the docs, add ``latex_engine = 'xelatex'`` and ``latex_use_xindy = False`` to ``sphinx/conf.py`` (tested with TeX Live 2026, see above). The ``latex_elements`` overrides (empty ``inputenc``, ``fontenc`` and ``utf8extra``) could then be reviewed: they seem to date from an earlier attempt at supporting Unicode characters.
+
+
+2026-09-11 • Automatic creation of environments
+===============================================
+
+Following your suggestion, add an ``environment.yml`` file, to create the `conda` environment in one command.
+
+This environment should also include the packages that are required to compile the Sphinx docs.
+
+Claude's report
+---------------
+
+Claude created the file ``environment.yml`` at the root of the project. It defines the ``janus`` environment (channel ``defaults``, as the existing environment), with the following packages: ``python=3.14``, ``pip``, ``setuptools``, ``cython``, ``fftw`` (build), ``numpy`` (run), ``pytest`` (tests) and ``sphinx`` (documentation). The environment is created with::
+
+  conda env create -f environment.yml
+  conda activate janus
+
+and an existing environment is synchronized with the file with::
+
+  conda env update -n janus -f environment.yml
+
+Only the Python version is pinned; the other packages take the latest version available in the channel.
+
+The documentation only requires ``sphinx``: all extensions listed in ``sphinx/conf.py`` are bundled with Sphinx (including ``sphinx.ext.napoleon``), the default theme (``alabaster``) is installed as a dependency of Sphinx, and the tutorials only include static figures and source files (``literalinclude``), which are not executed. Note however that ``autodoc`` imports `Janus`, which must therefore be compiled and installed first.
+
+`Janus` itself is not installed by ``environment.yml``: the build requires ``setup.cfg`` and the ``--no-build-isolation`` flag, neither of which can be expressed in the ``pip`` section of an environment file. The comments at the top of the file recall the remaining steps, and warn against adding ``mpi4py`` on Windows.
+
+The file was checked as follows.
+
+- ``conda env create -f environment.yml -n janus-envcheck --dry-run``: the environment resolves (Sphinx 9.1.0).
+- ``conda env update -n janus -f environment.yml``: this added Sphinx to the existing ``janus`` environment, and upgraded ``cython`` (3.2.5 → 3.2.9) and ``fftw`` (3.3.10 → 3.3.11). The serial tests still pass (3043 passed, 111 skipped).
+- ``python -m sphinx -b html -E sphinx <temporary directory>``: the build succeeds, with 3 warnings. The ``_static`` directory listed in ``html_static_path`` does not exist (1 warning), and ``janus.fft.parallel`` cannot be imported by ``autodoc``, since the parallel extension is not built (2 warnings). The documentation of this module is therefore missing from the API page. The ``docs/`` directory was not modified.
+
+Follow-up: first two suggestions applied
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+At the author's request, the first two suggestions below were applied.
+
+- ``sphinx/requirements.txt`` was deleted. In ``sphinx/conf.py``, the test on ``sphinx.__version__`` was removed, and ``sphinx.ext.napoleon`` was added directly to the list of ``extensions``.
+- ``html_static_path`` was removed from ``sphinx/conf.py``, rather than creating an empty ``sphinx/_static`` directory (an empty directory cannot be tracked by git; besides, ``_static`` is listed in ``sphinx/.gitignore``).
+
+The documentation was built again: the build succeeds, with 2 warnings (both related to ``janus.fft.parallel``, see above). The docstrings are still processed by ``napoleon`` (the *Parameters* and *Returns* sections are rendered in the API page).
+
+Follow-up: proposed text for ``sphinx/installation.rst``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following sub-section is proposed as a replacement for the current *Compilation with Anaconda and Visual Studio* sub-section of ``sphinx/installation.rst``. It has not been applied. It summarizes the procedure of the task *Installation on a windows machine*, which was only tested under Windows (hence its location in the Windows section)::
+
+  Compilation with Miniconda and Visual Studio (recommended)
+  ----------------------------------------------------------
+
+  This procedure was tested with Miniconda, Python 3.14 and Visual Studio Build Tools 2026.
+
+  1. Install the `Visual Studio Build Tools`_, with the *Desktop development with C++* workload. The compiler is located automatically by ``setuptools``: there is no need to use a *Developer Command Prompt*.
+
+  2. From the root of the project, create and activate the ``janus`` environment. It provides all the dependencies of Janus (including FFTW), as well as the packages that are required to run the tests and build the documentation::
+
+       conda env create -f environment.yml
+       conda activate janus
+
+     To synchronize an existing environment with ``environment.yml``, use ``conda env update -n janus -f environment.yml`` instead.
+
+  3. Create the ``setup.cfg`` file. FFTW is installed in the ``Library`` subdirectory of the environment, whose path is printed by ``echo %CONDA_PREFIX%``. Environment variables are not expanded in ``setup.cfg``: this path must be written in full::
+
+       [fftw]
+       include_dirs = C:\path\to\miniconda3\envs\janus\Library\include
+       library_dirs = C:\path\to\miniconda3\envs\janus\Library\lib
+       libraries = fftw3
+
+     Note that, unlike the precompiled binaries downloaded from fftw.org, the library provided by conda is called ``fftw3`` (without the ``lib`` prefix).
+
+  4. Install Janus in development (editable) mode::
+
+       pip install --no-build-isolation -e .
+
+     The ``--no-build-isolation`` flag ensures that the versions of Cython and setuptools installed in the environment are used for the build (otherwise, pip downloads the latest versions from PyPI).
+
+     After modifying a ``*.pyx`` or ``*.pxd`` file, recompile the extension modules in place with ``python setup.py build_ext --inplace``.
+
+  .. warning:: Do not install ``mpi4py`` in this environment: ``setup.py`` would then try to build the parallel version of Janus, which is not tested under Windows, and requires ``mpicc``.
+
+  .. _Visual Studio Build Tools: https://visualstudio.microsoft.com/visual-cpp-build-tools/
+
+If this text is adopted, the note on the ``lib`` prefix in ``CLAUDE.md`` should be updated accordingly.
+
+Follow-up: proposed text applied, ``CLAUDE.md`` corrected
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The author approved the above text, which now replaces the *Compilation with Anaconda and Visual Studio* sub-section of ``sphinx/installation.rst``.
+
+The *Build* section of ``CLAUDE.md`` was corrected as follows.
+
+- The FFTW library name on Windows depends on where FFTW comes from: ``fftw3`` with `conda`'s ``fftw`` package (recommended), ``libfftw3-3`` with the precompiled DLLs from fftw.org. ``CLAUDE.md`` previously stated that the ``lib`` prefix must always be kept.
+- ``environment.yml`` and the editable install (``pip install --no-build-isolation -e .``) are mentioned, instead of ``python setup.py install --user``.
+- ``python setup.py clean`` does not remove the compiled files any more (commit ``40eee5e``): ``git clean -Xfd janus/`` is mentioned instead.
+- If ``mpi4py`` is installed but ``mpicc`` cannot be found, the build most likely fails (``CLAUDE.md`` stated that the parallel extension was then silently skipped).
+
+The documentation was built again, without new warnings.
+
+Note that the introduction of the Windows section of ``sphinx/installation.rst`` still reads "You must first download and install the precompiled binaries of FFTW for Windows". This is not required by the new (recommended) procedure, where FFTW is provided by `conda`. At the author's request, this sentence was removed, together with the ``setup.cfg`` example and the note on the ``lib`` prefix that it introduced (and the now unused link to the precompiled binaries). The Windows section now only covers the `conda` procedure (and the unfinished MinGW/MSYS procedure).
+
+Suggestions
+-----------
+
+- *Applied, see above.* ``sphinx/requirements.txt`` only lists ``sphinxcontrib-napoleon``, which has been bundled with Sphinx (as ``sphinx.ext.napoleon``) since version 1.3. This file, as well as the corresponding test on ``sphinx.__version__`` in ``sphinx/conf.py``, could be removed.
+- *Applied, see above.* Remove ``html_static_path`` from ``sphinx/conf.py`` (or create the ``sphinx/_static`` directory) to get rid of the corresponding warning.
+- *Applied, see above.* Once the installation procedure is stabilized, mention ``environment.yml`` in ``sphinx/installation.rst``.
+
+
+2026-09-11 • Installation on a windows machine (`Miniconda` environment)
+========================================================================
+
+Following the update of the installation procedure, I am not sure how to install `Janus` on a windows machine. Use the `conda` environment `janus` to install the local version of `janus` in development mode. Add all required packages. Write down the procedure in your report. In particular, identify the fragile steps of the procedure (if any).
+
+Claude's report
+---------------
+
+What was done
+~~~~~~~~~~~~~
+
+`Janus` was already installed in the `janus` environment, in editable mode. To check the procedure from scratch, Claude uninstalled it (``pip uninstall janus``), removed all build artifacts (``git clean -Xfd janus/``, plus the ``build/`` and ``Janus.egg-info/`` directories at the root), then reinstalled it with the procedure below. The build succeeded, and the serial tests pass (3043 passed, 111 skipped; all skipped tests are 3D, fourth-rank cubic tensors, which are not implemented yet).
+
+No package had to be added: the environment already contained everything required (``python`` 3.14, ``cython``, ``setuptools``, ``pip``, ``numpy``, ``fftw``, ``pytest``, all from the ``pkgs/main`` channel). The parallel version was not installed (``mpi4py`` is absent, see below).
+
+Procedure
+~~~~~~~~~
+
+1. Install the Microsoft C/C++ compiler: *Visual Studio Build Tools*, with the *Desktop development with C++* workload. It is not provided by `conda`, but `setuptools` locates it automatically (no need for a *Developer Command Prompt*). *Visual Studio Build Tools 2026* was used here.
+
+2. Create and activate the environment (the creation command was checked with ``conda create --dry-run``)::
+
+     conda create -n janus python=3.14 cython fftw numpy pytest setuptools pip
+     conda activate janus
+
+3. Create the ``setup.cfg`` file at the root of the project. FFTW is provided by `conda`, in ``%CONDA_PREFIX%\Library``. Environment variables are not expanded in ``setup.cfg``, so the absolute path must be written in full (``echo %CONDA_PREFIX%`` prints it). Note that the library name is ``fftw3`` (the `conda` package provides ``fftw3.lib`` and ``fftw3.dll``)::
+
+     [fftw]
+     include_dirs = C:\path\to\miniconda3\envs\janus\Library\include
+     library_dirs = C:\path\to\miniconda3\envs\janus\Library\lib
+     libraries = fftw3
+
+4. Install `Janus` in development (editable) mode, from the root of the project::
+
+     pip install --no-build-isolation -e .
+
+   The extension modules (``*.pyd``) are compiled in place, next to the ``*.pyx`` sources. Changes to the ``*.py`` files are picked up immediately.
+
+5. Run the tests::
+
+     python -m pytest tests
+
+6. After editing a ``*.pyx`` or ``*.pxd`` file, recompile the modified extensions in place (only the modified modules are recompiled)::
+
+     python setup.py build_ext --inplace
+
+   Re-running ``pip install --no-build-isolation -e .`` also works.
+
+Fragile steps
+~~~~~~~~~~~~~
+
+- **The** ``setup.cfg`` **file.** It is git-ignored, written by hand, and contains absolute paths that depend on the machine and on the name of the environment. It must be rewritten on each new machine, or if the environment is renamed.
+- **The FFTW library name.** With the `conda` package, the library name is ``fftw3``. The Windows section of ``sphinx/installation.rst`` (and ``CLAUDE.md``) state that the ``lib`` prefix must be kept (``libfftw3-3``): this is true only for the precompiled DLLs downloaded from fftw.org.
+- **Build isolation.** Plain ``pip install -e .`` also works, but pip then downloads the latest `setuptools` and `Cython` from PyPI (84.0.0 and 3.3.0 at the time of writing), instead of using the versions installed by `conda` (83.0.0 and 3.2.5). This requires network access, and the versions used for the build are not pinned. Hence the ``--no-build-isolation`` flag.
+- **mpi4py.** It must *not* be installed in the environment. ``setup.py`` tries to build the parallel extension as soon as ``mpi4py`` can be imported, and only catches ``ImportError``. On Windows, there is usually no ``mpicc``, and the build would most likely fail. This was inferred from reading ``setup.py``, not tested.
+- **distutils.** ``setup.py`` imports ``distutils``, which was removed from the standard library in Python 3.12. It currently works only because `setuptools` provides a replacement ``distutils`` module; a future version of `setuptools` might drop it. ``setup.py`` also raises a ``SyntaxWarning`` (invalid escape sequence ``"\S"``, line 86).
+- **The** ``packages`` **list in** ``setup.py``. It omits ``janus.material``, ``janus.material.elastic`` and ``janus.material.elastic.linear``, and `setuptools` issues several "Package would be ignored" warnings. This is harmless for an editable install (the whole ``janus/`` directory is mapped), but a regular (non-editable) install would probably lack these subpackages. Not tested.
+- **Stale compiled files.** The ``*.c`` and ``*.pyd`` files live in the source tree. They must be rebuilt after editing ``*.pyx``/``*.pxd`` files, or after upgrading Python. ``python setup.py clean`` does not remove them; use ``git clean -Xfd janus/``.
+
+Some points turned out *not* to be fragile. The FFTW DLL (``fftw3.dll``) is found at import time even when the environment is not activated (checked with ``conda`` directories removed from ``PATH``): `conda`'s Python adds ``Library\bin`` to the DLL search path. The compiler emits many ``C4244`` warnings (conversions from ``Py_ssize_t``/``ptrdiff_t`` to ``int``), which do not prevent the build.
+
+Suggestions
+-----------
+
+- Update the Windows section of ``sphinx/installation.rst`` with the above procedure, and fix the note on the ``lib`` prefix in ``CLAUDE.md``.
+- Add an ``environment.yml`` file, to create the environment in one command.
+- In ``setup.py``, replace the ``distutils`` imports with their `setuptools` counterparts, fix the ``"\S"`` escape sequence (raw string), complete the ``packages`` list, and make the build of the parallel extension skip gracefully when ``mpicc`` cannot be found.
+- In ``setup.py``, default the FFTW paths to ``sys.prefix\Library`` when running in a `conda` environment on Windows, so that ``setup.cfg`` becomes optional.
+
+2026-09-11 • How to update this page
+====================================
+
+@Claude: this paragraph describe how we are to interact for the development of `Janus`. Take note of these instructions so that I don't have to repeat myself at each new session.
+
+Each time you are invoked in a console, you will read the present file and find the paragraphs that are marked `TODO`.
+
+These are your instructions for the current session: each paragraph is an elementary task. As far as possible, each task will be given its own section with a short, unique title.
+
+After completion of a task, report on what you did in a sub-paragraph called `Claude's report` of the `claude.rst` file.
+
+Once I have validated your changes, I will ask you to mark the task as done. This means you will replace the `TODO` flag with the date in yyyy-mm-dd format. You will then move to the next task. For tasks that cannot be completed in one session, use an `IN PROGRESS` flag, so that the state of the task is visible in the present file.
+
+Unless otherwise stated, you will never commit your changes.
+
+Before you mark the present task as done, you can collect in a sub-paragraph any suggestions that might improve our interactions.
+
+For these instructions to apply on any machine, add the following pointer in `CLAUDE.md`
+
+  at session start, read `sphinx/claude.rst` and process the `TODO` sections according to the `How to update this page` section
+
+
+Claude's report
+---------------
+
+The pointer above was added to `CLAUDE.md`, in a new `Session workflow` section at the top of the file. Since `CLAUDE.md` is loaded at the start of every session, the present file is now the single source of truth for our workflow, on any machine.
+
+The copy of these instructions that had been saved in Claude Code's local memory (under `~/.claude/projects/`, on the author's machine only) was deleted: it duplicated the present file and was already out of date (it did not require the author's validation before marking a task as done).
+
+The author validated these changes on 2026-09-11, and the task was marked as done.
