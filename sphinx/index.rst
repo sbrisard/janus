@@ -12,6 +12,7 @@ User's guide
    fft_tutorial
    tutorials/square_basic/square_basic
    api
+   roadmap
    todo
    license
    mandel

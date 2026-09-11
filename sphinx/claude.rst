@@ -5,6 +5,69 @@ Claude's contributions to `Janus`
 As of august 2026, `Janus` is revived by the author with the help of `Claude Code`. This page will collect all interactions between the author and Claude.
 
 
+2026-09-11 • The road to v1.0
+=============================
+
+The goal of this task is to write a roadmap to v1.0 of `Janus`
+
+Context
+-------
+
+`Janus` was initially built to target both prototyping and large simulations.
+
+Large simulations has now become obsolete, because new developments in the community will soon offer excellent alternatives. So `Janus` should really evolve into a more flexible library, easily maintanable and extensible.
+
+The architecture should reduce as much friction as possible at installation and allow for rapid prototyping of new ideas. More precisely
+
+- implementation of new discretizations
+- implementation of new physics (e.g. Darcy, finite strain solid mechanics, etc.)
+
+should be possible without having to compile with Cython, which is not possible at the time being I think, even for experimental (sub-optimal) code.
+
+I have listed below a few evolutions I have in mind. Analyse each of them in terms of gains, losses, consequences on the code, implementations problems, …
+
+With the above context in mind, try to come up with supplementary evolutions that you think might improve the code's flexibility, and go through the same analysis for each of your suggestions. At this stage, breaking changes in the code would be allowed.
+
+Report briefly in this file, and write the detailed analysis in a new chapter of these docs (file called `roadmap.rst`); add the corresponding entry in the `index.rst` file.
+
+Possible evolutions
+-------------------
+
+Removal of the MPI dependency
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+`MPI` is no longer useful if we do not target large simulations.
+
+The gain would be considerable
+
+- installation
+- the structure of some objects: no need to encode the global shape and the local shape of an operator
+
+Interfacing with FFTW
+~~~~~~~~~~~~~~~~~~~~~
+
+At the time of creation of `Janus`, interfacing with `FFTW` was done “manually” through a hand-crafted `Cython` file. Nowedays, `pyFFTW` seems to be the *de facto* module (with presumably a robust installation procedure).
+
+Replacing `Cython` with other (dynamic) tools
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The compilation required by `Cython` adds some friction. I am under the impression that tools such as `Numba`, `JaX` are mature tools that could (partly) replace `Cython`. I am ready to pay a little price in terms of speed if it is justified by a significant gain in flexibility.
+
+Claude's report
+---------------
+
+Before starting, Claude asked four questions; the author answered that GPU execution and automatic differentiation are *nice to have*, that any dependency distributed as binary wheels is acceptable, that the analysis should not be backed by benchmarks, and that the roadmap should include ordered milestones.
+
+The detailed analysis is in the new chapter :doc:`roadmap` (file ``sphinx/roadmap.rst``, added to ``sphinx/index.rst`` after the API reference). It is based on a complete reading of the code base, and on the current state of the candidate dependencies on PyPI. In brief:
+
+- **Friction points.** Seven were identified. The most important one: all the methods that do the actual work are ``cdef`` methods, so that Python subclasses are *silently ignored* inside the library. For instance, a Python local operator used in a ``BlockDiagonalOperator2D`` leaves the output untouched; this was checked with the current build. The other ones: operators are scalar and stateful (one call per frequency, impossible to transpose to Python); everything is duplicated for 2D and 3D; the filtered discretization is hard-coded for elasticity; the data model is restricted (Mandel–Voigt vectors, ``float64``, real symbols); local and global shapes leak from MPI into the serial code; the build chain is fragile.
+- **Evolutions proposed by the author.** Remove MPI: yes, first (cheap, and it reduces the code to be ported). FFTW: rather than making pyFFTW a hard dependency, use ``scipy.fft`` by default, with pyFFTW as an optional accelerator through the ``scipy.fft`` backend mechanism. Cython: replace it entirely, first by a pure NumPy/SciPy implementation written in functional style, then by an optional JAX backend (fusion, GPU, automatic differentiation); Numba is not recommended as a foundation, because it does not solve the extensibility problem.
+- **Additional evolutions (E4 to E12).** Vectorized, stateless operators (the Green operator as a function of an array of wave-vectors); dimension-generic code; separation of discretizations (weighted modified wave-vectors) and physics; array API and functional interface; local operators as fields (phase maps, constitutive functions, autodiff tangents); generic tensor representations (vectors, full tensors for finite strain); thin solver adapters; pure Python packaging and continuous integration; testing strategy based on the reference data and on mathematical properties.
+- **Milestones.** 0.2 clean-up (MPI removal, continuous integration); 0.3 new core alongside the Cython code, validated against the reference data and benchmarked; 0.4 switch (Cython and FFTW removed, pure Python packaging); 0.5 extensibility (second physics in pure Python); 0.6 backends (JAX, autodiff, finite strain prototype); 1.0 stabilization.
+- **Decisions required from the author** are listed at the end of the chapter. In particular, the name ``janus`` is already taken on PyPI (by an unrelated package), so a distribution name must be chosen before publication.
+
+The speed estimates of the chapter are not backed by benchmarks, as agreed; a benchmark is part of milestone 0.3. No code was modified. The documentation builds without new warnings.
+
 2026-09-11 • Updating the online docs
 =====================================
 

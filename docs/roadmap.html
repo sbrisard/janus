@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Roadmap to v1.0 &#8212; Janus 0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=837179f8"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="TODO List" href="todo.html" />
+    <link rel="prev" title="API Reference" href="api.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="roadmap-to-v1-0">
+<span id="roadmap"></span><h1>Roadmap to v1.0<a class="headerlink" href="#roadmap-to-v1-0" title="Link to this heading">¶</a></h1>
+<p>This chapter was written by Claude at the request of the author (see <a class="reference internal" href="claude.html"><span class="doc">Claude’s contributions to Janus</span></a>, task <em>The road to v1.0</em>). It analyses the evolutions that would turn Janus into a flexible, easily maintainable and extensible library, and proposes an ordered sequence of releases leading to version 1.0. It is a working document: none of the evolutions described below has been implemented yet.</p>
+<section id="goals">
+<h2>Goals<a class="headerlink" href="#goals" title="Link to this heading">¶</a></h2>
+<p>Janus was initially designed for two purposes: rapid prototyping, and large (distributed) simulations. The second purpose is now obsolete, because new developments in the community will soon offer excellent alternatives. Janus should therefore focus on prototyping:</p>
+<ul class="simple">
+<li><p>installation should be as easy as possible (ideally <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span></code>, without compiler);</p></li>
+<li><p>new discretizations and new physics (conductivity, Darcy flow, finite strain solid mechanics…) should be implementable in pure Python, without compilation, even if the resulting code is sub-optimal;</p></li>
+<li><p>GPU execution and automatic differentiation are not required, but the architecture should not rule them out;</p></li>
+<li><p>any dependency that is distributed as binary wheels is acceptable;</p></li>
+<li><p>breaking changes are allowed.</p></li>
+</ul>
+<p>The speed estimates given below are <em>not</em> backed by benchmarks (at the author’s request, the analysis relies on the code and on the known properties of the tools); benchmarks are part of the proposed milestones.</p>
+</section>
+<section id="where-does-the-friction-come-from">
+<h2>Where does the friction come from?<a class="headerlink" href="#where-does-the-friction-come-from" title="Link to this heading">¶</a></h2>
+<p>The following observations are based on a complete reading of the current code base (about 2300 lines of Cython, in <code class="docutils literal notranslate"><span class="pre">janus/operators.pyx</span></code>, <code class="docutils literal notranslate"><span class="pre">janus/green.pyx</span></code>, <code class="docutils literal notranslate"><span class="pre">janus/material/elastic/linear/isotropic.pyx</span></code> and <code class="docutils literal notranslate"><span class="pre">janus/fft/</span></code>).</p>
+<ol class="arabic simple">
+<li><p><strong>Extensions must be written in Cython.</strong> All the methods that do the actual work (<code class="docutils literal notranslate"><span class="pre">c_apply</span></code>, <code class="docutils literal notranslate"><span class="pre">c_set_frequency</span></code>, <code class="docutils literal notranslate"><span class="pre">c_apply_by_freq</span></code>, <code class="docutils literal notranslate"><span class="pre">c_to_memoryview</span></code>) are <code class="docutils literal notranslate"><span class="pre">cdef</span></code> methods, which cannot be overridden in Python. The docstrings of <code class="docutils literal notranslate"><span class="pre">init_sizes</span></code> and <code class="docutils literal notranslate"><span class="pre">init_shapes</span></code> suggest that pure Python subclasses are supported, but this only holds for direct calls to <code class="docutils literal notranslate"><span class="pre">apply</span></code>. Inside the library, the Cython methods are called, and Python overrides are <em>silently ignored</em>. For example, a Python subclass of <a class="reference internal" href="operators.html#janus.operators.AbstractOperator" title="janus.operators.AbstractOperator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractOperator</span></code></a> which doubles its input returns the expected result when called directly, but when used as a local operator of a <a class="reference internal" href="operators.html#janus.operators.BlockDiagonalOperator2D" title="janus.operators.BlockDiagonalOperator2D"><code class="xref py py-class docutils literal notranslate"><span class="pre">BlockDiagonalOperator2D</span></code></a>, the output array is left untouched (the no-op <code class="docutils literal notranslate"><span class="pre">AbstractOperator.c_apply</span></code> is called instead); this was checked with the current build. Likewise, a continuum Green operator (for new physics) must be a Cython subclass of <code class="docutils literal notranslate"><span class="pre">AbstractGreenOperator</span></code>.</p></li>
+<li><p><strong>Operators are scalar and stateful.</strong> A continuum Green operator is evaluated one wave-vector at a time (<code class="docutils literal notranslate"><span class="pre">set_frequency(k)</span></code>, then <code class="docutils literal notranslate"><span class="pre">apply(tau,</span> <span class="pre">eta)</span></code>), and discrete Green operators loop over all frequencies in Cython. This design is efficient in Cython, but it cannot be transposed to Python: a Python implementation would require one Python call per frequency (e.g. 8 million calls for a 256³ grid). Any Python-level extension mechanism requires operators that act on <em>whole arrays</em> of wave-vectors or cells at once.</p></li>
+<li><p><strong>Everything is duplicated for 2D and 3D.</strong> Almost every class exists in two versions (<code class="docutils literal notranslate"><span class="pre">AbstractStructuredOperator2D/3D</span></code>, <code class="docutils literal notranslate"><span class="pre">BlockDiagonalOperator2D/3D</span></code>, <code class="docutils literal notranslate"><span class="pre">TruncatedGreenOperator2D/3D</span></code>, <code class="docutils literal notranslate"><span class="pre">FilteredGreenOperator2D/3D</span></code>, <code class="docutils literal notranslate"><span class="pre">FiniteDifferences2D/3D</span></code>, <code class="docutils literal notranslate"><span class="pre">_RealFFT2D/3D</span></code>, <code class="docutils literal notranslate"><span class="pre">_GreenOperatorForStrains2D/3D</span></code>, <code class="docutils literal notranslate"><span class="pre">FourthRankIsotropicTensor2D/3D</span></code>…), and the 3D versions of some operators are missing (<code class="docutils literal notranslate"><span class="pre">FourthRankCubicTensor3D</span></code>).</p></li>
+<li><p><strong>Discretizations are tied to the physics.</strong> The filtered Green operators hard-code symmetric 3×3 (2D) and 6×6 (3D) matrices, i.e. strain-based elasticity; their code is generated by <code class="docutils literal notranslate"><span class="pre">scripts/gencode.py</span></code>. The filtered discretization cannot be reused for, say, conductivity (2×2 or 3×3 matrices).</p></li>
+<li><p><strong>The data model is restricted.</strong> Local data are vectors of fixed size, symmetric tensors are stored in Mandel–Voigt form, only <code class="docutils literal notranslate"><span class="pre">float64</span></code> is supported, and complex Fourier coefficients are stored as interleaved real numbers, the Green operator being applied separately to the real and imaginary parts (which assumes a <em>real</em> Fourier symbol). Finite strain mechanics requires non-symmetric second-rank tensors (9 components in 3D), and some discretizations have complex symbols.</p></li>
+<li><p><strong>Distributed memory leaks into the serial code.</strong> Discrete Green operators and FFT objects distinguish local and global shapes (<code class="docutils literal notranslate"><span class="pre">offset0</span></code>, <code class="docutils literal notranslate"><span class="pre">global_shape0</span></code>, <code class="docutils literal notranslate"><span class="pre">global_ishape</span></code>…), although only the serial version is used in practice.</p></li>
+<li><p><strong>The build chain is fragile.</strong> Compilation requires a C compiler, a hand-written <code class="docutils literal notranslate"><span class="pre">setup.cfg</span></code> with machine-specific paths to FFTW, and a <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> that relies on <code class="docutils literal notranslate"><span class="pre">distutils</span></code> (see <a class="reference internal" href="installation.html"><span class="doc">Installation</span></a> and the task <em>Installation on a windows machine</em> in <a class="reference internal" href="claude.html"><span class="doc">Claude’s contributions to Janus</span></a>).</p></li>
+</ol>
+<p>Minor issues found along the way illustrate the maintenance burden of the current code: <code class="docutils literal notranslate"><span class="pre">TruncatedGreenOperator3D.c_apply</span></code> calls the Python-level <code class="docutils literal notranslate"><span class="pre">set_frequency</span></code> (with argument checks) in its innermost loop, whereas the 2D version calls <code class="docutils literal notranslate"><span class="pre">c_set_frequency</span></code>; some variables in <code class="docutils literal notranslate"><span class="pre">FiniteDifferences3D.c_set_frequency</span></code> are untyped (hence Python objects); the error messages of <code class="docutils literal notranslate"><span class="pre">_RealFFT3D</span></code> report wrong shapes (<code class="docutils literal notranslate"><span class="pre">TODO</span></code> in the code).</p>
+</section>
+<section id="analysis-of-the-proposed-evolutions">
+<h2>Analysis of the proposed evolutions<a class="headerlink" href="#analysis-of-the-proposed-evolutions" title="Link to this heading">¶</a></h2>
+<p>Each evolution is analysed in terms of gains, losses, consequences on the code and implementation problems, and ends with a recommendation. Evolutions E1 to E3 were proposed by the author; E4 to E12 are additional suggestions.</p>
+<section id="e1-removal-of-the-mpi-dependency">
+<h3>E1. Removal of the MPI dependency<a class="headerlink" href="#e1-removal-of-the-mpi-dependency" title="Link to this heading">¶</a></h3>
+<p><strong>Gains.</strong></p>
+<ul class="simple">
+<li><p>Installation: no <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code>, no MPI-enabled FFTW, no parsing of <code class="docutils literal notranslate"><span class="pre">mpicc</span> <span class="pre">-show</span></code> in <code class="docutils literal notranslate"><span class="pre">setup.py</span></code>. This also removes a fragile step on Windows (<code class="docutils literal notranslate"><span class="pre">setup.py</span></code> fails if <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> is installed but <code class="docutils literal notranslate"><span class="pre">mpicc</span></code> is missing).</p></li>
+<li><p>Code: the distinction between local and global shapes disappears from the FFT objects and the discrete Green operators (<code class="docutils literal notranslate"><span class="pre">offset0</span></code>, <code class="docutils literal notranslate"><span class="pre">global_shape0</span></code>, <code class="docutils literal notranslate"><span class="pre">global_ishape</span></code>, <code class="docutils literal notranslate"><span class="pre">global_oshape</span></code>, <code class="docutils literal notranslate"><span class="pre">n0_loc</span></code>). <code class="docutils literal notranslate"><span class="pre">janus/fft/parallel/</span></code> (about 110 lines), <code class="docutils literal notranslate"><span class="pre">tests/parallel/</span></code>, <code class="docutils literal notranslate"><span class="pre">sphinx/parallel_fft_tutorial.py</span></code> and the <code class="docutils literal notranslate"><span class="pre">[fftw_mpi]</span></code> configuration can be deleted.</p></li>
+<li><p>Documentation: the API of <code class="docutils literal notranslate"><span class="pre">janus.fft.parallel</span></code> is currently missing from the documentation built on Windows; this problem disappears.</p></li>
+</ul>
+<p><strong>Losses.</strong> Distributed-memory simulations are no longer possible, which is consistent with the new goals. Shared-memory parallelism remains available (multithreaded FFTs, Numba <code class="docutils literal notranslate"><span class="pre">prange</span></code>, JAX on GPU): 3D grids of 256³ to 512³ cells remain within reach of a workstation (a single 512³ field of symmetric tensors, 6 components in double precision, requires 6.4 GB).</p>
+<p><strong>Consequences on the code.</strong> Breaking change for users of <code class="docutils literal notranslate"><span class="pre">janus.fft.parallel</span></code> (presumably few). The constructors of the discrete Green operators are simplified.</p>
+<p><strong>Implementation problems.</strong> None: this is mostly code deletion. If distributed computing were needed again, it could be reintroduced at the level of the FFT backend (e.g. <code class="docutils literal notranslate"><span class="pre">mpi4py-fft</span></code>, or JAX sharding) without affecting the rest of the architecture, provided that the FFT is kept behind a small interface (see E2).</p>
+<p><strong>Recommendation.</strong> Do it first (milestone 0.2): it is cheap, and it reduces the amount of code to be ported by the other evolutions.</p>
+</section>
+<section id="e2-interfacing-with-fftw">
+<h3>E2. Interfacing with FFTW<a class="headerlink" href="#e2-interfacing-with-fftw" title="Link to this heading">¶</a></h3>
+<p>The hand-written wrapper (<code class="docutils literal notranslate"><span class="pre">janus/fft/serial/</span></code>, about 370 lines of Cython) could be replaced by <a class="reference external" href="https://github.com/pyFFTW/pyFFTW">pyFFTW</a>. Another candidate should be considered: <code class="docutils literal notranslate"><span class="pre">scipy.fft</span></code>.</p>
+<p><strong>pyFFTW.</strong></p>
+<ul class="simple">
+<li><p>Gains: removes the Cython wrapper and, above all, the need to locate and link FFTW at build time (<code class="docutils literal notranslate"><span class="pre">setup.cfg</span></code>), which is the most fragile step of the current installation. pyFFTW is distributed as binary wheels (version 0.15.1 provides wheels for Python 3.14, including Windows), and exposes the planner flags, wisdom, multithreading and aligned arrays of FFTW.</p></li>
+<li><p>Losses: an additional compiled dependency, with a slow release cadence (the latest release, 0.15.1, dates from October 2025). FFTW is licensed under the GPL, which constrains the distribution of software that links it; note that Janus (BSD-3-Clause) is <em>already</em> in this situation.</p></li>
+</ul>
+<p><strong>scipy.fft.</strong></p>
+<ul class="simple">
+<li><p>Gains: no additional dependency (SciPy is needed anyway for iterative solvers), BSD license, real-to-complex transforms along arbitrary axes of an array (<code class="docutils literal notranslate"><span class="pre">rfftn(x,</span> <span class="pre">axes=...)</span></code>, hence directly applicable to fields of tensors), multithreading (<code class="docutils literal notranslate"><span class="pre">workers</span></code> argument), no planning step. Moreover, pyFFTW can be plugged in as a <em>backend</em> of <code class="docutils literal notranslate"><span class="pre">scipy.fft</span></code> (<code class="docutils literal notranslate"><span class="pre">scipy.fft.set_backend(pyfftw.interfaces.scipy_fft)</span></code>), without any change to the code that calls <code class="docutils literal notranslate"><span class="pre">scipy.fft</span></code>.</p></li>
+<li><p>Losses: typically somewhat slower than FFTW with <code class="docutils literal notranslate"><span class="pre">FFTW_MEASURE</span></code> (to be measured); no wisdom.</p></li>
+</ul>
+<p><strong>Consequences on the code.</strong> The FFT objects (<code class="docutils literal notranslate"><span class="pre">_RealFFT2D/3D</span></code>, with their explicit copies to and from an internal buffer) and the planner flags (<code class="docutils literal notranslate"><span class="pre">janus.fft.FFTW_*</span></code>) disappear. The current wrapper copies the data to and from an FFTW buffer at each call anyway, so no zero-copy optimization is lost. Complex Fourier coefficients become genuine complex arrays, instead of interleaved real arrays.</p>
+<p><strong>Implementation problems.</strong> The layout of the output of real-to-complex transforms (last axis of length <code class="docutils literal notranslate"><span class="pre">n//2</span> <span class="pre">+</span> <span class="pre">1</span></code>) and the handling of the Nyquist frequency for even grid sizes must be reproduced exactly, so that the new implementation matches the reference data in <code class="docutils literal notranslate"><span class="pre">tests/data</span></code>.</p>
+<p><strong>Recommendation.</strong> Use <code class="docutils literal notranslate"><span class="pre">scipy.fft</span></code> by default (through the array namespace, see E7), and document pyFFTW as an optional accelerator, via the <code class="docutils literal notranslate"><span class="pre">scipy.fft</span></code> backend mechanism. Do not make pyFFTW a hard dependency.</p>
+</section>
+<section id="e3-replacing-cython-with-other-dynamic-tools">
+<h3>E3. Replacing Cython with other (dynamic) tools<a class="headerlink" href="#e3-replacing-cython-with-other-dynamic-tools" title="Link to this heading">¶</a></h3>
+<p>Two kinds of loops are compiled in the current code: the frequency-wise application of the Green operator (a small dense matrix per frequency), and the cell-wise application of local operators. Both are “embarrassingly vectorizable”. Three options are considered.</p>
+<p><strong>Pure NumPy (vectorized array expressions).</strong></p>
+<ul class="simple">
+<li><p>Gains: no compilation at all, runs everywhere, easiest to read, write and debug; new physics can be prototyped in a few lines (see E4).</p></li>
+<li><p>Losses: array expressions create temporaries, and are limited by memory bandwidth. The order of magnitude of the cost should remain comparable to the current code, which itself is not optimal (memoryview slicing and virtual calls at each frequency), but this must be measured. Storing the Green operator for all frequencies is only affordable in 2D: in 3D, a 6×6 matrix per frequency of a 256³ grid requires 2.4 GB, so the operator must be applied on the fly (e.g. through a closed-form expression, or by blocks of frequencies).</p></li>
+</ul>
+<p><strong>Numba.</strong></p>
+<ul class="simple">
+<li><p>Gains: loops written in Python syntax and compiled at run time (<code class="docutils literal notranslate"><span class="pre">&#64;njit</span></code>, <code class="docutils literal notranslate"><span class="pre">parallel=True</span></code>, <code class="docutils literal notranslate"><span class="pre">cache=True</span></code>), with a performance similar to Cython, and no compilation at installation (Numba 0.67 provides wheels for Python 3.14, including Windows).</p></li>
+<li><p>Losses: only a subset of Python and NumPy is supported; polymorphism (user-defined physics passed to generic kernels) is awkward (jitted functions passed as arguments, experimental <code class="docutils literal notranslate"><span class="pre">jitclass</span></code>); compilation latency at the first call; harder debugging; no automatic differentiation; GPU support is limited to NVIDIA hardware, through a separate package.</p></li>
+</ul>
+<p><strong>JAX.</strong></p>
+<ul class="simple">
+<li><p>Gains: NumPy-like API (<code class="docutils literal notranslate"><span class="pre">jax.numpy</span></code>, including <code class="docutils literal notranslate"><span class="pre">jax.numpy.fft</span></code>); <code class="docutils literal notranslate"><span class="pre">jit</span></code> compiles and <em>fuses</em> array expressions (which removes the temporaries of the pure NumPy approach); <code class="docutils literal notranslate"><span class="pre">vmap</span></code> turns a function of one cell into a function of the whole grid; automatic differentiation (<code class="docutils literal notranslate"><span class="pre">grad</span></code>, <code class="docutils literal notranslate"><span class="pre">jacfwd</span></code>), which provides consistent tangent operators for nonlinear and finite strain constitutive laws; GPU execution; matrix-free solvers (<code class="docutils literal notranslate"><span class="pre">jax.scipy.sparse.linalg.cg</span></code>, <code class="docutils literal notranslate"><span class="pre">gmres</span></code>). jaxlib 0.11 provides wheels for Python 3.14, including Windows (CPU only; GPU support on Windows requires WSL2).</p></li>
+<li><p>Losses: arrays are immutable, so that the current in-place API (<code class="docutils literal notranslate"><span class="pre">apply(x,</span> <span class="pre">y)</span></code>, <code class="docutils literal notranslate"><span class="pre">apply(x,</span> <span class="pre">x)</span></code>) is not possible; single precision by default (double precision must be enabled explicitly); tracing constraints (static shapes, no Python control flow on array values inside jitted functions); compilation latency; a large dependency.</p></li>
+</ul>
+<p><strong>Consequences on the code.</strong> Whatever the tool, the per-frequency/per-cell design must be replaced by operations on whole arrays (E4). With Numba, the kernels would remain explicit loops, specific to each physics; with NumPy or JAX, the same array code serves both purposes.</p>
+<p><strong>Implementation problems.</strong> Porting about 2300 lines of Cython, most of which are duplicated or generated code, is less work than it seems: the dimension-generic, vectorized equivalent should be much shorter. The reference data in <code class="docutils literal notranslate"><span class="pre">tests/data</span></code> provide a regression oracle.</p>
+<p><strong>Recommendation.</strong> Replace Cython entirely, in two steps. First, write a pure NumPy/SciPy implementation, in <em>functional</em> style (no in-place updates), so that the same code can later run on JAX arrays (see E7). Second, add JAX as an optional backend, which brings speed (fusion), GPU and automatic differentiation. Numba is not recommended as the foundation of the architecture, because it does not solve the extensibility problem (user-defined physics would still have to be written as specialized kernels); it may be used locally, as an optional accelerator of the NumPy backend, if benchmarks show a bottleneck.</p>
+</section>
+<section id="e4-vectorized-stateless-operators">
+<h3>E4. Vectorized, stateless operators<a class="headerlink" href="#e4-vectorized-stateless-operators" title="Link to this heading">¶</a></h3>
+<p><strong>Proposal.</strong> A continuum Green operator becomes a function of an <em>array</em> of wave-vectors: <code class="docutils literal notranslate"><span class="pre">symbol(k)</span></code> maps an array of shape <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">dim)</span></code> to an array of shape <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">m,</span> <span class="pre">n)</span></code> (or applies directly to an array of Fourier coefficients, without forming the matrices). Local operators act on whole fields. There is no <code class="docutils literal notranslate"><span class="pre">set_frequency</span></code> state.</p>
+<p><strong>Gains.</strong> Pure Python extensions become possible and efficient (one call per field, not per frequency); the code is simpler and thread-safe; the same function can be evaluated at modified wave-vectors (E6). For example, the Green operator of isotropic conductivity (conductivity <code class="docutils literal notranslate"><span class="pre">k0</span></code>) is written as follows, without compilation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">green_symbol</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">k0</span><span class="p">):</span>
+    <span class="n">k2</span> <span class="o">=</span> <span class="p">(</span><span class="n">k</span> <span class="o">*</span> <span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n">kk</span> <span class="o">=</span> <span class="n">k</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">k</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">k2</span> <span class="o">&gt;</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">kk</span> <span class="o">/</span> <span class="p">(</span><span class="n">k0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">k2</span> <span class="o">&gt;</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">k2</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)),</span> <span class="mf">0.</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Losses.</strong> Memory: evaluating a symbol on all frequencies requires a temporary array of matrices (see E3), which calls for evaluation by blocks or for closed-form application (e.g. for isotropic elasticity, the image of a polarization can be computed from the normalized wave-vector and a few scalars, without forming the 6×6 matrix).</p>
+<p><strong>Consequences.</strong> Complete rewrite of <code class="docutils literal notranslate"><span class="pre">janus/green.pyx</span></code> and <code class="docutils literal notranslate"><span class="pre">janus/material/</span></code>. The API changes from <code class="docutils literal notranslate"><span class="pre">green.set_frequency(k);</span> <span class="pre">green.apply(tau)</span></code> to <code class="docutils literal notranslate"><span class="pre">green(k)</span> <span class="pre">&#64;</span> <span class="pre">tau</span></code> (or <code class="docutils literal notranslate"><span class="pre">green.apply(k,</span> <span class="pre">tau)</span></code>).</p>
+<p><strong>Implementation problems.</strong> Treatment of the zero frequency (the symbol is not defined at <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">=</span> <span class="pre">0</span></code>) and of the Nyquist frequencies must be explicit and documented.</p>
+<p><strong>Recommendation.</strong> Core of the new architecture (milestone 0.3).</p>
+</section>
+<section id="e5-dimension-generic-implementation">
+<h3>E5. Dimension-generic implementation<a class="headerlink" href="#e5-dimension-generic-implementation" title="Link to this heading">¶</a></h3>
+<p><strong>Proposal.</strong> A single implementation for 2D and 3D (and possibly 1D, useful for tests), based on the number of spatial axes of the arrays.</p>
+<p><strong>Gains.</strong> Roughly halves the code, and removes the risk of inconsistencies between the 2D and 3D versions (see the minor issues listed above); missing 3D variants (<code class="docutils literal notranslate"><span class="pre">FourthRankCubicTensor3D</span></code>) come for free when the underlying formula is dimension-independent.</p>
+<p><strong>Losses.</strong> Hand-unrolled 3×3/6×6 expressions are replaced by generic array operations, which are slightly slower in NumPy (not in JAX, where <code class="docutils literal notranslate"><span class="pre">jit</span></code> specializes the code for the actual shapes).</p>
+<p><strong>Consequences.</strong> Classes suffixed by <code class="docutils literal notranslate"><span class="pre">2D</span></code>/<code class="docutils literal notranslate"><span class="pre">3D</span></code> disappear from the API.</p>
+<p><strong>Recommendation.</strong> Adopt together with E4.</p>
+</section>
+<section id="e6-separation-of-discretization-and-physics">
+<h3>E6. Separation of discretization and physics<a class="headerlink" href="#e6-separation-of-discretization-and-physics" title="Link to this heading">¶</a></h3>
+<p><strong>Proposal.</strong> A discretization scheme is described independently of the physics, as a list of <em>weighted modified wave-vectors</em> associated with each discrete frequency; the discrete Green operator is then the weighted sum of the continuum symbol evaluated at these wave-vectors:</p>
+<ul class="simple">
+<li><p>truncated scheme: one term (the wave-vector of the discrete frequency itself, with weight 1);</p></li>
+<li><p>filtered scheme: 4 terms in 2D and 8 terms in 3D (neighbouring wave-vectors, with <code class="docutils literal notranslate"><span class="pre">cos²</span></code> weights), as currently implemented in <code class="docutils literal notranslate"><span class="pre">FilteredGreenOperator2D/3D</span></code>;</p></li>
+<li><p>finite differences (<code class="docutils literal notranslate"><span class="pre">willot2015</span></code>): one term, with a modified wave-vector.</p></li>
+</ul>
+<p><strong>Gains.</strong> Any scheme works with any physics (e.g. the filtered scheme for conductivity), and new schemes can be added in a few lines of Python; <code class="docutils literal notranslate"><span class="pre">scripts/gencode.py</span></code> becomes useless.</p>
+<p><strong>Losses.</strong> The filtered scheme evaluates the continuum symbol 4 or 8 times per frequency, instead of combining precomputed matrices; this is also the case in the current code, so there is no actual loss.</p>
+<p><strong>Consequences.</strong> New public concept (<code class="docutils literal notranslate"><span class="pre">Scheme</span></code>), and new signature of the discrete Green operators (continuum operator + scheme + grid).</p>
+<p><strong>Implementation problems.</strong> Some schemes involve complex modified wave-vectors (the current implementation of <code class="docutils literal notranslate"><span class="pre">willot2015</span></code> uses an equivalent real form); symbols should therefore accept complex wave-vectors and use conjugates where required (e.g. <code class="docutils literal notranslate"><span class="pre">k</span> <span class="pre">⊗</span> <span class="pre">conj(k)</span></code>). Schemes that are not of the “weighted sum” type (e.g. staggered grids) may require a more general interface; this should be kept in mind, but not designed for upfront.</p>
+<p><strong>Recommendation.</strong> Adopt in milestone 0.3, and validate it by reproducing the three existing schemes against the reference data.</p>
+</section>
+<section id="e7-array-api-and-functional-interface">
+<h3>E7. Array API and functional interface<a class="headerlink" href="#e7-array-api-and-functional-interface" title="Link to this heading">¶</a></h3>
+<p><strong>Proposal.</strong> Write the library against the <a class="reference external" href="https://data-apis.org/array-api/">Python array API standard</a> (via <code class="docutils literal notranslate"><span class="pre">array-api-compat</span></code>), in functional style: <code class="docutils literal notranslate"><span class="pre">y</span> <span class="pre">=</span> <span class="pre">op(x)</span></code> rather than <code class="docutils literal notranslate"><span class="pre">op.apply(x,</span> <span class="pre">y)</span></code>. NumPy (version 2 and later) and JAX both implement this standard, including its FFT extension.</p>
+<p><strong>Gains.</strong> The same code runs on NumPy (CPU, default), JAX (jit, GPU, autodiff), and possibly CuPy or PyTorch, which keeps the “GPU and autodiff” option open at low cost.</p>
+<p><strong>Losses.</strong> In-place operations and output arguments (<code class="docutils literal notranslate"><span class="pre">apply(x,</span> <span class="pre">y)</span></code>, <code class="docutils literal notranslate"><span class="pre">apply(x,</span> <span class="pre">x)</span></code>) disappear from the core API, which slightly increases memory allocations with NumPy (an optional <code class="docutils literal notranslate"><span class="pre">out</span></code> argument may be kept for the NumPy backend only). Only the functions of the standard can be used in the core (<code class="docutils literal notranslate"><span class="pre">np.einsum</span></code> is not part of it, for instance, although most libraries provide it).</p>
+<p><strong>Consequences.</strong> Breaking change for all operators (the documented in-place semantics, see <a class="reference internal" href="operators.html#in-place-operations"><span class="std std-ref">Performing in-place operations</span></a>, is dropped).</p>
+<p><strong>Implementation problems.</strong> Testing on several backends (at least NumPy and JAX) is required to guarantee compliance; double precision must be enabled explicitly with JAX.</p>
+<p><strong>Recommendation.</strong> Decide the functional interface as early as milestone 0.3, even if the JAX backend comes later (milestone 0.6): retrofitting it afterwards would require a second rewrite.</p>
+</section>
+<section id="e8-local-operators-as-fields">
+<h3>E8. Local operators as fields<a class="headerlink" href="#e8-local-operators-as-fields" title="Link to this heading">¶</a></h3>
+<p><strong>Proposal.</strong> Replace block-diagonal operators made of arrays of Python objects (<code class="docutils literal notranslate"><span class="pre">BlockDiagonalOperator2D</span></code> of <code class="docutils literal notranslate"><span class="pre">FourthRankIsotropicTensor</span></code>, as in the <a class="reference internal" href="tutorials/square_basic/square_basic.html"><span class="doc">tutorial</span></a>) with array-based descriptions of the microstructure: a phase map (array of integers) and the stiffness of each phase, or more generally a constitutive function of one cell, applied to the whole field (vectorized in NumPy, <code class="docutils literal notranslate"><span class="pre">vmap</span></code> in JAX).</p>
+<p><strong>Gains.</strong> Pure Python, vectorized, and extensible to nonlinear laws; with JAX, the tangent operator of a nonlinear law is obtained by automatic differentiation, which is exactly what Newton–Krylov solvers for finite strain require.</p>
+<p><strong>Losses.</strong> Arbitrary heterogeneous Python objects per cell are no longer supported (they were not usable from Python anyway, see the first friction point).</p>
+<p><strong>Consequences.</strong> Rewrite of <code class="docutils literal notranslate"><span class="pre">janus/operators.pyx</span></code>; the fourth-rank tensor classes become small functions returning arrays (Mandel–Voigt matrices).</p>
+<p><strong>Recommendation.</strong> Milestone 0.5 (phase maps and linear laws may be needed as early as 0.3, to port the tutorial).</p>
+</section>
+<section id="e9-generic-tensor-representations">
+<h3>E9. Generic tensor representations<a class="headerlink" href="#e9-generic-tensor-representations" title="Link to this heading">¶</a></h3>
+<p><strong>Proposal.</strong> Describe the local data of a field by a small object (vector of size <code class="docutils literal notranslate"><span class="pre">dim</span></code>, symmetric second-rank tensor in Mandel form, full second-rank tensor…), instead of assuming a vector of Mandel–Voigt components. The layout <code class="docutils literal notranslate"><span class="pre">(*grid_shape,</span> <span class="pre">*local_shape)</span></code> (grid axes first, local components last) should be kept: it is the current layout, and it is natural for NumPy broadcasting (<code class="docutils literal notranslate"><span class="pre">matmul</span></code> acts on the last two axes).</p>
+<p><strong>Gains.</strong> Conductivity and Darcy flow (vector fields), and finite strain (non-symmetric deformation gradients, 9 components in 3D) become possible. The Mandel form (<code class="docutils literal notranslate"><span class="pre">janus/mandelvoigt.py</span></code>) remains available for symmetric tensors; being orthonormal, it keeps transposes and scalar products simple.</p>
+<p><strong>Losses.</strong> Some added complexity in the API.</p>
+<p><strong>Recommendation.</strong> Milestone 0.5 (vectors), and 0.6 (full tensors, for the finite strain prototype).</p>
+</section>
+<section id="e10-solvers-and-interoperability">
+<h3>E10. Solvers and interoperability<a class="headerlink" href="#e10-solvers-and-interoperability" title="Link to this heading">¶</a></h3>
+<p><strong>Proposal.</strong> Janus does not provide solvers, on purpose. For prototyping, however, a thin layer would reduce friction: adapters to <code class="docutils literal notranslate"><span class="pre">scipy.sparse.linalg.LinearOperator</span></code> (flattened vectors) and to the JAX solvers, and reference implementations of the basic scheme of Moulinec &amp; Suquet and of a Newton–Krylov loop for nonlinear problems.</p>
+<p><strong>Gains.</strong> The tutorial becomes shorter; users compare schemes on a common basis.</p>
+<p><strong>Losses.</strong> Scope creep: this layer must remain minimal.</p>
+<p><strong>Recommendation.</strong> Adapters in milestone 0.4; reference schemes in 0.5.</p>
+</section>
+<section id="e11-packaging-continuous-integration-and-distribution">
+<h3>E11. Packaging, continuous integration and distribution<a class="headerlink" href="#e11-packaging-continuous-integration-and-distribution" title="Link to this heading">¶</a></h3>
+<p><strong>Proposal.</strong> Once Cython is gone, Janus becomes a pure Python package: configuration in <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> only (no <code class="docutils literal notranslate"><span class="pre">setup.py</span></code>, no <code class="docutils literal notranslate"><span class="pre">setup.cfg</span></code>), a universal wheel, publication on PyPI (and conda-forge), and continuous integration on GitHub Actions (tests on Linux, Windows and macOS, build of the documentation, possibly its deployment to GitHub Pages).</p>
+<p><strong>Gains.</strong> <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span></code> in seconds, without compiler; all the fragile steps identified in <a class="reference internal" href="claude.html"><span class="doc">Claude’s contributions to Janus</span></a> disappear.</p>
+<p><strong>Implementation problems.</strong> The name <code class="docutils literal notranslate"><span class="pre">janus</span></code> is already taken on PyPI (by an unrelated package), so that a distribution name must be chosen (the import name can remain <code class="docutils literal notranslate"><span class="pre">janus</span></code>, although a distinct import name avoids clashes in environments that contain both packages). Minimum supported versions of Python and NumPy should follow a policy such as <a class="reference external" href="https://scientific-python.org/specs/spec-0000/">SPEC 0</a>.</p>
+<p><strong>Recommendation.</strong> Continuous integration as early as milestone 0.2 (with the current Cython code); pure Python packaging and publication in milestone 0.4.</p>
+</section>
+<section id="e12-testing-strategy-for-the-rewrite">
+<h3>E12. Testing strategy for the rewrite<a class="headerlink" href="#e12-testing-strategy-for-the-rewrite" title="Link to this heading">¶</a></h3>
+<p><strong>Proposal.</strong> Keep the reference data (<code class="docutils literal notranslate"><span class="pre">tests/data/*.npz</span></code>) as a regression oracle; keep the current Cython implementation available (in a tagged release) to generate additional references if needed; add tests of mathematical properties, independent of the implementation: the discrete Green operator is a projector (<code class="docutils literal notranslate"><span class="pre">Γ₀</span> <span class="pre">C₀</span> <span class="pre">Γ₀</span> <span class="pre">=</span> <span class="pre">Γ₀</span></code>), it is symmetric, it annihilates uniform fields, its Fourier symbol is homogeneous of degree zero, and the results do not depend on the backend.</p>
+<p><strong>Gains.</strong> Confidence in the rewrite, and tests that remain valid for new physics.</p>
+<p><strong>Recommendation.</strong> From milestone 0.3 on.</p>
+</section>
+</section>
+<section id="milestones">
+<h2>Milestones<a class="headerlink" href="#milestones" title="Link to this heading">¶</a></h2>
+<p>The evolutions above are ordered as follows. Each milestone leaves the library in a usable, tested state.</p>
+<p><strong>0.2 — Clean-up.</strong> Remove MPI (E1). Set up continuous integration with the current Cython code (E11). Tag the last Cython-based release, so that it remains available as a reference.</p>
+<p><strong>0.3 — New core.</strong> New pure NumPy/SciPy implementation, alongside the Cython code (e.g. in a new subpackage): FFT through <code class="docutils literal notranslate"><span class="pre">scipy.fft</span></code> (E2), vectorized and stateless operators (E4), dimension-generic code (E5), separation of discretization and physics (E6), functional interface (E7). Isotropic linear elasticity with the three existing schemes, validated against the reference data (E12). Benchmark against the Cython implementation, on 2D and 3D grids: the acceptable slowdown is to be decided by the author.</p>
+<p><strong>0.4 — Switch.</strong> The new core becomes the default; Cython, FFTW, <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> and <code class="docutils literal notranslate"><span class="pre">setup.cfg</span></code> are deleted. The tutorials and the documentation are ported; adapters to SciPy solvers (E10). Pure Python packaging and first publication (E11).</p>
+<p><strong>0.5 — Extensibility.</strong> A second physics (conductivity or Darcy flow, i.e. vector fields, E9) implemented in pure Python, as a validation of the extension mechanism, with a user guide on adding physics and discretizations. Local operators as fields, including nonlinear laws (E8); reference iterative schemes (E10).</p>
+<p><strong>0.6 — Backends.</strong> Array API compliance tested on NumPy and JAX (E7); JAX backend (jit, optional GPU, double precision); automatic differentiation of local laws; finite strain prototype with full second-rank tensors (E9).</p>
+<p><strong>1.0 — Stabilization.</strong> API freeze, complete documentation, removal of deprecated code, release on PyPI and conda-forge.</p>
+<p>The order matters in two places. MPI is removed first, because it reduces the amount of code to port. The functional interface is adopted in 0.3, although JAX comes in 0.6, because changing the interface afterwards would require a second rewrite.</p>
+</section>
+<section id="decisions-required-from-the-author">
+<h2>Decisions required from the author<a class="headerlink" href="#decisions-required-from-the-author" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Distribution name on PyPI (<code class="docutils literal notranslate"><span class="pre">janus</span></code> is taken), and import name.</p></li>
+<li><p>Data layout: keep grid axes first and local components last (recommended, see E9)?</p></li>
+<li><p>Default backend: NumPy with optional JAX (recommended), or JAX only?</p></li>
+<li><p>Precision: <code class="docutils literal notranslate"><span class="pre">float64</span></code> only, or <code class="docutils literal notranslate"><span class="pre">float32</span></code> as well (relevant on GPU)?</p></li>
+<li><p>Acceptable slowdown of the pure Python implementation with respect to the current Cython code (acceptance criterion of milestone 0.3).</p></li>
+<li><p>Minimum supported versions of Python and NumPy.</p></li>
+</ul>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo_janus-200x200.png" alt="Logo of Janus"/>
+            </a></p>
+<h1 class="logo"><a href="index.html">Janus</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="operators.html">Operators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="materials.html">Materials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fft_tutorial.html">Computing discrete Fourier transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/square_basic/square_basic.html">Square inclusion, basic scheme</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Roadmap to v1.0</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#goals">Goals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#where-does-the-friction-come-from">Where does the friction come from?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#analysis-of-the-proposed-evolutions">Analysis of the proposed evolutions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#milestones">Milestones</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#decisions-required-from-the-author">Decisions required from the author</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="todo.html">TODO List</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mandel.html">Mandel notation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
+<li class="toctree-l1"><a class="reference internal" href="claude.html">Claude’s contributions to <cite>Janus</cite></a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="api.html" title="previous chapter">API Reference</a></li>
+      <li>Next: <a href="todo.html" title="next chapter">TODO List</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2013-2018, S. Brisard.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/roadmap.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

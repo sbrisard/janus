@@ -35,11 +35,62 @@
   <section id="claude-s-contributions-to-janus">
 <h1>Claude’s contributions to <cite>Janus</cite><a class="headerlink" href="#claude-s-contributions-to-janus" title="Link to this heading">¶</a></h1>
 <p>As of august 2026, <cite>Janus</cite> is revived by the author with the help of <cite>Claude Code</cite>. This page will collect all interactions between the author and Claude.</p>
+<section id="todo-the-road-to-v1-0">
+<h2>TODO • The road to v1.0<a class="headerlink" href="#todo-the-road-to-v1-0" title="Link to this heading">¶</a></h2>
+<p>The goal of this task is to write a roadmap to v1.0 of <cite>Janus</cite></p>
+<section id="context">
+<h3>Context<a class="headerlink" href="#context" title="Link to this heading">¶</a></h3>
+<p><cite>Janus</cite> was initially built to target both prototyping and large simulations.</p>
+<p>Large simulations has now become obsolete, because new developments in the community will soon offer excellent alternatives. So <cite>Janus</cite> should really evolve into a more flexible library, easily maintanable and extensible.</p>
+<p>The architecture should reduce as much friction as possible at installation and allow for rapid prototyping of new ideas. More precisely</p>
+<ul class="simple">
+<li><p>implementation of new discretizations</p></li>
+<li><p>implementation of new physics (e.g. Darcy, finite strain solid mechanics, etc.)</p></li>
+</ul>
+<p>should be possible without having to compile with Cython, which is not possible at the time being I think, even for experimental (sub-optimal) code.</p>
+<p>I have listed below a few evolutions I have in mind. Analyse each of them in terms of gains, losses, consequences on the code, implementations problems, …</p>
+<p>With the above context in mind, try to come up with supplementary evolutions that you think might improve the code’s flexibility, and go through the same analysis for each of your suggestions. At this stage, breaking changes in the code would be allowed.</p>
+<p>Report briefly in this file, and write the detailed analysis in a new chapter of these docs (file called <cite>roadmap.rst</cite>); add the corresponding entry in the <cite>index.rst</cite> file.</p>
+</section>
+<section id="possible-evolutions">
+<h3>Possible evolutions<a class="headerlink" href="#possible-evolutions" title="Link to this heading">¶</a></h3>
+<section id="removal-of-the-mpi-dependency">
+<h4>Removal of the MPI dependency<a class="headerlink" href="#removal-of-the-mpi-dependency" title="Link to this heading">¶</a></h4>
+<p><cite>MPI</cite> is no longer useful if we do not target large simulations.</p>
+<p>The gain would be considerable</p>
+<ul class="simple">
+<li><p>installation</p></li>
+<li><p>the structure of some objects: no need to encode the global shape and the local shape of an operator</p></li>
+</ul>
+</section>
+<section id="interfacing-with-fftw">
+<h4>Interfacing with FFTW<a class="headerlink" href="#interfacing-with-fftw" title="Link to this heading">¶</a></h4>
+<p>At the time of creation of <cite>Janus</cite>, interfacing with <cite>FFTW</cite> was done “manually” through a hand-crafted <cite>Cython</cite> file. Nowedays, <cite>pyFFTW</cite> seems to be the <em>de facto</em> module (with presumably a robust installation procedure).</p>
+</section>
+<section id="replacing-cython-with-other-dynamic-tools">
+<h4>Replacing <cite>Cython</cite> with other (dynamic) tools<a class="headerlink" href="#replacing-cython-with-other-dynamic-tools" title="Link to this heading">¶</a></h4>
+<p>The compilation required by <cite>Cython</cite> adds some friction. I am under the impression that tools such as <cite>Numba</cite>, <cite>JaX</cite> are mature tools that could (partly) replace <cite>Cython</cite>. I am ready to pay a little price in terms of speed if it is justified by a significant gain in flexibility.</p>
+</section>
+</section>
+<section id="claude-s-report">
+<h3>Claude’s report<a class="headerlink" href="#claude-s-report" title="Link to this heading">¶</a></h3>
+<p>Before starting, Claude asked four questions; the author answered that GPU execution and automatic differentiation are <em>nice to have</em>, that any dependency distributed as binary wheels is acceptable, that the analysis should not be backed by benchmarks, and that the roadmap should include ordered milestones.</p>
+<p>The detailed analysis is in the new chapter <a class="reference internal" href="roadmap.html"><span class="doc">Roadmap to v1.0</span></a> (file <code class="docutils literal notranslate"><span class="pre">sphinx/roadmap.rst</span></code>, added to <code class="docutils literal notranslate"><span class="pre">sphinx/index.rst</span></code> after the API reference). It is based on a complete reading of the code base, and on the current state of the candidate dependencies on PyPI. In brief:</p>
+<ul class="simple">
+<li><p><strong>Friction points.</strong> Seven were identified. The most important one: all the methods that do the actual work are <code class="docutils literal notranslate"><span class="pre">cdef</span></code> methods, so that Python subclasses are <em>silently ignored</em> inside the library. For instance, a Python local operator used in a <code class="docutils literal notranslate"><span class="pre">BlockDiagonalOperator2D</span></code> leaves the output untouched; this was checked with the current build. The other ones: operators are scalar and stateful (one call per frequency, impossible to transpose to Python); everything is duplicated for 2D and 3D; the filtered discretization is hard-coded for elasticity; the data model is restricted (Mandel–Voigt vectors, <code class="docutils literal notranslate"><span class="pre">float64</span></code>, real symbols); local and global shapes leak from MPI into the serial code; the build chain is fragile.</p></li>
+<li><p><strong>Evolutions proposed by the author.</strong> Remove MPI: yes, first (cheap, and it reduces the code to be ported). FFTW: rather than making pyFFTW a hard dependency, use <code class="docutils literal notranslate"><span class="pre">scipy.fft</span></code> by default, with pyFFTW as an optional accelerator through the <code class="docutils literal notranslate"><span class="pre">scipy.fft</span></code> backend mechanism. Cython: replace it entirely, first by a pure NumPy/SciPy implementation written in functional style, then by an optional JAX backend (fusion, GPU, automatic differentiation); Numba is not recommended as a foundation, because it does not solve the extensibility problem.</p></li>
+<li><p><strong>Additional evolutions (E4 to E12).</strong> Vectorized, stateless operators (the Green operator as a function of an array of wave-vectors); dimension-generic code; separation of discretizations (weighted modified wave-vectors) and physics; array API and functional interface; local operators as fields (phase maps, constitutive functions, autodiff tangents); generic tensor representations (vectors, full tensors for finite strain); thin solver adapters; pure Python packaging and continuous integration; testing strategy based on the reference data and on mathematical properties.</p></li>
+<li><p><strong>Milestones.</strong> 0.2 clean-up (MPI removal, continuous integration); 0.3 new core alongside the Cython code, validated against the reference data and benchmarked; 0.4 switch (Cython and FFTW removed, pure Python packaging); 0.5 extensibility (second physics in pure Python); 0.6 backends (JAX, autodiff, finite strain prototype); 1.0 stabilization.</p></li>
+<li><p><strong>Decisions required from the author</strong> are listed at the end of the chapter. In particular, the name <code class="docutils literal notranslate"><span class="pre">janus</span></code> is already taken on PyPI (by an unrelated package), so a distribution name must be chosen before publication.</p></li>
+</ul>
+<p>The speed estimates of the chapter are not backed by benchmarks, as agreed; a benchmark is part of milestone 0.3. No code was modified. The documentation builds without new warnings.</p>
+</section>
+</section>
 <section id="updating-the-online-docs">
 <h2>2026-09-11 • Updating the online docs<a class="headerlink" href="#updating-the-online-docs" title="Link to this heading">¶</a></h2>
 <p>Report on the procedure for compiling the sphinx docs locally and updating the Github pages accordingly (the project lives in the following repo: <a class="reference external" href="https://github.com/sbrisard/janus">https://github.com/sbrisard/janus</a> while the github pages are: <a class="reference external" href="https://sbrisard.github.io/janus/">https://sbrisard.github.io/janus/</a>).</p>
-<section id="claude-s-report">
-<h3>Claude’s report<a class="headerlink" href="#claude-s-report" title="Link to this heading">¶</a></h3>
+<section id="id1">
+<h3>Claude’s report<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
 <section id="current-setup">
 <h4>Current setup<a class="headerlink" href="#current-setup" title="Link to this heading">¶</a></h4>
 <ul class="simple">
@@ -178,8 +229,8 @@
 <h2>2026-09-11 • Automatic creation of environments<a class="headerlink" href="#automatic-creation-of-environments" title="Link to this heading">¶</a></h2>
 <p>Following your suggestion, add an <code class="docutils literal notranslate"><span class="pre">environment.yml</span></code> file, to create the <cite>conda</cite> environment in one command.</p>
 <p>This environment should also include the packages that are required to compile the Sphinx docs.</p>
-<section id="id1">
-<h3>Claude’s report<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
+<section id="id2">
+<h3>Claude’s report<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
 <p>Claude created the file <code class="docutils literal notranslate"><span class="pre">environment.yml</span></code> at the root of the project. It defines the <code class="docutils literal notranslate"><span class="pre">janus</span></code> environment (channel <code class="docutils literal notranslate"><span class="pre">defaults</span></code>, as the existing environment), with the following packages: <code class="docutils literal notranslate"><span class="pre">python=3.14</span></code>, <code class="docutils literal notranslate"><span class="pre">pip</span></code>, <code class="docutils literal notranslate"><span class="pre">setuptools</span></code>, <code class="docutils literal notranslate"><span class="pre">cython</span></code>, <code class="docutils literal notranslate"><span class="pre">fftw</span></code> (build), <code class="docutils literal notranslate"><span class="pre">numpy</span></code> (run), <code class="docutils literal notranslate"><span class="pre">pytest</span></code> (tests) and <code class="docutils literal notranslate"><span class="pre">sphinx</span></code> (documentation). The environment is created with:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">environment</span><span class="o">.</span><span class="n">yml</span>
 <span class="n">conda</span> <span class="n">activate</span> <span class="n">janus</span>
@@ -262,8 +313,8 @@ This procedure was tested with Miniconda, Python 3.14 and Visual Studio Build To
 <p>Note that the introduction of the Windows section of <code class="docutils literal notranslate"><span class="pre">sphinx/installation.rst</span></code> still reads “You must first download and install the precompiled binaries of FFTW for Windows”. This is not required by the new (recommended) procedure, where FFTW is provided by <cite>conda</cite>. At the author’s request, this sentence was removed, together with the <code class="docutils literal notranslate"><span class="pre">setup.cfg</span></code> example and the note on the <code class="docutils literal notranslate"><span class="pre">lib</span></code> prefix that it introduced (and the now unused link to the precompiled binaries). The Windows section now only covers the <cite>conda</cite> procedure (and the unfinished MinGW/MSYS procedure).</p>
 </section>
 </section>
-<section id="id2">
-<h3>Suggestions<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
+<section id="id3">
+<h3>Suggestions<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><em>Applied, see above.</em> <code class="docutils literal notranslate"><span class="pre">sphinx/requirements.txt</span></code> only lists <code class="docutils literal notranslate"><span class="pre">sphinxcontrib-napoleon</span></code>, which has been bundled with Sphinx (as <code class="docutils literal notranslate"><span class="pre">sphinx.ext.napoleon</span></code>) since version 1.3. This file, as well as the corresponding test on <code class="docutils literal notranslate"><span class="pre">sphinx.__version__</span></code> in <code class="docutils literal notranslate"><span class="pre">sphinx/conf.py</span></code>, could be removed.</p></li>
 <li><p><em>Applied, see above.</em> Remove <code class="docutils literal notranslate"><span class="pre">html_static_path</span></code> from <code class="docutils literal notranslate"><span class="pre">sphinx/conf.py</span></code> (or create the <code class="docutils literal notranslate"><span class="pre">sphinx/_static</span></code> directory) to get rid of the corresponding warning.</p></li>
@@ -274,15 +325,15 @@ This procedure was tested with Miniconda, Python 3.14 and Visual Studio Build To
 <section id="installation-on-a-windows-machine-miniconda-environment">
 <h2>2026-09-11 • Installation on a windows machine (<cite>Miniconda</cite> environment)<a class="headerlink" href="#installation-on-a-windows-machine-miniconda-environment" title="Link to this heading">¶</a></h2>
 <p>Following the update of the installation procedure, I am not sure how to install <cite>Janus</cite> on a windows machine. Use the <cite>conda</cite> environment <cite>janus</cite> to install the local version of <cite>janus</cite> in development mode. Add all required packages. Write down the procedure in your report. In particular, identify the fragile steps of the procedure (if any).</p>
-<section id="id3">
-<h3>Claude’s report<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
+<section id="id4">
+<h3>Claude’s report<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h3>
 <section id="what-was-done">
 <h4>What was done<a class="headerlink" href="#what-was-done" title="Link to this heading">¶</a></h4>
 <p><cite>Janus</cite> was already installed in the <cite>janus</cite> environment, in editable mode. To check the procedure from scratch, Claude uninstalled it (<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">uninstall</span> <span class="pre">janus</span></code>), removed all build artifacts (<code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clean</span> <span class="pre">-Xfd</span> <span class="pre">janus/</span></code>, plus the <code class="docutils literal notranslate"><span class="pre">build/</span></code> and <code class="docutils literal notranslate"><span class="pre">Janus.egg-info/</span></code> directories at the root), then reinstalled it with the procedure below. The build succeeded, and the serial tests pass (3043 passed, 111 skipped; all skipped tests are 3D, fourth-rank cubic tensors, which are not implemented yet).</p>
 <p>No package had to be added: the environment already contained everything required (<code class="docutils literal notranslate"><span class="pre">python</span></code> 3.14, <code class="docutils literal notranslate"><span class="pre">cython</span></code>, <code class="docutils literal notranslate"><span class="pre">setuptools</span></code>, <code class="docutils literal notranslate"><span class="pre">pip</span></code>, <code class="docutils literal notranslate"><span class="pre">numpy</span></code>, <code class="docutils literal notranslate"><span class="pre">fftw</span></code>, <code class="docutils literal notranslate"><span class="pre">pytest</span></code>, all from the <code class="docutils literal notranslate"><span class="pre">pkgs/main</span></code> channel). The parallel version was not installed (<code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> is absent, see below).</p>
 </section>
-<section id="id4">
-<h4>Procedure<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h4>
+<section id="id5">
+<h4>Procedure<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h4>
 <ol class="arabic">
 <li><p>Install the Microsoft C/C++ compiler: <em>Visual Studio Build Tools</em>, with the <em>Desktop development with C++</em> workload. It is not provided by <cite>conda</cite>, but <cite>setuptools</cite> locates it automatically (no need for a <em>Developer Command Prompt</em>). <em>Visual Studio Build Tools 2026</em> was used here.</p></li>
 <li><p>Create and activate the environment (the creation command was checked with <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">create</span> <span class="pre">--dry-run</span></code>):</p>
@@ -332,8 +383,8 @@ This procedure was tested with Miniconda, Python 3.14 and Visual Studio Build To
 <p>Some points turned out <em>not</em> to be fragile. The FFTW DLL (<code class="docutils literal notranslate"><span class="pre">fftw3.dll</span></code>) is found at import time even when the environment is not activated (checked with <code class="docutils literal notranslate"><span class="pre">conda</span></code> directories removed from <code class="docutils literal notranslate"><span class="pre">PATH</span></code>): <cite>conda</cite>’s Python adds <code class="docutils literal notranslate"><span class="pre">Library\bin</span></code> to the DLL search path. The compiler emits many <code class="docutils literal notranslate"><span class="pre">C4244</span></code> warnings (conversions from <code class="docutils literal notranslate"><span class="pre">Py_ssize_t</span></code>/<code class="docutils literal notranslate"><span class="pre">ptrdiff_t</span></code> to <code class="docutils literal notranslate"><span class="pre">int</span></code>), which do not prevent the build.</p>
 </section>
 </section>
-<section id="id5">
-<h3>Suggestions<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h3>
+<section id="id6">
+<h3>Suggestions<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p>Update the Windows section of <code class="docutils literal notranslate"><span class="pre">sphinx/installation.rst</span></code> with the above procedure, and fix the note on the <code class="docutils literal notranslate"><span class="pre">lib</span></code> prefix in <code class="docutils literal notranslate"><span class="pre">CLAUDE.md</span></code>.</p></li>
 <li><p>Add an <code class="docutils literal notranslate"><span class="pre">environment.yml</span></code> file, to create the environment in one command.</p></li>
@@ -355,8 +406,8 @@ This procedure was tested with Miniconda, Python 3.14 and Visual Studio Build To
 <blockquote>
 <div><p>at session start, read <cite>sphinx/claude.rst</cite> and process the <cite>TODO</cite> sections according to the <cite>How to update this page</cite> section</p>
 </div></blockquote>
-<section id="id6">
-<h3>Claude’s report<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h3>
+<section id="id7">
+<h3>Claude’s report<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h3>
 <p>The pointer above was added to <cite>CLAUDE.md</cite>, in a new <cite>Session workflow</cite> section at the top of the file. Since <cite>CLAUDE.md</cite> is loaded at the start of every session, the present file is now the single source of truth for our workflow, on any machine.</p>
 <p>The copy of these instructions that had been saved in Claude Code’s local memory (under <cite>~/.claude/projects/</cite>, on the author’s machine only) was deleted: it duplicated the present file and was already out of date (it did not require the author’s validation before marking a task as done).</p>
 <p>The author validated these changes on 2026-09-11, and the task was marked as done.</p>
@@ -401,11 +452,13 @@ This procedure was tested with Miniconda, Python 3.14 and Visual Studio Build To
 <li class="toctree-l1"><a class="reference internal" href="fft_tutorial.html">Computing discrete Fourier transforms</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorials/square_basic/square_basic.html">Square inclusion, basic scheme</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="roadmap.html">Roadmap to v1.0</a></li>
 <li class="toctree-l1"><a class="reference internal" href="todo.html">TODO List</a></li>
 <li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mandel.html">Mandel notation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Claude’s contributions to <cite>Janus</cite></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#todo-the-road-to-v1-0">TODO • The road to v1.0</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#updating-the-online-docs">2026-09-11 • Updating the online docs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#automatic-creation-of-environments">2026-09-11 • Automatic creation of environments</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#installation-on-a-windows-machine-miniconda-environment">2026-09-11 • Installation on a windows machine (<cite>Miniconda</cite> environment)</a></li>
