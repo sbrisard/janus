@@ -16,6 +16,7 @@ User's guide
    license
    mandel
    bibliography
+   claude
 
 Indices and tables
 ==================

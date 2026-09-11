@@ -2,6 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Session workflow
+
+At session start, read `sphinx/claude.rst` and process the `TODO` sections according to the
+`How to update this page` section.
+
 ## Project overview
 
 Janus is a Python/Cython library for discretizing the Lippmann–Schwinger equation with periodic
