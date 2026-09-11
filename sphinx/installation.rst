@@ -69,21 +69,42 @@ Compilation and installation under MacOS
 Compilation and installation under Windows
 ==========================================
 
-The parallel version of this code is not tested under Windows. You must first download and install the `precompiled binaries of FFTW for Windows`_. Assuming you have uncompressed this archive in ``C:\opt\fftw-3.3.4-dll64, the ``setup.cfg`` file reads::
+The parallel version of this code is not tested under Windows.
 
-  [fftw]
-  include_dirs = C:\opt\fftw-3.3.4-dll64
-  library_dirs = C:\opt\fftw-3.3.4-dll64
-  libraries = libfftw3-3
+Compilation with Miniconda and Visual Studio (recommended)
+----------------------------------------------------------
 
-Note that the library name *must not* be stripped of the ``lib`` prefix (``libfftw3-3.dll`` → ``libfftw3``).
+This procedure was tested with Miniconda, Python 3.14 and Visual Studio Build Tools 2026.
 
-Compilation with Anaconda and Visual Studio
--------------------------------------------
+1. Install the `Visual Studio Build Tools`_, with the *Desktop development with C++* workload. The compiler is located automatically by ``setuptools``: there is no need to use a *Developer Command Prompt*.
 
-If you use `Anaconda <https://www.anaconda.com/distribution/>`_ (which is highly recommended) then open the Anaconda console and issue the standard command::
+2. From the root of the project, create and activate the ``janus`` environment. It provides all the dependencies of Janus (including FFTW), as well as the packages that are required to run the tests and build the documentation::
 
-  python setup.py install --user
+     conda env create -f environment.yml
+     conda activate janus
+
+   To synchronize an existing environment with ``environment.yml``, use ``conda env update -n janus -f environment.yml`` instead.
+
+3. Create the ``setup.cfg`` file. FFTW is installed in the ``Library`` subdirectory of the environment, whose path is printed by ``echo %CONDA_PREFIX%``. Environment variables are not expanded in ``setup.cfg``: this path must be written in full::
+
+     [fftw]
+     include_dirs = C:\path\to\miniconda3\envs\janus\Library\include
+     library_dirs = C:\path\to\miniconda3\envs\janus\Library\lib
+     libraries = fftw3
+
+   Note that, unlike the precompiled binaries downloaded from fftw.org, the library provided by conda is called ``fftw3`` (without the ``lib`` prefix).
+
+4. Install Janus in development (editable) mode::
+
+     pip install --no-build-isolation -e .
+
+   The ``--no-build-isolation`` flag ensures that the versions of Cython and setuptools installed in the environment are used for the build (otherwise, pip downloads the latest versions from PyPI).
+
+   After modifying a ``*.pyx`` or ``*.pxd`` file, recompile the extension modules in place with ``python setup.py build_ext --inplace``.
+
+.. warning:: Do not install ``mpi4py`` in this environment: ``setup.py`` would then try to build the parallel version of Janus, which is not tested under Windows, and requires ``mpicc``.
+
+.. _Visual Studio Build Tools: https://visualstudio.microsoft.com/visual-cpp-build-tools/
 
 Compilation with MinGW/MSYS
 ---------------------------
@@ -114,5 +135,4 @@ where the total number of processes can be adjusted (an odd number should prefer
 
 .. _FFTW: http://www.fftw.org/
 .. _mpi4py: https://bitbucket.org/mpi4py/mpi4py/
-.. _precompiled binaries of FFTW for Windows: http://www.fftw.org/install/windows.html
 .. _pytest: http://pytest.org/

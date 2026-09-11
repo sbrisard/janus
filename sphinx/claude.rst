@@ -4,6 +4,181 @@ Claude's contributions to `Janus`
 
 As of august 2026, `Janus` is revived by the author with the help of `Claude Code`. This page will collect all interactions between the author and Claude.
 
+2026-09-11 • Automatic creation of environments
+===============================================
+
+Following your suggestion, add an ``environment.yml`` file, to create the `conda` environment in one command.
+
+This environment should also include the packages that are required to compile the Sphinx docs.
+
+Claude's report
+---------------
+
+Claude created the file ``environment.yml`` at the root of the project. It defines the ``janus`` environment (channel ``defaults``, as the existing environment), with the following packages: ``python=3.14``, ``pip``, ``setuptools``, ``cython``, ``fftw`` (build), ``numpy`` (run), ``pytest`` (tests) and ``sphinx`` (documentation). The environment is created with::
+
+  conda env create -f environment.yml
+  conda activate janus
+
+and an existing environment is synchronized with the file with::
+
+  conda env update -n janus -f environment.yml
+
+Only the Python version is pinned; the other packages take the latest version available in the channel.
+
+The documentation only requires ``sphinx``: all extensions listed in ``sphinx/conf.py`` are bundled with Sphinx (including ``sphinx.ext.napoleon``), the default theme (``alabaster``) is installed as a dependency of Sphinx, and the tutorials only include static figures and source files (``literalinclude``), which are not executed. Note however that ``autodoc`` imports `Janus`, which must therefore be compiled and installed first.
+
+`Janus` itself is not installed by ``environment.yml``: the build requires ``setup.cfg`` and the ``--no-build-isolation`` flag, neither of which can be expressed in the ``pip`` section of an environment file. The comments at the top of the file recall the remaining steps, and warn against adding ``mpi4py`` on Windows.
+
+The file was checked as follows.
+
+- ``conda env create -f environment.yml -n janus-envcheck --dry-run``: the environment resolves (Sphinx 9.1.0).
+- ``conda env update -n janus -f environment.yml``: this added Sphinx to the existing ``janus`` environment, and upgraded ``cython`` (3.2.5 → 3.2.9) and ``fftw`` (3.3.10 → 3.3.11). The serial tests still pass (3043 passed, 111 skipped).
+- ``python -m sphinx -b html -E sphinx <temporary directory>``: the build succeeds, with 3 warnings. The ``_static`` directory listed in ``html_static_path`` does not exist (1 warning), and ``janus.fft.parallel`` cannot be imported by ``autodoc``, since the parallel extension is not built (2 warnings). The documentation of this module is therefore missing from the API page. The ``docs/`` directory was not modified.
+
+Follow-up: first two suggestions applied
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+At the author's request, the first two suggestions below were applied.
+
+- ``sphinx/requirements.txt`` was deleted. In ``sphinx/conf.py``, the test on ``sphinx.__version__`` was removed, and ``sphinx.ext.napoleon`` was added directly to the list of ``extensions``.
+- ``html_static_path`` was removed from ``sphinx/conf.py``, rather than creating an empty ``sphinx/_static`` directory (an empty directory cannot be tracked by git; besides, ``_static`` is listed in ``sphinx/.gitignore``).
+
+The documentation was built again: the build succeeds, with 2 warnings (both related to ``janus.fft.parallel``, see above). The docstrings are still processed by ``napoleon`` (the *Parameters* and *Returns* sections are rendered in the API page).
+
+Follow-up: proposed text for ``sphinx/installation.rst``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following sub-section is proposed as a replacement for the current *Compilation with Anaconda and Visual Studio* sub-section of ``sphinx/installation.rst``. It has not been applied. It summarizes the procedure of the task *Installation on a windows machine*, which was only tested under Windows (hence its location in the Windows section)::
+
+  Compilation with Miniconda and Visual Studio (recommended)
+  ----------------------------------------------------------
+
+  This procedure was tested with Miniconda, Python 3.14 and Visual Studio Build Tools 2026.
+
+  1. Install the `Visual Studio Build Tools`_, with the *Desktop development with C++* workload. The compiler is located automatically by ``setuptools``: there is no need to use a *Developer Command Prompt*.
+
+  2. From the root of the project, create and activate the ``janus`` environment. It provides all the dependencies of Janus (including FFTW), as well as the packages that are required to run the tests and build the documentation::
+
+       conda env create -f environment.yml
+       conda activate janus
+
+     To synchronize an existing environment with ``environment.yml``, use ``conda env update -n janus -f environment.yml`` instead.
+
+  3. Create the ``setup.cfg`` file. FFTW is installed in the ``Library`` subdirectory of the environment, whose path is printed by ``echo %CONDA_PREFIX%``. Environment variables are not expanded in ``setup.cfg``: this path must be written in full::
+
+       [fftw]
+       include_dirs = C:\path\to\miniconda3\envs\janus\Library\include
+       library_dirs = C:\path\to\miniconda3\envs\janus\Library\lib
+       libraries = fftw3
+
+     Note that, unlike the precompiled binaries downloaded from fftw.org, the library provided by conda is called ``fftw3`` (without the ``lib`` prefix).
+
+  4. Install Janus in development (editable) mode::
+
+       pip install --no-build-isolation -e .
+
+     The ``--no-build-isolation`` flag ensures that the versions of Cython and setuptools installed in the environment are used for the build (otherwise, pip downloads the latest versions from PyPI).
+
+     After modifying a ``*.pyx`` or ``*.pxd`` file, recompile the extension modules in place with ``python setup.py build_ext --inplace``.
+
+  .. warning:: Do not install ``mpi4py`` in this environment: ``setup.py`` would then try to build the parallel version of Janus, which is not tested under Windows, and requires ``mpicc``.
+
+  .. _Visual Studio Build Tools: https://visualstudio.microsoft.com/visual-cpp-build-tools/
+
+If this text is adopted, the note on the ``lib`` prefix in ``CLAUDE.md`` should be updated accordingly.
+
+Follow-up: proposed text applied, ``CLAUDE.md`` corrected
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The author approved the above text, which now replaces the *Compilation with Anaconda and Visual Studio* sub-section of ``sphinx/installation.rst``.
+
+The *Build* section of ``CLAUDE.md`` was corrected as follows.
+
+- The FFTW library name on Windows depends on where FFTW comes from: ``fftw3`` with `conda`'s ``fftw`` package (recommended), ``libfftw3-3`` with the precompiled DLLs from fftw.org. ``CLAUDE.md`` previously stated that the ``lib`` prefix must always be kept.
+- ``environment.yml`` and the editable install (``pip install --no-build-isolation -e .``) are mentioned, instead of ``python setup.py install --user``.
+- ``python setup.py clean`` does not remove the compiled files any more (commit ``40eee5e``): ``git clean -Xfd janus/`` is mentioned instead.
+- If ``mpi4py`` is installed but ``mpicc`` cannot be found, the build most likely fails (``CLAUDE.md`` stated that the parallel extension was then silently skipped).
+
+The documentation was built again, without new warnings.
+
+Note that the introduction of the Windows section of ``sphinx/installation.rst`` still reads "You must first download and install the precompiled binaries of FFTW for Windows". This is not required by the new (recommended) procedure, where FFTW is provided by `conda`. At the author's request, this sentence was removed, together with the ``setup.cfg`` example and the note on the ``lib`` prefix that it introduced (and the now unused link to the precompiled binaries). The Windows section now only covers the `conda` procedure (and the unfinished MinGW/MSYS procedure).
+
+Suggestions
+-----------
+
+- *Applied, see above.* ``sphinx/requirements.txt`` only lists ``sphinxcontrib-napoleon``, which has been bundled with Sphinx (as ``sphinx.ext.napoleon``) since version 1.3. This file, as well as the corresponding test on ``sphinx.__version__`` in ``sphinx/conf.py``, could be removed.
+- *Applied, see above.* Remove ``html_static_path`` from ``sphinx/conf.py`` (or create the ``sphinx/_static`` directory) to get rid of the corresponding warning.
+- *Applied, see above.* Once the installation procedure is stabilized, mention ``environment.yml`` in ``sphinx/installation.rst``.
+
+
+2026-09-11 • Installation on a windows machine (`Miniconda` environment)
+========================================================================
+
+Following the update of the installation procedure, I am not sure how to install `Janus` on a windows machine. Use the `conda` environment `janus` to install the local version of `janus` in development mode. Add all required packages. Write down the procedure in your report. In particular, identify the fragile steps of the procedure (if any).
+
+Claude's report
+---------------
+
+What was done
+~~~~~~~~~~~~~
+
+`Janus` was already installed in the `janus` environment, in editable mode. To check the procedure from scratch, Claude uninstalled it (``pip uninstall janus``), removed all build artifacts (``git clean -Xfd janus/``, plus the ``build/`` and ``Janus.egg-info/`` directories at the root), then reinstalled it with the procedure below. The build succeeded, and the serial tests pass (3043 passed, 111 skipped; all skipped tests are 3D, fourth-rank cubic tensors, which are not implemented yet).
+
+No package had to be added: the environment already contained everything required (``python`` 3.14, ``cython``, ``setuptools``, ``pip``, ``numpy``, ``fftw``, ``pytest``, all from the ``pkgs/main`` channel). The parallel version was not installed (``mpi4py`` is absent, see below).
+
+Procedure
+~~~~~~~~~
+
+1. Install the Microsoft C/C++ compiler: *Visual Studio Build Tools*, with the *Desktop development with C++* workload. It is not provided by `conda`, but `setuptools` locates it automatically (no need for a *Developer Command Prompt*). *Visual Studio Build Tools 2026* was used here.
+
+2. Create and activate the environment (the creation command was checked with ``conda create --dry-run``)::
+
+     conda create -n janus python=3.14 cython fftw numpy pytest setuptools pip
+     conda activate janus
+
+3. Create the ``setup.cfg`` file at the root of the project. FFTW is provided by `conda`, in ``%CONDA_PREFIX%\Library``. Environment variables are not expanded in ``setup.cfg``, so the absolute path must be written in full (``echo %CONDA_PREFIX%`` prints it). Note that the library name is ``fftw3`` (the `conda` package provides ``fftw3.lib`` and ``fftw3.dll``)::
+
+     [fftw]
+     include_dirs = C:\Users\s.brisard\miniconda3\envs\janus\Library\include
+     library_dirs = C:\Users\s.brisard\miniconda3\envs\janus\Library\lib
+     libraries = fftw3
+
+4. Install `Janus` in development (editable) mode, from the root of the project::
+
+     pip install --no-build-isolation -e .
+
+   The extension modules (``*.pyd``) are compiled in place, next to the ``*.pyx`` sources. Changes to the ``*.py`` files are picked up immediately.
+
+5. Run the tests::
+
+     python -m pytest tests
+
+6. After editing a ``*.pyx`` or ``*.pxd`` file, recompile the modified extensions in place (only the modified modules are recompiled)::
+
+     python setup.py build_ext --inplace
+
+   Re-running ``pip install --no-build-isolation -e .`` also works.
+
+Fragile steps
+~~~~~~~~~~~~~
+
+- **The** ``setup.cfg`` **file.** It is git-ignored, written by hand, and contains absolute paths that depend on the machine and on the name of the environment. It must be rewritten on each new machine, or if the environment is renamed.
+- **The FFTW library name.** With the `conda` package, the library name is ``fftw3``. The Windows section of ``sphinx/installation.rst`` (and ``CLAUDE.md``) state that the ``lib`` prefix must be kept (``libfftw3-3``): this is true only for the precompiled DLLs downloaded from fftw.org.
+- **Build isolation.** Plain ``pip install -e .`` also works, but pip then downloads the latest `setuptools` and `Cython` from PyPI (84.0.0 and 3.3.0 at the time of writing), instead of using the versions installed by `conda` (83.0.0 and 3.2.5). This requires network access, and the versions used for the build are not pinned. Hence the ``--no-build-isolation`` flag.
+- **mpi4py.** It must *not* be installed in the environment. ``setup.py`` tries to build the parallel extension as soon as ``mpi4py`` can be imported, and only catches ``ImportError``. On Windows, there is usually no ``mpicc``, and the build would most likely fail. This was inferred from reading ``setup.py``, not tested.
+- **distutils.** ``setup.py`` imports ``distutils``, which was removed from the standard library in Python 3.12. It currently works only because `setuptools` provides a replacement ``distutils`` module; a future version of `setuptools` might drop it. ``setup.py`` also raises a ``SyntaxWarning`` (invalid escape sequence ``"\S"``, line 86).
+- **The** ``packages`` **list in** ``setup.py``. It omits ``janus.material``, ``janus.material.elastic`` and ``janus.material.elastic.linear``, and `setuptools` issues several "Package would be ignored" warnings. This is harmless for an editable install (the whole ``janus/`` directory is mapped), but a regular (non-editable) install would probably lack these subpackages. Not tested.
+- **Stale compiled files.** The ``*.c`` and ``*.pyd`` files live in the source tree. They must be rebuilt after editing ``*.pyx``/``*.pxd`` files, or after upgrading Python. ``python setup.py clean`` does not remove them; use ``git clean -Xfd janus/``.
+
+Some points turned out *not* to be fragile. The FFTW DLL (``fftw3.dll``) is found at import time even when the environment is not activated (checked with ``conda`` directories removed from ``PATH``): `conda`'s Python adds ``Library\bin`` to the DLL search path. The compiler emits many ``C4244`` warnings (conversions from ``Py_ssize_t``/``ptrdiff_t`` to ``int``), which do not prevent the build.
+
+Suggestions
+-----------
+
+- Update the Windows section of ``sphinx/installation.rst`` with the above procedure, and fix the note on the ``lib`` prefix in ``CLAUDE.md``.
+- Add an ``environment.yml`` file, to create the environment in one command.
+- In ``setup.py``, replace the ``distutils`` imports with their `setuptools` counterparts, fix the ``"\S"`` escape sequence (raw string), complete the ``packages`` list, and make the build of the parallel extension skip gracefully when ``mpicc`` cannot be found.
+- In ``setup.py``, default the FFTW paths to ``sys.prefix\Library`` when running in a `conda` environment on Windows, so that ``setup.cfg`` becomes optional.
 
 2026-09-11 • How to update this page
 ====================================

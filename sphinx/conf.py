@@ -19,15 +19,10 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.todo',
               'sphinx.ext.coverage',
               'sphinx.ext.mathjax',
+              'sphinx.ext.napoleon',
               'sphinx.ext.viewcode']
 
 todo_include_todos = True
-
-import sphinx
-if sphinx.__version__ < '1.3':
-    extensions.append('sphinxcontrib.napoleon')
-else:
-    extensions.append('sphinx.ext.napoleon')
 
 templates_path = ['_templates']
 source_suffix = '.rst'
@@ -48,7 +43,6 @@ pygments_style = 'sphinx'
 numfig = True
 
 html_logo = './logo_janus-200x200.png'
-html_static_path = ['_static']
 htmlhelp_basename = 'janusdoc'
 
 latex_elements = {'preamble': '',

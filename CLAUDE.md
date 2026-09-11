@@ -32,25 +32,47 @@ library_dirs = C:\path\to\fftw\lib
 libraries = fftw3
 ```
 
-On Windows, the FFTW library name must keep the `lib` prefix (e.g. `libfftw3-3`, not `fftw3`).
+`setup.cfg` is git-ignored and machine-specific (absolute paths; environment variables are not
+expanded). On Windows, the FFTW library name depends on where FFTW comes from:
+- conda's `fftw` package (recommended): `libraries = fftw3`, with `include_dirs`/`library_dirs`
+  set to `%CONDA_PREFIX%\Library\include` / `%CONDA_PREFIX%\Library\lib`;
+- precompiled DLLs from fftw.org: the `lib` prefix must be kept (`libraries = libfftw3-3`).
 
-Build in place / install:
-
-```
-python setup.py build_ext --inplace   # compile extensions next to sources
-python setup.py install --user
-```
-
-Clean compiled artifacts (`.c`, `.so`, `.pyd`, `.pyo`, `__pycache__`) under `janus/`:
+The development environment is described by `environment.yml` (build, test and Sphinx
+dependencies; Janus itself is not installed by it):
 
 ```
-python setup.py clean
+conda env create -f environment.yml   # or: conda env update -n janus -f environment.yml
+conda activate janus
 ```
 
-The MPI/parallel extension (`janus.fft.parallel._parallel_fft`) is only built if `mpi4py` is
-importable and `mpicc` can be located (`setup.py` parses the output of `mpicc -show`, sorting the
-tokens into `include_dirs`/`library_dirs`/`extra_link_args`); if `mpi4py` is missing, `setup.py`
-silently skips the parallel package.
+Install in development (editable) mode — `--no-build-isolation` makes pip use the conda-installed
+Cython/setuptools instead of downloading them from PyPI:
+
+```
+pip install --no-build-isolation -e .
+```
+
+After editing a `.pyx`/`.pxd` file, recompile the extensions in place (next to the sources):
+
+```
+python setup.py build_ext --inplace
+```
+
+`python setup.py clean` does *not* remove the compiled artifacts (`.c`, `.so`, `.pyd`,
+`__pycache__`); since they are git-ignored, remove them with (the `janus/` argument is mandatory,
+otherwise `setup.cfg` is deleted too):
+
+```
+git clean -Xfd janus/
+```
+
+The MPI/parallel extension (`janus.fft.parallel._parallel_fft`) is only attempted if `mpi4py` is
+importable (`setup.py` parses the output of `mpicc -show`, sorting the tokens into
+`include_dirs`/`library_dirs`/`extra_link_args`); if `mpi4py` is missing, `setup.py` silently skips
+the parallel package. Only `ImportError` is caught, so with `mpi4py` installed but no `mpicc` (the
+usual situation on Windows) the build most likely fails — do not install `mpi4py` in the Windows
+environment.
 
 ## Tests
 

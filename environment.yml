@@ -1,0 +1,27 @@
+# Conda environment for the development of Janus (serial version).
+#
+#     conda env create -f environment.yml
+#     conda activate janus
+#
+# Janus itself is not installed by this file: create setup.cfg, then run
+#
+#     pip install --no-build-isolation -e .
+#
+# (see sphinx/installation.rst). Do not add mpi4py on Windows: setup.py would
+# then try to build the parallel extension, which requires mpicc.
+name: janus
+channels:
+  - defaults
+dependencies:
+  - python=3.14
+  - pip
+  # Build
+  - setuptools
+  - cython
+  - fftw
+  # Run
+  - numpy
+  # Tests
+  - pytest
+  # Documentation
+  - sphinx
