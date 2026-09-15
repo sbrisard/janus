@@ -4,7 +4,7 @@
 Janus
 #####
 
-Janus is a Python library dedicated to the discretization of the Lippmann--Schwinger equation with periodic boundary conditions. The library is designed with performance in mind. It is fully parallelized, and the critical parts of the code are written in Cython.
+Janus is a Python library dedicated to the discretization of the Lippmann--Schwinger equation with periodic boundary conditions. The library is designed to be as flexible as possible. In order to ensure reasonable performance, the critical parts of the code are written in Cython.
 
 Janus is released under a BSD 3-clause license (see ``LICENSE.txt``).
 
@@ -12,6 +12,16 @@ The documentations can be found at http://sbrisard.github.io/janus/.
 
 History of major changes
 ========================
+
+2026-09-15 — This code no longer supports ``MPI``
+-------------------------------------------------
+
+Janus no longer targets large simulations. As explained in the `roadmap <https://sbrisard.github.io/janus/roadmap.html>`_, support for parallel computing through MPI is therefore being removed, which will make installation simpler.
+
+The last version that supports MPI is tagged ``Farewell_MPI`` in the Git repository.
+
+The removal is being carried out in the ``MPI-ectomy`` branch.
+
 
 2015-07-09 — This code is now licensed under BSD 3-clause license
 -----------------------------------------------------------------
