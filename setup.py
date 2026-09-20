@@ -72,23 +72,9 @@ def extensions_and_packages():
     return extensions, packages
 
 
-def extensions_and_packages_with_mpi():
-    try:
-        kwargs = update_from_config(mpicc_show(), 'fftw_mpi')
-        parallel_fft = Extension('janus.fft.parallel._parallel_fft',
-                                 sources=['janus/fft/parallel/_parallel_fft.pyx'],
-                                 **kwargs)
-        return [parallel_fft], ['janus.fft.parallel']
-    except ImportError:
-        return [], []
-
-
 if __name__ == '__main__':
     extensions, packages = extensions_and_packages()
-    extensions_mpi, packages_mpi = extensions_and_packages_with_mpi()
 
-    extensions += extensions_mpi
-    packages += packages_mpi
     setup(packages=packages,
           ext_modules=cythonize(extensions,
                                 compiler_directives={'embedsignature': True,
