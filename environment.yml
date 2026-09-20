@@ -1,4 +1,4 @@
-# Conda environment for the development of Janus (serial version).
+# Conda environment for the development of Janus.
 #
 #     conda env create -f environment.yml
 #     conda activate janus
