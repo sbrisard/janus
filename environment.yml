@@ -7,8 +7,7 @@
 #
 #     pip install --no-build-isolation -e .
 #
-# (see sphinx/installation.rst). Do not add mpi4py on Windows: setup.py would
-# then try to build the parallel extension, which requires mpicc.
+# (see sphinx/installation.rst).
 name: janus
 channels:
   - defaults
