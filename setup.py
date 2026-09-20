@@ -72,43 +72,6 @@ def extensions_and_packages():
     return extensions, packages
 
 
-def mpicc_show():
-    """Use ``mpicc --show`` to retrieve the mpicc arguments.
-
-    Works with both openmpi and mpich.
-    Returns a dictionary that can be passed to Extension().
-    """
-    import mpi4py
-    import subprocess
-    mpicc = mpi4py.get_config()['mpicc']
-    mpicc_show = subprocess.check_output([mpicc, '-show']).decode().strip()
-    # Strip command line from first part, which is the name of the compiler
-    mpicc_show = re.sub('\S+\s', '', mpicc_show, count=1)
-
-    def my_filter(regex, iterable, group=0):
-        matching = []
-        non_matching = []
-        for item in iterable:
-            m = re.search(regex, item)
-            if m is not None:
-                matching.append(m.group(group))
-            else:
-                non_matching.append(item)
-        return matching, non_matching
-
-    cflags = split_quoted(mpicc_show)
-    incdirs, cflags = my_filter('^-I(.*)', cflags, 1)
-    libdirs, cflags = my_filter('^-L(.*)', cflags, 1)
-    ldflags, cflags = my_filter('^-W?l.*', cflags)
-    ldflags += cflags
-    incdirs.append(mpi4py.get_include())
-
-    return {'include_dirs': incdirs,
-            'library_dirs': libdirs,
-            'extra_compile_args': cflags,
-            'extra_link_args': ldflags}
-
-
 def extensions_and_packages_with_mpi():
     try:
         kwargs = update_from_config(mpicc_show(), 'fftw_mpi')
