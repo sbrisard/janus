@@ -65,6 +65,23 @@ In ``sphinx/fft_tutorial.rst``, the four attributes documented for a serial tran
 
 Whatever the step, the behaviour of the library must not change: the tests (3043 passed, 111 skipped) are the acceptance criterion, and no reference data in ``tests/data`` is to be regenerated.
 
+Claude's report
+---------------
+
+Step 1 — ``idispl`` and ``odispl``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Both attributes were removed, as a pure deletion. Two files were modified.
+
+- ``janus/fft/serial/_serial_fft.pxd``: in the declarations of ``_RealFFT2D`` and ``_RealFFT3D``, the ``readonly ptrdiff_t`` line becomes ``isize, osize, offset0``.
+- ``janus/fft/serial/_serial_fft.pyx``: the two assignments of ``__cinit__`` were deleted in each class (``self.idispl``/``self.odispl``, computed from ``self.offset0``).
+
+Before deleting, a search for ``idispl`` and ``odispl`` over the whole repository (excluding ``docs/`` and the build artifacts) confirmed that the only remaining occurrences were these four lines and the description of the task in the present file: the attributes were written in ``__cinit__`` and read nowhere — neither in ``janus/``, nor in ``tests/``, ``examples/`` or ``sphinx/``. No other file was affected.
+
+The extension modules were rebuilt (``python setup.py build_ext --inplace``; all five ``.pyx`` files were re-cythonized, not only the modified one — the ``.c`` files present in the checkout were stale) and the tests were run: **3043 passed, 111 skipped**, i.e. the expected baseline. No reference data was touched.
+
+The changes are not committed, as usual.
+
 
 2026-09-15 • Planning the MPI-ectomy
 ====================================
