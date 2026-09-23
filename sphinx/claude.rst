@@ -5,6 +5,50 @@ Claude's contributions to `Janus`
 As of august 2026, `Janus` is revived by the author with the help of `Claude Code`. This page will collect all interactions between the author and Claude.
 
 
+TODO • Continuous integration
+=============================
+
+Set up continuous integration on GitHub Actions, with the current Cython code, as announced in section *E11* and in milestone 0.2 of the :doc:`roadmap`. Its purpose is to build Janus from a clean clone, on Linux and Windows, at each push and once a week, so that the Cython implementation remains a reliable reference during the rewrite of milestone 0.3.
+
+Proceed in the order below, one step at a time. Each step is a separate commit, made by the author: Claude does not commit, nor push. Report on each step in its own sub-paragraph of `Claude's report`, and wait for validation before starting the next one.
+
+Out of scope: building and deploying the documentation to GitHub Pages, packaging and publication on PyPI (milestone 0.4), macOS.
+
+TODO • Step 1 — Make ``setup.cfg`` optional
+-------------------------------------------
+
+``setup.py``, ``environment.yml``, ``sphinx/installation.rst``, ``CLAUDE.md``.
+
+When ``setup.cfg`` has no ``[fftw]`` section, ``setup.py`` falls back to defaults: ``libraries = fftw3`` on all platforms and, on Windows within a conda environment, ``include_dirs``/``library_dirs`` set to ``sys.prefix\Library\include``/``sys.prefix\Library\lib``. An existing ``[fftw]`` section keeps precedence over these defaults, so that the precompiled DLLs from fftw.org remain usable. The workflow of step 2 then reduces to ``pip install``, with no configuration file to generate.
+
+Update the instructions accordingly: the header comment of ``environment.yml``, ``sphinx/installation.rst`` and the *Build* section of ``CLAUDE.md`` state that ``setup.cfg`` is only needed outside conda, or to override the defaults.
+
+Check on Linux: move ``setup.cfg`` aside, remove the compiled artifacts (``git clean -Xfd janus/``), then ``pip install --no-build-isolation -e .`` and run the tests. Windows cannot be checked by Claude on this machine: the author checks it, or step 2 does.
+
+TODO • Step 2 — GitHub Actions workflow
+---------------------------------------
+
+``.github/workflows/tests.yml`` (new file).
+
+- Triggers: ``push``, ``pull_request``, a weekly ``schedule`` (to catch breakage caused by new versions of the dependencies, which ``environment.yml`` does not pin), and ``workflow_dispatch``.
+- Matrix: ``ubuntu-latest`` and ``windows-latest``.
+- Steps: ``actions/checkout``; ``conda-incubator/setup-miniconda`` with ``environment.yml`` and the ``janus`` environment activated (``shell: bash -el {0}``); ``pip install --no-build-isolation -e .``; ``python -m pytest tests``; ``python -m sphinx -b doctest sphinx sphinx/_build/doctest``.
+
+The workflow only runs once pushed to GitHub, which the author does. Two difficulties are expected, to be reported rather than worked around silently:
+
+- the ``defaults`` channel of Anaconda may require the acceptance of its terms of service, which blocks non-interactive runs. If so, propose switching ``environment.yml`` to ``conda-forge`` (after checking that Python 3.14 and ``fftw`` are available there for both platforms), as a separate commit;
+- on Windows, ``setuptools`` must find the MSVC compiler of the runner.
+
+Acceptance criterion: both jobs are green, with the same test count as locally (3043 passed, 111 skipped on Linux), and no failing doctest.
+
+TODO • Step 3 — Badge
+---------------------
+
+``README.rst``.
+
+Add the status badge of the workflow at the top of ``README.rst``.
+
+
 2026-09-23 • Removal of the vestiges of distributed memory
 ==========================================================
 
