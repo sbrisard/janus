@@ -90,7 +90,6 @@ cdef class DiscreteGreenOperator2D(AbstractStructuredOperator2D):
     cdef readonly AbstractGreenOperator green
     cdef readonly double h
     cdef int global_shape0
-    cdef int offset0
     # s[i] = 2 * pi / (h * n[i]),
     # where n[i] is the size of the *global* grid in the direction i.
     cdef double s0, s1
@@ -124,14 +123,12 @@ cdef class DiscreteGreenOperator2D(AbstractStructuredOperator2D):
                 self.dft_y = array((transform.oshape0, transform.oshape1,
                                     green.osize), sizeof(double), 'd')
             self.global_shape0 = transform.global_ishape[0]
-            self.offset0 = transform.offset0
             shape0 = transform.ishape0
             shape1 = transform.ishape1
         else:
             self.dft_x = None
             self.dft_y = None
             self.global_shape0 = shape[0]
-            self.offset0 = 0
             shape0 = shape[0]
             shape1 = shape[1]
 
@@ -149,11 +146,9 @@ cdef class DiscreteGreenOperator2D(AbstractStructuredOperator2D):
                              .format(b.shape[0]))
 
         cdef int b0 = b[0]
-        if (b0 < self.offset0) or (b0 >= self.offset0 + self.shape0):
-            raise ValueError('index must be >= {0} and < {1} (was {2})'
-                             .format(self.offset0,
-                                     self.offset0 + self.shape0,
-                                     b0))
+        if (b0 < 0) or (b0 >= self.shape0):
+            raise ValueError('index must be >= 0 and < {0} (was {1})'
+                             .format(self.shape0, b0))
 
         cdef int b1 = b[1]
         if (b1 < 0) or (b1 >= self.shape1):
@@ -196,7 +191,7 @@ cdef class DiscreteGreenOperator2D(AbstractStructuredOperator2D):
         cdef int i0, i1, b0, b1
 
         for i0 in range(n0):
-            b[0] = i0 + self.offset0
+            b[0] = i0
             i1 = 0
             for b1 in range(n1):
                 b[1] = b1
@@ -251,7 +246,6 @@ cdef class DiscreteGreenOperator3D(AbstractStructuredOperator3D):
     cdef readonly AbstractGreenOperator green
     cdef readonly double h
     cdef int global_shape0
-    cdef int offset0
     # s[i] = 2 * pi / (h * n[i]),
     # where n[i] is the size of the grid in the direction i.
     cdef double s0, s1, s2
@@ -287,7 +281,6 @@ cdef class DiscreteGreenOperator3D(AbstractStructuredOperator3D):
                                     transform.oshape2, green.osize),
                                    sizeof(double), 'd')
             self.global_shape0 = transform.global_ishape[0]
-            self.offset0 = transform.offset0
             shape0 = transform.ishape0
             shape1 = transform.ishape1
             shape2 = transform.ishape2
@@ -295,7 +288,6 @@ cdef class DiscreteGreenOperator3D(AbstractStructuredOperator3D):
             self.dft_x = None
             self.dft_y = None
             self.global_shape0 = shape[0]
-            self.offset0 = 0
             shape0 = shape[0]
             shape1 = shape[1]
             shape2 = shape[2]
@@ -315,11 +307,9 @@ cdef class DiscreteGreenOperator3D(AbstractStructuredOperator3D):
                              .format(b.shape[0]))
 
         cdef int b0 = b[0]
-        if (b0 < self.offset0) or (b0 >= self.offset0 + self.shape0):
-            raise ValueError('index must be >= {0} and < {1} (was {2})'
-                             .format(self.offset0,
-                                     self.offset0 + self.shape0,
-                                     b0))
+        if (b0 < 0) or (b0 >= self.shape0):
+            raise ValueError('index must be >= 0 and < {0} (was {1})'
+                             .format(self.shape0, b0))
 
         cdef int b1 = b[1]
         if (b1 < 0) or (b1 >= self.shape1):
@@ -368,7 +358,7 @@ cdef class DiscreteGreenOperator3D(AbstractStructuredOperator3D):
         cdef int i0, i1, i2, b2
 
         for i0 in range(n0):
-            b[0] = i0 + self.offset0
+            b[0] = i0
             for i1 in range(n1):
                 b[1] = i1
                 i2 = 0
@@ -466,7 +456,7 @@ cdef class TruncatedGreenOperator2D(DiscreteGreenOperator2D):
         cdef int i0, i1, b0, b1
 
         for i0 in range(n0):
-            b0 = i0 + self.offset0
+            b0 = i0
             if 2 * b0 > self.global_shape0:
                 self.k[0] = self.s0 * (b0 - self.global_shape0)
             else:
@@ -545,7 +535,7 @@ cdef class TruncatedGreenOperator3D(DiscreteGreenOperator3D):
         cdef int i0, i2, b0, b1, b2
 
         for i0 in range(n0):
-            b0 = i0 + self.offset0
+            b0 = i0
             if 2 * b0 > self.global_shape0:
                 self.k[0] = self.s0 * (b0 - self.global_shape0)
             else:

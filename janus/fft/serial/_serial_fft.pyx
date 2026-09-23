@@ -34,7 +34,7 @@ def create_real(shape, flags=FFTW_MEASURE):
 
 cdef create_real_2D(ptrdiff_t n0, ptrdiff_t n1, unsigned flags):
 
-    cdef _RealFFT2D fft = _RealFFT2D(n0, n1, n0, 0)
+    cdef _RealFFT2D fft = _RealFFT2D(n0, n1, n0)
     fft.buffer = fftw_alloc_real(2 * n0 * (n1 // 2 + 1))
     fft.plan_r2c = fftw_plan_dft_r2c_2d(n0, n1, fft.buffer,
                                         <fftw_complex *> fft.buffer, flags)
@@ -44,7 +44,7 @@ cdef create_real_2D(ptrdiff_t n0, ptrdiff_t n1, unsigned flags):
 
 cdef create_real_3D(ptrdiff_t n0, ptrdiff_t n1, ptrdiff_t n2, unsigned flags):
 
-    cdef _RealFFT3D fft = _RealFFT3D(n0, n1, n2, n0, 0)
+    cdef _RealFFT3D fft = _RealFFT3D(n0, n1, n2, n0)
     fft.buffer = fftw_alloc_real(fft.oshape0 * fft.oshape1 * fft.oshape2)
     fft.plan_r2c = fftw_plan_dft_r2c_3d(n0, n1, n2, fft.buffer,
                                         <fftw_complex *> fft.buffer, flags)
@@ -55,15 +55,13 @@ cdef create_real_3D(ptrdiff_t n0, ptrdiff_t n1, ptrdiff_t n2, unsigned flags):
 cdef class _RealFFT2D:
 
     @cython.boundscheck(False)
-    def __cinit__(self, ptrdiff_t n0, ptrdiff_t n1,
-                  ptrdiff_t n0_loc, ptrdiff_t offset0):
+    def __cinit__(self, ptrdiff_t n0, ptrdiff_t n1, ptrdiff_t n0_loc):
         self.ishape0 = n0_loc
         self.ishape1 = n1
         self.isize = self.ishape0 * self.ishape1
         self.oshape0 = n0_loc
         self.oshape1 = 2 * (n1 // 2 + 1)
         self.osize = self.oshape0 * self.oshape1
-        self.offset0 = offset0
         self.padding = padding(n1)
         self.ishape = self.ishape0, self.ishape1
         self.oshape = self.oshape0, self.oshape1
@@ -178,7 +176,7 @@ cdef class _RealFFT3D:
 
     @cython.boundscheck(False)
     def __cinit__(self, ptrdiff_t n0, ptrdiff_t n1, ptrdiff_t n2,
-                  ptrdiff_t n0_loc, ptrdiff_t offset0):
+                  ptrdiff_t n0_loc):
         self.ishape0 = n0_loc
         self.ishape1 = n1
         self.ishape2 = n2
@@ -187,7 +185,6 @@ cdef class _RealFFT3D:
         self.oshape1 = n1
         self.oshape2 = 2 * (n2 // 2 + 1)
         self.osize = self.oshape0 * self.oshape1 * self.oshape2
-        self.offset0 = offset0
         self.padding = padding(self.ishape2)
         self.ishape = self.ishape0, self.ishape1, self.ishape2
         self.oshape = self.oshape0, self.oshape1, self.oshape2

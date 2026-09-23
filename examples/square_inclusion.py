@@ -23,8 +23,10 @@
 #          sys.path.append("..") (Janus is installed in editable mode);
 #        - replacing janus.fft.parallel.create_real(shape, comm) with
 #          janus.fft.serial.create_real(shape), and dropping transform.offset0
-#          along with the final Gatherv of tau and eps, which become plain
-#          local arrays;
+#          -- which no longer exists at all: the serial transforms lost it
+#          with the other vestiges of distributed memory (sept. 2026), so the
+#          two references to it below are now dead -- along with the final
+#          Gatherv of tau and eps, which become plain local arrays;
 #        - exposing matvec() and wrapping the class in
 #          scipy.sparse.linalg.LinearOperator, then solving with
 #          scipy.sparse.linalg.cg instead of PETSc.KSP;

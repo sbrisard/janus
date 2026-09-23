@@ -14,15 +14,15 @@ Proceed one attribute at a time, in the order below, so that each step is a sepa
 
 Report on each step in its own sub-paragraph of `Claude's report`, and wait for validation before starting the next one.
 
-TODO • Step 1 — ``idispl`` and ``odispl``
------------------------------------------
+2026-09-23 • Step 1 — ``idispl`` and ``odispl``
+-----------------------------------------------
 
 ``janus/fft/serial/_serial_fft.pxd``, ``_serial_fft.pyx``.
 
 Dead code: both are computed in ``__cinit__`` from ``offset0``, and read nowhere else in the code base. Pure deletion, no other file affected.
 
-TODO • Step 2 — ``offset0`` of the discrete Green operators
------------------------------------------------------------
+2026-09-23 • Step 2 — ``offset0`` of the discrete Green operators
+-----------------------------------------------------------------
 
 ``janus/green.pyx``.
 
@@ -34,8 +34,8 @@ Remove the ``offset0`` attribute of ``DiscreteGreenOperator2D`` and ``3D``, whic
 
 This step must come before step 3, which removes the attribute that is read here.
 
-TODO • Step 3 — ``offset0`` of the FFT objects
-----------------------------------------------
+2026-09-23 • Step 3 — ``offset0`` of the FFT objects
+----------------------------------------------------
 
 ``janus/fft/serial/_serial_fft.pxd``, ``_serial_fft.pyx``, ``examples/square_inclusion.py``.
 
@@ -81,6 +81,36 @@ Before deleting, a search for ``idispl`` and ``odispl`` over the whole repositor
 The extension modules were rebuilt (``python setup.py build_ext --inplace``; all five ``.pyx`` files were re-cythonized, not only the modified one — the ``.c`` files present in the checkout were stale) and the tests were run: **3043 passed, 111 skipped**, i.e. the expected baseline. No reference data was touched.
 
 The changes are not committed, as usual.
+
+Step 2 — ``offset0`` of the discrete Green operators
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The attribute was removed from ``DiscreteGreenOperator2D`` and ``DiscreteGreenOperator3D``; only ``janus/green.pyx`` was modified. The three announced consequences were applied, in both classes:
+
+- the declaration ``cdef int offset0`` and its two assignments in ``__cinit__`` (``transform.offset0`` when a transform is given, ``0`` otherwise) are gone. The attribute was declared ``cdef``, not ``cdef readonly``: it was never visible from Python, so this is not a breaking change for the public API;
+- in ``set_frequency``, the bounds check on ``b0`` is now ``if (b0 < 0) or (b0 >= self.shape0)``, and raises the same message as the checks on ``b1`` and ``b2``;
+- in ``c_apply``, ``b[0] = i0 + self.offset0`` becomes ``b[0] = i0`` (``DiscreteGreenOperator2D``/``3D``), and ``b0 = i0 + self.offset0`` becomes ``b0 = i0`` (``TruncatedGreenOperator2D``/``3D``).
+
+``global_shape0`` was left untouched, as it belongs to step 4; so was the check on ``transform.global_ishape``.
+
+After rebuilding, the tests give the expected baseline: **3043 passed, 111 skipped**, with the reference data unchanged.
+
+The out-of-bounds branch of ``set_frequency`` turned out *not* to be covered by the test suite (``tests/test_greenop.py`` only exercises the continuum operators), so the invariance of the error message was checked by hand, on a ``TruncatedGreenOperator2D`` of shape ``(8, 8)``, built both with and without a transform. In both cases, ``set_frequency`` raises ``index must be >= 0 and < 8 (was -1)`` (resp. ``(was 8)``) for an out-of-range ``b0``, which is the text produced before the change, and the message is now identical to the one raised for an out-of-range ``b1``. A valid index is still accepted.
+
+The changes are not committed.
+
+Step 3 — ``offset0`` of the FFT objects
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Three files were modified.
+
+- ``janus/fft/serial/_serial_fft.pxd``: in ``_RealFFT2D`` and ``_RealFFT3D``, the ``readonly ptrdiff_t`` line is reduced to ``isize, osize``. Unlike the ``offset0`` of the Green operators (step 2), this one *was* ``readonly``, hence visible from Python: its removal is a breaking change for any code that read ``transform.offset0``. This is the intended outcome, announced in section *E1* of the :doc:`roadmap`.
+- ``janus/fft/serial/_serial_fft.pyx``: the ``offset0`` parameter was dropped from the ``__cinit__`` of both classes, together with the assignment ``self.offset0 = offset0``. The two call sites were updated accordingly: ``_RealFFT2D(n0, n1, n0, 0)`` becomes ``_RealFFT2D(n0, n1, n0)``, and ``_RealFFT3D(n0, n1, n2, n0, 0)`` becomes ``_RealFFT3D(n0, n1, n2, n0)``. A search confirmed that these two lines, in the ``cdef`` functions ``create_real_2D``/``create_real_3D``, are the only places where the constructors are called; the public entry point ``janus.fft.serial.create_real(shape, flags)`` is unchanged, and so is the ``n0_loc`` parameter, which belongs to step 5.
+- ``examples/square_inclusion.py``: the ``TODO`` header now states that ``transform.offset0`` no longer exists at all, and that the two references to it in the body of the example (``self.offset0 = transform.offset0`` and the slice ``ops[:imax - self.offset0, :imax]``) are therefore dead. The repair itself was not attempted, as agreed: the example still imports ``mpi4py``, ``petsc4py`` and ``janus.fft.parallel``, and does not run.
+
+After ``offset0`` was removed, no occurrence of it remains anywhere under ``janus/``.
+
+The extension modules were rebuilt and the tests run: **3043 passed, 111 skipped**, the expected baseline, with the reference data unchanged. ``tests/test_fft.py`` builds its transforms through the public ``create_real`` and exercises ``r2c``/``c2r`` round trips, so the constructors are covered; the attribute itself was read by no test.
 
 
 2026-09-15 • Planning the MPI-ectomy
