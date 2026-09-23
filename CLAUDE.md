@@ -20,7 +20,13 @@ those come from `scipy.sparse.linalg`.
 The project is built with `setuptools` + `Cython`, compiling `.pyx`/`.pxd` sources into extension
 modules (`.pyd`/`.so`). It links against FFTW3.
 
-Before building, `setup.cfg` must exist at the repo root with an `[fftw]` section, e.g.:
+FFTW is located through the optional `setup.cfg` at the repo root (git-ignored, machine-specific:
+absolute paths, environment variables are not expanded). When it is absent, or its `[fftw]`
+section is empty, `setup.py` (`fftw_config()`) falls back to defaults suited to the conda
+environment: `libraries = fftw3` and, on Windows only, `include_dirs`/`library_dirs` set to
+`sys.prefix\Library\include` / `sys.prefix\Library\lib` (on Linux, conda's Python already passes
+`$PREFIX/include` and `$PREFIX/lib` to the compiler). So within the `janus` environment no
+`setup.cfg` is needed. Otherwise, write one with an `[fftw]` section, e.g.:
 
 ```ini
 [fftw]
@@ -29,11 +35,9 @@ library_dirs = C:\path\to\fftw\lib
 libraries = fftw3
 ```
 
-`setup.cfg` is git-ignored and machine-specific (absolute paths; environment variables are not
-expanded). On Windows, the FFTW library name depends on where FFTW comes from:
-- conda's `fftw` package (recommended): `libraries = fftw3`, with `include_dirs`/`library_dirs`
-  set to `%CONDA_PREFIX%\Library\include` / `%CONDA_PREFIX%\Library\lib`;
-- precompiled DLLs from fftw.org: the `lib` prefix must be kept (`libraries = libfftw3-3`).
+As soon as the `[fftw]` section has one entry, the defaults are ignored altogether (not merged).
+With the precompiled DLLs from fftw.org, the `lib` prefix must be kept
+(`libraries = libfftw3-3`).
 
 The development environment is described by `environment.yml` (build, test and Sphinx
 dependencies; Janus itself is not installed by it):
@@ -58,7 +62,7 @@ python setup.py build_ext --inplace
 
 `python setup.py clean` does *not* remove the compiled artifacts (`.c`, `.so`, `.pyd`,
 `__pycache__`); since they are git-ignored, remove them with (the `janus/` argument is mandatory,
-otherwise `setup.cfg` is deleted too):
+otherwise `setup.cfg`, if any, is deleted too):
 
 ```
 git clean -Xfd janus/

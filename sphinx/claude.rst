@@ -46,7 +46,19 @@ TODO • Step 3 — Badge
 
 ``README.rst``.
 
-Add the status badge of the workflow at the top of ``README.rst``.
+Add the status badge of the workflow at the top of ``README.rst``, next to the documentation badge.
+
+Claude's report
+---------------
+
+Step 1 — Make ``setup.cfg`` optional
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- ``setup.py``: new function ``fftw_config()``, which replaces the direct call to ``update_from_config({}, "fftw")`` in ``extensions_and_packages()``. If ``setup.cfg`` provides at least one entry in its ``[fftw]`` section, these entries are used as before, and the defaults are ignored altogether (they are not merged, so that a hand-written configuration behaves exactly as it did). Otherwise, ``libraries = fftw3`` and, on Windows within a conda environment (detected by the ``conda-meta`` directory of ``sys.prefix``), ``include_dirs``/``library_dirs`` are set to ``sys.prefix\Library\include``/``lib``. The message printed by ``python setup.py clean`` no longer says that ``setup.cfg`` is required.
+- Why nothing more is needed on Linux: the Python interpreter of the ``janus`` environment compiles with ``-isystem $PREFIX/include`` and links with ``-L$PREFIX/lib`` and ``-rpath $PREFIX/lib`` (checked with ``sysconfig``), and the compiled ``_serial_fft`` module does load the ``libfftw3.so.3`` of the environment, not the one of the system (checked with ``ldd``). The same holds for macOS in principle, but was not checked.
+- ``environment.yml`` (header comment), ``sphinx/installation.rst`` (sections *Configuration* and *Compilation with Miniconda and Visual Studio*, step 3) and ``CLAUDE.md`` (*Build*) now state that ``setup.cfg`` is not needed within the ``janus`` environment, and when it must still be written.
+
+Check on Linux: with ``setup.cfg`` moved aside and the compiled artifacts removed (``git clean -Xfd janus/``), ``pip install --no-build-isolation -e .`` succeeds, and the tests give 3043 passed, 111 skipped; the doctests (``python -m sphinx -b doctest sphinx sphinx/_build/doctest``) give 0 failures. ``setup.cfg`` was then put back. The Windows branch of ``fftw_config()`` was not run: it will be checked by the author, or by the Windows job of step 2.
 
 
 2026-09-23 • Removal of the vestiges of distributed memory

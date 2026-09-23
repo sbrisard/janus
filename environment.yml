@@ -3,11 +3,12 @@
 #     conda env create -f environment.yml
 #     conda activate janus
 #
-# Janus itself is not installed by this file: create setup.cfg, then run
+# Janus itself is not installed by this file: run
 #
 #     pip install --no-build-isolation -e .
 #
-# (see sphinx/installation.rst).
+# (see sphinx/installation.rst; within this environment, setup.cfg is not
+# needed).
 name: janus
 channels:
   - defaults
