@@ -89,9 +89,8 @@ cdef class AbstractGreenOperator(AbstractLinearOperator):
 cdef class DiscreteGreenOperator2D(AbstractStructuredOperator2D):
     cdef readonly AbstractGreenOperator green
     cdef readonly double h
-    cdef int global_shape0
     # s[i] = 2 * pi / (h * n[i]),
-    # where n[i] is the size of the *global* grid in the direction i.
+    # where n[i] is the size of the grid in the direction i.
     cdef double s0, s1
     cdef readonly _RealFFT2D transform
     cdef double[:, :, :] dft_x, dft_y
@@ -112,9 +111,9 @@ cdef class DiscreteGreenOperator2D(AbstractStructuredOperator2D):
 
         cdef int shape0, shape1
         if transform is not None:
-            if transform.global_ishape != shape:
+            if transform.ishape != shape:
                 raise ValueError('shape of transform must be {0} [was {1}]'
-                                 .format(shape, transform.global_ishape))
+                                 .format(shape, transform.ishape))
             self.dft_x = array((transform.oshape0, transform.oshape1,
                                 green.isize), sizeof(double), 'd')
             if green.osize == green.isize:
@@ -122,19 +121,17 @@ cdef class DiscreteGreenOperator2D(AbstractStructuredOperator2D):
             else:
                 self.dft_y = array((transform.oshape0, transform.oshape1,
                                     green.osize), sizeof(double), 'd')
-            self.global_shape0 = transform.global_ishape[0]
             shape0 = transform.ishape0
             shape1 = transform.ishape1
         else:
             self.dft_x = None
             self.dft_y = None
-            self.global_shape0 = shape[0]
             shape0 = shape[0]
             shape1 = shape[1]
 
         self.transform = transform
         self.init_shapes(shape0, shape1, green.isize, green.osize)
-        self.s0 = 2. * M_PI / (self.h * self.global_shape0)
+        self.s0 = 2. * M_PI / (self.h * self.shape0)
         self.s1 = 2. * M_PI / (self.h * self.shape1)
 
     cdef void c_set_frequency(self, int[:] b):
@@ -245,7 +242,6 @@ cdef class DiscreteGreenOperator3D(AbstractStructuredOperator3D):
     """
     cdef readonly AbstractGreenOperator green
     cdef readonly double h
-    cdef int global_shape0
     # s[i] = 2 * pi / (h * n[i]),
     # where n[i] is the size of the grid in the direction i.
     cdef double s0, s1, s2
@@ -268,9 +264,9 @@ cdef class DiscreteGreenOperator3D(AbstractStructuredOperator3D):
 
         cdef int shape0, shape1, shape2
         if transform is not None:
-            if transform.global_ishape != shape:
+            if transform.ishape != shape:
                 raise ValueError('shape of transform must be {0} [was {1}]'
-                                 .format(shape, transform.global_ishape))
+                                 .format(shape, transform.ishape))
             self.dft_x = array((transform.oshape0, transform.oshape1,
                                 transform.oshape2, green.isize),
                                sizeof(double), 'd')
@@ -280,21 +276,19 @@ cdef class DiscreteGreenOperator3D(AbstractStructuredOperator3D):
                 self.dft_y = array((transform.oshape0, transform.oshape1,
                                     transform.oshape2, green.osize),
                                    sizeof(double), 'd')
-            self.global_shape0 = transform.global_ishape[0]
             shape0 = transform.ishape0
             shape1 = transform.ishape1
             shape2 = transform.ishape2
         else:
             self.dft_x = None
             self.dft_y = None
-            self.global_shape0 = shape[0]
             shape0 = shape[0]
             shape1 = shape[1]
             shape2 = shape[2]
 
         self.transform = transform
         self.init_shapes(shape0, shape1, shape2, green.isize, green.osize)
-        self.s0 = 2. * M_PI / (self.h * self.global_shape0)
+        self.s0 = 2. * M_PI / (self.h * self.shape0)
         self.s1 = 2. * M_PI / (self.h * self.shape1)
         self.s2 = 2. * M_PI / (self.h * self.shape2)
 
@@ -423,8 +417,8 @@ cdef class TruncatedGreenOperator2D(DiscreteGreenOperator2D):
     @wraparound(False)
     cdef void c_set_frequency(self, int[:] b):
         cdef int b0 = b[0]
-        if 2 * b0 > self.global_shape0:
-            self.k[0] = self.s0 * (b0 - self.global_shape0)
+        if 2 * b0 > self.shape0:
+            self.k[0] = self.s0 * (b0 - self.shape0)
         else:
             self.k[0] = self.s0 * b0
         cdef int b1 = b[1]
@@ -457,8 +451,8 @@ cdef class TruncatedGreenOperator2D(DiscreteGreenOperator2D):
 
         for i0 in range(n0):
             b0 = i0
-            if 2 * b0 > self.global_shape0:
-                self.k[0] = self.s0 * (b0 - self.global_shape0)
+            if 2 * b0 > self.shape0:
+                self.k[0] = self.s0 * (b0 - self.shape0)
             else:
                 self.k[0] = self.s0 * b0
 
@@ -496,8 +490,8 @@ cdef class TruncatedGreenOperator3D(DiscreteGreenOperator3D):
     @wraparound(False)
     cdef void c_set_frequency(self, int[:] b):
         cdef int b0 = b[0]
-        if 2 * b0 > self.global_shape0:
-            self.k[0] = self.s0 * (b0 - self.global_shape0)
+        if 2 * b0 > self.shape0:
+            self.k[0] = self.s0 * (b0 - self.shape0)
         else:
             self.k[0] = self.s0 * b0
         cdef int b1 = b[1]
@@ -536,8 +530,8 @@ cdef class TruncatedGreenOperator3D(DiscreteGreenOperator3D):
 
         for i0 in range(n0):
             b0 = i0
-            if 2 * b0 > self.global_shape0:
-                self.k[0] = self.s0 * (b0 - self.global_shape0)
+            if 2 * b0 > self.shape0:
+                self.k[0] = self.s0 * (b0 - self.shape0)
             else:
                 self.k[0] = self.s0 * b0
 
@@ -603,7 +597,7 @@ cdef class FilteredGreenOperator2D(DiscreteGreenOperator2D):
 
         # Computation of the first component of k1, k2, k3, k4 and the first
         # factor of the corresponding weights.
-        k = self.s0 * (b0 - self.global_shape0)
+        k = self.s0 * (b0 - self.shape0)
         w = cos(0.25 * self.h * k)
         w *= w
         self.k1[0] = k
@@ -725,7 +719,7 @@ cdef class FilteredGreenOperator3D(DiscreteGreenOperator3D):
         cdef int b2 = b[2]
         cdef double k, w, w1, w2, w3, w4, w5, w6, w7, w8
 
-        k = self.s0 * (b0 - self.global_shape0)
+        k = self.s0 * (b0 - self.shape0)
         w = cos(0.25 * self.h * k)
         w *= w
         self.k1[0] = k

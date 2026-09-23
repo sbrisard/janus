@@ -24,19 +24,11 @@ The following piece of code creates an object ``transform`` which can perform re
 
 The function :func:`janus.fft.serial.create_real` can be passed planner flags (see `Planner Flags <http://www.fftw.org/fftw3_doc/Planner-Flags.html#Planner-Flags>`_ in the FFTW manual). The attributes of the returned object are
 
-  - ``transform.global_ishape`` contains the *global* shape of the input array,
-  - ``transform.ishape`` contains the *local* shape of the input (real) array,
-  - ``transform.global_oshape`` contains the *global* shape of the output (complex) array,
-  - ``transform.oshape`` contains the *local* shape of the output (complex) array. For serial transforms, local and global output shapes coincide.
+  - ``transform.ishape`` contains the shape of the input (real) array,
+  - ``transform.oshape`` contains the shape of the output (complex) array.
 
-For serial transforms, local and global shapes coincide.
-
->>> transform.global_ishape
-(32, 64)
 >>> transform.ishape
 (32, 64)
->>> transform.global_oshape
-(32, 66)
 >>> transform.oshape
 (32, 66)
 

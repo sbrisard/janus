@@ -118,14 +118,10 @@ from the discrete grid index `b` and in whether the tensor is filtered:
 - `FiniteDifferences2D/3D` (`willot2015`) — Green operator evaluated using a finite-difference
   discretization of the gradient instead of the exact Fourier symbol.
 
-These classes still carry an `offset0`/`global_shape0` pair, inherited from the (now removed)
-distributed-memory variant, where they located the local slab within a domain-decomposed grid.
-`offset0` is now always 0 and `global_shape0 == shape0`; removing them is a pending simplification.
-
 **FFT layer** (`janus/fft/`): `janus/fft/serial/_serial_fft.pyx` wraps FFTW3 real-to-complex/
-complex-to-real transforms (`_RealFFT2D`/`3D`), exposing `ishape`/`oshape` alongside the vestigial
-`global_ishape`/`global_oshape` and `offset0`. `janus/fft/__init__.py` exposes the FFTW planner flag
-constants (`FFTW_ESTIMATE`, `FFTW_MEASURE`, etc.).
+complex-to-real transforms (`_RealFFT2D`/`3D`), exposing `ishape`/`oshape` (and `isize`/`osize`).
+`janus/fft/__init__.py` exposes the FFTW planner flag constants (`FFTW_ESTIMATE`, `FFTW_MEASURE`,
+etc.).
 
 **Materials** (`janus/material/`) mirror the mechanical constitutive-law hierarchy; currently only
 `janus/material/elastic/linear/isotropic.pyx` is implemented, producing a Green operator via

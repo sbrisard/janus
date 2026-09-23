@@ -112,6 +112,43 @@ After ``offset0`` was removed, no occurrence of it remains anywhere under ``janu
 
 The extension modules were rebuilt and the tests run: **3043 passed, 111 skipped**, the expected baseline, with the reference data unchanged. ``tests/test_fft.py`` builds its transforms through the public ``create_real`` and exercises ``r2c``/``c2r`` round trips, so the constructors are covered; the attribute itself was read by no test.
 
+Step 4 — ``global_shape0``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``global_shape0`` disappears from ``DiscreteGreenOperator2D`` and ``3D``. In ``janus/green.pyx``:
+
+- the declaration ``cdef int global_shape0`` and its two assignments in ``__cinit__`` (``transform.global_ishape[0]``, or ``shape[0]`` without a transform) were deleted;
+- the twelve readers now use ``self.shape0``: the computation of ``s0``, the wave-vector of ``TruncatedGreenOperator2D``/``3D`` (``if 2 * b0 > self.shape0`` and the corresponding ``self.k[0]``, in both ``c_set_frequency`` and ``c_apply``), and the first component of the wave-vectors of ``FilteredGreenOperator2D``/``3D``. ``FiniteDifferences2D``/``3D`` was indeed not concerned;
+- the check on the shape of the transform now reads ``transform.ishape``, in the condition and in the error message, which frees step 5;
+- the comment above ``s0`` in ``DiscreteGreenOperator2D`` described ``n[i]`` as the size of the *global* grid; it now reads like its 3D counterpart, which never mentioned the global grid.
+
+The substitution is legitimate because ``init_shapes``, called just above the computation of ``s0``, sets ``shape0`` to exactly the value that ``global_shape0`` received: ``transform.ishape0`` (equal to ``transform.global_ishape[0]`` in the serial case) or ``shape[0]``.
+
+Both replacements are covered by the test suite. The mismatched-transform branch is exercised by ``tests/test_discrete_green_operator.py``, whose parameters for ``test_init_invalid_params`` include a grid of shape ``(9, 9)`` with a transform of shape ``(8, 9)`` and ``(9, 8)``; and the wave-vectors are precisely what the reference data of ``tests/data`` check. Tests: **3043 passed, 111 skipped**, reference data unchanged.
+
+In ``CLAUDE.md``, the paragraph presenting the ``offset0``/``global_shape0`` pair as a pending simplification was deleted.
+
+One residue is left on purpose: in the *FFT layer* paragraph of ``CLAUDE.md``, the serial transforms are still described as exposing ``ishape``/``oshape`` "alongside the vestigial ``global_ishape``/``global_oshape`` and ``offset0``". Since step 3, ``offset0`` no longer exists; that sentence is rewritten by step 5, which removes the last two attributes as well.
+
+Step 5 — ``global_ishape``, ``global_oshape`` and ``n0_loc``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The last vestiges are gone. Four files were modified.
+
+- ``janus/fft/serial/_serial_fft.pxd``: in both classes, the ``readonly tuple`` line is reduced to ``ishape, oshape``.
+- ``janus/fft/serial/_serial_fft.pyx``: the four assignments of ``global_ishape``/``global_oshape`` were deleted, and the constructors now take the shape alone — ``__cinit__(self, n0, n1)`` and ``__cinit__(self, n0, n1, n2)``. Wherever ``n0_loc`` was used (``ishape0`` and ``oshape0``), ``n0`` is used instead; the call sites in ``create_real_2D``/``create_real_3D`` lose their repeated argument (``_RealFFT2D(n0, n1, n0)`` becomes ``_RealFFT2D(n0, n1)``). In the docstring of ``create_real``, ``shape`` is now "the shape of the input data".
+- ``sphinx/fft_tutorial.rst``: the list of attributes is reduced to ``ishape`` and ``oshape``, described without the *local*/*global* emphasis, which no longer opposes anything; the two doctests on ``global_ishape``/``global_oshape`` and the two sentences on the coincidence of local and global shapes were removed.
+- ``CLAUDE.md``: the *FFT layer* paragraph now says that the transforms expose ``ishape``/``oshape`` (and ``isize``/``osize``), with no mention of the vestigial attributes. This also settles the residue reported in step 4.
+
+After rebuilding, the tests give **3043 passed, 111 skipped**, with the reference data unchanged. The doctests of the documentation were run as well (``python -m sphinx -b doctest``, into a temporary directory): ``fft_tutorial`` passes its 30 tests, which covers the rewritten section.
+
+Two mentions were deliberately left alone.
+
+- ``README.rst`` documents the renaming of the FFT attributes in its *History of major changes*, under the date 2015-02-23 (``shape`` → ``global_ishape``, and the addition of ``global_oshape``). This is a historical record of what happened in 2015, not a description of the current API: rewriting it would falsify the history. The removal is already recorded in the same file, in the entry of 2026-09-15 on the MPI-ectomy.
+- ``sphinx/roadmap.rst`` lists these attributes twice, as *friction point 6* and in the description of milestone 0.2, i.e. as the work to be done. They now *are* done; the roadmap will have to be updated when the milestone is closed, which is beyond the scope of this task.
+
+Unrelated observation, found while running the doctests: ``sphinx/operators.rst`` (line 81) has one failing doctest, ``np.sqrt(np.sum((yy - y)**2))``, which expects ``0.0`` but gets ``np.float64(0.0)``. This is the NumPy 2 scalar representation, has nothing to do with the present task, and does not affect the HTML build (the ``doctest`` builder is not run by ``make ghpages``).
+
 
 2026-09-15 • Planning the MPI-ectomy
 ====================================
