@@ -13,14 +13,14 @@ The documentations can be found at http://sbrisard.github.io/janus/.
 History of major changes
 ========================
 
-2026-09-15 — This code no longer supports ``MPI``
+2026-09-23 — This code no longer supports ``MPI``
 -------------------------------------------------
 
-Janus no longer targets large simulations. As explained in the `roadmap <https://sbrisard.github.io/janus/roadmap.html>`_, support for parallel computing through MPI is therefore being removed, which will make installation simpler.
+Janus no longer targets large simulations. As explained in the `roadmap <https://sbrisard.github.io/janus/roadmap.html>`_, support for parallel computing through MPI has therefore been removed, which makes installation simpler.
 
 The last version that supports MPI is tagged ``Farewell_MPI`` in the Git repository.
 
-The removal is being carried out in the ``MPI-ectomy`` branch.
+As a consequence, the FFT objects and the discrete Green operators no longer distinguish local and global shapes: the attributes ``offset0``, ``global_shape0``, ``global_ishape`` and ``global_oshape`` were removed (incompatible changes). Use ``shape0``, ``ishape`` and ``oshape`` instead.
 
 
 2015-07-09 — This code is now licensed under BSD 3-clause license
