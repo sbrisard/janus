@@ -1,0 +1,58 @@
+# Build Janus from a clean clone and run the tests, on Linux and Windows.
+#
+# The weekly run catches breakage caused by new versions of the dependencies,
+# which environment.yml does not pin. GitHub runs scheduled workflows on the
+# default branch (master) only.
+name: tests
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    defaults:
+      run:
+        # Login shell, so that the janus environment is activated.
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          # Miniforge only uses conda-forge: no terms of service to accept,
+          # unlike the defaults channel of Anaconda.
+          miniforge-version: latest
+          conda-remove-defaults: true
+          environment-file: environment.yml
+          activate-environment: janus
+          auto-activate-base: false
+
+      - name: Show environment
+        run: conda list
+
+      # No setup.cfg: setup.py finds FFTW in the conda environment.
+      - name: Build
+        run: pip install --no-build-isolation -e .
+
+      - name: Tests
+        run: python -m pytest tests
+
+      - name: Doctests
+        run: python -m sphinx -b doctest sphinx sphinx/_build/doctest
