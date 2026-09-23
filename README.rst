@@ -4,6 +4,10 @@
 Janus
 #####
 
+.. image:: https://img.shields.io/badge/docs-sbrisard.github.io%2Fjanus-blue
+   :target: https://sbrisard.github.io/janus/
+   :alt: Documentation
+
 Janus is a Python library dedicated to the discretization of the Lippmann--Schwinger equation with periodic boundary conditions. The library is designed to be as flexible as possible. In order to ensure reasonable performance, the critical parts of the code are written in Cython.
 
 Janus is released under a BSD 3-clause license (see ``LICENSE.txt``).
