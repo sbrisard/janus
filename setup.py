@@ -1,5 +1,7 @@
 import configparser
 import distutils.command.clean
+import os
+import sys
 from distutils.core import setup
 from distutils.extension import Extension
 
@@ -24,7 +26,7 @@ this command. Since they are all git-ignored, they can be removed with
     git clean -Xfd janus/
 
 Beware: the janus/ argument is mandatory. Without it, git clean would also
-delete setup.cfg, which is git-ignored, but required to build this project.
+delete setup.cfg, which is git-ignored.
 """)
         return out
 
@@ -51,6 +53,28 @@ def update_from_config(kwargs, section):
     return kwargs
 
 
+def fftw_config():
+    """Return the keyword arguments of Extension() that locate FFTW.
+
+    These are read from the ``[fftw]`` section of ``setup.cfg``. If this file
+    provides no entry, defaults suitable for a conda environment are used:
+    ``libraries = fftw3`` on all platforms and, on Windows, the ``include``
+    and ``lib`` subdirectories of ``sys.prefix\\Library``, where conda
+    installs FFTW. On Linux and macOS, the Python interpreter provided by
+    conda already passes the paths of the environment to the compiler.
+    """
+    kwargs = update_from_config({}, "fftw")
+    if kwargs:
+        return kwargs
+    kwargs = {"libraries": ["fftw3"]}
+    is_conda = os.path.isdir(os.path.join(sys.prefix, "conda-meta"))
+    if sys.platform == "win32" and is_conda:
+        library = os.path.join(sys.prefix, "Library")
+        kwargs["include_dirs"] = [os.path.join(library, "include")]
+        kwargs["library_dirs"] = [os.path.join(library, "lib")]
+    return kwargs
+
+
 def extensions_and_packages():
     utils = Extension("janus.utils.checkarray", sources=["janus/utils/checkarray.pyx"])
     operators = Extension("janus.operators", sources=["janus/operators.pyx"])
@@ -59,7 +83,7 @@ def extensions_and_packages():
         sources=["janus/material/elastic/linear/isotropic.pyx"],
     )
 
-    kwargs = update_from_config({}, "fftw")
+    kwargs = fftw_config()
     serial_fft = Extension(
         "janus.fft.serial._serial_fft",
         sources=["janus/fft/serial/_serial_fft.pyx"],

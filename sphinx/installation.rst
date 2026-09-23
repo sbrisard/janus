@@ -16,9 +16,11 @@ Janus requires Python 3k, and depends on `FFTW`_ (version 3) only.
 Configuration (all platforms)
 =============================
 
-Compilation and installation is configured through the ``setup.cfg`` file, which must be created in the root directory of the project if necessary (this file must reside in the same directory as ``setup.py``).
+Compilation and installation is configured through the optional ``setup.cfg`` file, which must be created in the root directory of the project if necessary (this file must reside in the same directory as ``setup.py``).
 
-One section of this file must be filed: ``[fftw]``::
+If ``setup.cfg`` does not exist, or provides no entry in its ``[fftw]`` section, defaults suitable for a conda environment are used: ``libraries = fftw3`` on all platforms and, on Windows, the ``Library\include`` and ``Library\lib`` subdirectories of the environment, where conda installs FFTW. Within the ``janus`` conda environment (see ``environment.yml``), ``setup.cfg`` is therefore not needed. It must be created in all other cases (e.g. FFTW installed by the system package manager in a non-standard location, or precompiled binaries downloaded from fftw.org).
+
+The FFTW settings are given in the ``[fftw]`` section::
 
   [fftw]
   include_dirs = …
@@ -75,7 +77,9 @@ This procedure was tested with Miniconda, Python 3.14 and Visual Studio Build To
 
    To synchronize an existing environment with ``environment.yml``, use ``conda env update -n janus -f environment.yml`` instead.
 
-3. Create the ``setup.cfg`` file. FFTW is installed in the ``Library`` subdirectory of the environment, whose path is printed by ``echo %CONDA_PREFIX%``. Environment variables are not expanded in ``setup.cfg``: this path must be written in full::
+   All packages come from the ``conda-forge`` channel, which works with both Miniconda and `Miniforge`_. An environment created before ``environment.yml`` switched from the ``defaults`` channel to ``conda-forge`` should be recreated (``conda env remove -n janus``, then ``conda env create -f environment.yml``) rather than updated, so as not to mix packages from both channels.
+
+3. There is no need to create ``setup.cfg``: FFTW is installed in the ``Library`` subdirectory of the environment, which ``setup.py`` uses by default. Should the paths need to be set explicitly, note that environment variables are not expanded in ``setup.cfg``: the path printed by ``echo %CONDA_PREFIX%`` must be written in full::
 
      [fftw]
      include_dirs = C:\path\to\miniconda3\envs\janus\Library\include
@@ -93,6 +97,7 @@ This procedure was tested with Miniconda, Python 3.14 and Visual Studio Build To
    After modifying a ``*.pyx`` or ``*.pxd`` file, recompile the extension modules in place with ``python setup.py build_ext --inplace``.
 
 .. _Visual Studio Build Tools: https://visualstudio.microsoft.com/visual-cpp-build-tools/
+.. _Miniforge: https://github.com/conda-forge/miniforge
 
 Compilation with MinGW/MSYS
 ---------------------------

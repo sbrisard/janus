@@ -5,6 +5,103 @@ Claude's contributions to `Janus`
 As of august 2026, `Janus` is revived by the author with the help of `Claude Code`. This page will collect all interactions between the author and Claude.
 
 
+TODO • Continuous integration
+=============================
+
+Set up continuous integration on GitHub Actions, with the current Cython code, as announced in section *E11* and in milestone 0.2 of the :doc:`roadmap`. Its purpose is to build Janus from a clean clone, on Linux and Windows, at each push and once a week, so that the Cython implementation remains a reliable reference during the rewrite of milestone 0.3.
+
+Proceed in the order below, one step at a time. Each step is a separate commit, made by the author: Claude does not commit, nor push. Report on each step in its own sub-paragraph of `Claude's report`, and wait for validation before starting the next one.
+
+Out of scope: building and deploying the documentation to GitHub Pages, packaging and publication on PyPI (milestone 0.4), macOS.
+
+TODO • Step 1 — Make ``setup.cfg`` optional
+-------------------------------------------
+
+``setup.py``, ``environment.yml``, ``sphinx/installation.rst``, ``CLAUDE.md``.
+
+When ``setup.cfg`` has no ``[fftw]`` section, ``setup.py`` falls back to defaults: ``libraries = fftw3`` on all platforms and, on Windows within a conda environment, ``include_dirs``/``library_dirs`` set to ``sys.prefix\Library\include``/``sys.prefix\Library\lib``. An existing ``[fftw]`` section keeps precedence over these defaults, so that the precompiled DLLs from fftw.org remain usable. The workflow of step 2 then reduces to ``pip install``, with no configuration file to generate.
+
+Update the instructions accordingly: the header comment of ``environment.yml``, ``sphinx/installation.rst`` and the *Build* section of ``CLAUDE.md`` state that ``setup.cfg`` is only needed outside conda, or to override the defaults.
+
+Check on Linux: move ``setup.cfg`` aside, remove the compiled artifacts (``git clean -Xfd janus/``), then ``pip install --no-build-isolation -e .`` and run the tests. Windows cannot be checked by Claude on this machine: the author checks it, or step 2 does.
+
+TODO • Step 2 — GitHub Actions workflow
+---------------------------------------
+
+``.github/workflows/tests.yml`` (new file).
+
+- Triggers: ``push``, ``pull_request``, a weekly ``schedule`` (to catch breakage caused by new versions of the dependencies, which ``environment.yml`` does not pin), and ``workflow_dispatch``.
+- Matrix: ``ubuntu-latest`` and ``windows-latest``.
+- Steps: ``actions/checkout``; ``conda-incubator/setup-miniconda`` with ``environment.yml`` and the ``janus`` environment activated (``shell: bash -el {0}``); ``pip install --no-build-isolation -e .``; ``python -m pytest tests``; ``python -m sphinx -b doctest sphinx sphinx/_build/doctest``.
+
+The workflow only runs once pushed to GitHub, which the author does. Two difficulties are expected, to be reported rather than worked around silently:
+
+- the ``defaults`` channel of Anaconda may require the acceptance of its terms of service, which blocks non-interactive runs. If so, propose switching ``environment.yml`` to ``conda-forge`` (after checking that Python 3.14 and ``fftw`` are available there for both platforms), as a separate commit;
+- on Windows, ``setuptools`` must find the MSVC compiler of the runner.
+
+Acceptance criterion: both jobs are green, with the same test count as locally (3043 passed, 111 skipped on Linux), and no failing doctest.
+
+TODO • Step 3 — Badge
+---------------------
+
+``README.rst``.
+
+Add the status badge of the workflow at the top of ``README.rst``, next to the documentation badge.
+
+Claude's report
+---------------
+
+Step 1 — Make ``setup.cfg`` optional
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- ``setup.py``: new function ``fftw_config()``, which replaces the direct call to ``update_from_config({}, "fftw")`` in ``extensions_and_packages()``. If ``setup.cfg`` provides at least one entry in its ``[fftw]`` section, these entries are used as before, and the defaults are ignored altogether (they are not merged, so that a hand-written configuration behaves exactly as it did). Otherwise, ``libraries = fftw3`` and, on Windows within a conda environment (detected by the ``conda-meta`` directory of ``sys.prefix``), ``include_dirs``/``library_dirs`` are set to ``sys.prefix\Library\include``/``lib``. The message printed by ``python setup.py clean`` no longer says that ``setup.cfg`` is required.
+- Why nothing more is needed on Linux: the Python interpreter of the ``janus`` environment compiles with ``-isystem $PREFIX/include`` and links with ``-L$PREFIX/lib`` and ``-rpath $PREFIX/lib`` (checked with ``sysconfig``), and the compiled ``_serial_fft`` module does load the ``libfftw3.so.3`` of the environment, not the one of the system (checked with ``ldd``). The same holds for macOS in principle, but was not checked.
+- ``environment.yml`` (header comment), ``sphinx/installation.rst`` (sections *Configuration* and *Compilation with Miniconda and Visual Studio*, step 3) and ``CLAUDE.md`` (*Build*) now state that ``setup.cfg`` is not needed within the ``janus`` environment, and when it must still be written.
+
+Check on Linux: with ``setup.cfg`` moved aside and the compiled artifacts removed (``git clean -Xfd janus/``), ``pip install --no-build-isolation -e .`` succeeds, and the tests give 3043 passed, 111 skipped; the doctests (``python -m sphinx -b doctest sphinx sphinx/_build/doctest``) give 0 failures. ``setup.cfg`` was then put back. The Windows branch of ``fftw_config()`` was not run: it will be checked by the author, or by the Windows job of step 2.
+
+Step 2 — GitHub Actions workflow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+New file ``.github/workflows/tests.yml``, as specified. A few choices beyond the specification:
+
+- ``fail-fast: false``: a failure on one platform does not cancel the job on the other, so that each run tells whether the problem is specific to one platform;
+- ``concurrency`` with ``cancel-in-progress``: a new push to a branch cancels the run still in progress on that branch;
+- ``permissions: contents: read``: the workflow only needs to read the repository;
+- a *Show environment* step (``conda list``), so that the versions of the dependencies are recorded in the log of each run. This is what makes a failure of the weekly run diagnosable: comparing with the log of the last successful run shows which package changed;
+- no ``setup.cfg`` is written: the build relies on the defaults of step 1.
+
+The weekly run (Mondays, 04:00 UTC) only starts once the workflow is on ``master``: GitHub runs scheduled workflows on the default branch only.
+
+What was checked: the file is valid YAML, and the commands of the workflow were run by hand on a fresh clone of the branch (``git clone``, no ``setup.cfg``, no compiled artifacts), in the ``janus`` environment: build OK, 3043 passed, 111 skipped, 0 failing doctest. The workflow itself could not be run: it will run when the author pushes the branch. The two expected difficulties (terms of service of the ``defaults`` channel, MSVC on Windows) can only be observed there.
+
+Step 2 (continued) — Switch to ``conda-forge``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+At the author's request, the first of the two difficulties was removed before the first run, rather than waited for.
+
+- ``environment.yml``: the only channel is now ``conda-forge``. ``fftw`` is pinned to its ``nompi_*`` builds: conda-forge also publishes builds of FFTW linked against MPI (OpenMPI, MPICH), which Janus no longer needs.
+- ``.github/workflows/tests.yml``: ``setup-miniconda`` installs Miniforge (``miniforge-version: latest``), whose only channel is ``conda-forge``, and ``conda-remove-defaults: true`` makes sure that the ``defaults`` channel is never queried. There are no terms of service to accept.
+- ``sphinx/installation.rst``: a note states that the packages come from ``conda-forge`` (which works with Miniconda as well as Miniforge), and that an environment created from the former ``environment.yml`` should be recreated rather than updated, so as not to mix channels.
+
+What was checked:
+
+- both platforms resolve on ``conda-forge`` (``conda create --dry-run`` with ``CONDA_SUBDIR`` set to ``linux-64`` and ``win-64``): Python 3.14.7 (the regular build, not the free-threaded one), Cython 3.3.0, NumPy 2.5.3, FFTW 3.3.11 ``nompi``;
+- the Windows package of FFTW on ``conda-forge`` provides ``Library/include/fftw3.h`` and ``Library/lib/fftw3.lib`` (checked by downloading the package): the defaults of ``fftw_config()`` (step 1) apply unchanged;
+- on Linux, end to end: a fresh environment created from the new ``environment.yml`` (in a temporary prefix), a fresh clone without ``setup.cfg``, ``python setup.py build_ext --inplace``, then 3043 passed, 111 skipped, and 0 failing doctest. The compiled module loads the FFTW of the new environment (``ldd``). The temporary environment and clone were deleted.
+
+The author's own ``janus`` environment was not modified: it still comes from the ``defaults`` channel, and should be recreated as explained above.
+
+After the push by the author, both jobs of the workflow are green on GitHub. This also validates the two points that could not be checked on this machine: the Windows branch of ``fftw_config()`` (step 1), and the detection of the MSVC compiler of the runner by ``setuptools``.
+
+Step 3 — Badge
+~~~~~~~~~~~~~~
+
+``README.rst``: the status badge of the workflow is placed before the documentation badge, on the same line. Both are now written as substitutions (``|tests| |docs|``), since two consecutive ``image`` directives would be rendered one below the other. The rendering was checked with ``docutils`` (no warning, both images in a single paragraph).
+
+The badge reports the status of ``master`` (``?branch=master``), which is the reference for a visitor, not the status of the working branches. It will show *no status* until ``continuous_integration`` is merged into ``master``; the weekly run will also start then.
+
+
 2026-09-23 • Removal of the vestiges of distributed memory
 ==========================================================
 

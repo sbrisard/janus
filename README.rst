@@ -4,7 +4,13 @@
 Janus
 #####
 
-.. image:: https://img.shields.io/badge/docs-sbrisard.github.io%2Fjanus-blue
+|tests| |docs|
+
+.. |tests| image:: https://github.com/sbrisard/janus/actions/workflows/tests.yml/badge.svg?branch=master
+   :target: https://github.com/sbrisard/janus/actions/workflows/tests.yml
+   :alt: Tests
+
+.. |docs| image:: https://img.shields.io/badge/docs-sbrisard.github.io%2Fjanus-blue
    :target: https://sbrisard.github.io/janus/
    :alt: Documentation
 
