@@ -5,6 +5,14 @@ Claude's contributions to `Janus`
 As of august 2026, `Janus` is revived by the author with the help of `Claude Code`. This page will collect all interactions between the author and Claude.
 
 
+TO DISCUSS • Status of the roadmap
+==================================
+
+Not a task: no decision has been made yet. To be discussed with the author before anything is changed.
+
+The introduction of :doc:`roadmap` (``sphinx/roadmap.rst``, line 9) states that "none of the evolutions described below has been implemented yet", which is no longer true: E1 is done, and so is the continuous integration part of E11. The author sees no point in rewriting the roadmap in the past tense, since the history is kept in the present page, in ``README.rst`` and in git. Claude suggested correcting only this sentence, e.g. "milestone 0.2 (E1, and the continuous integration part of E11) is done; the other evolutions have not been implemented yet", possibly at the next regeneration of ``docs/``.
+
+
 2026-09-23 • Continuous integration
 ===================================
 
@@ -733,6 +741,8 @@ These are your instructions for the current session: each paragraph is an elemen
 After completion of a task, report on what you did in a sub-paragraph called `Claude's report` of the `claude.rst` file.
 
 Once I have validated your changes, I will ask you to mark the task as done. This means you will replace the `TODO` flag with the date in yyyy-mm-dd format. You will then move to the next task. For tasks that cannot be completed in one session, use an `IN PROGRESS` flag, so that the state of the task is visible in the present file.
+
+Questions that are still open, on which I have not made a decision yet, are recorded in sections marked `TO DISCUSS`. These are not tasks: you will not act on them, but raise them with me when they become relevant. Once a decision is made, the section is either turned into a `TODO` task, or marked with the date of the decision, together with a short statement of that decision.
 
 Unless otherwise stated, you will never commit your changes.
 
