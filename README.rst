@@ -12,7 +12,7 @@ Janus is a Python library dedicated to the discretization of the Lippmann--Schwi
 
 Janus is released under a BSD 3-clause license (see ``LICENSE.txt``).
 
-The documentation can be found at http://sbrisard.github.io/janus/.
+The documentation can be found at https://sbrisard.github.io/janus/.
 
 History of major changes
 ========================
