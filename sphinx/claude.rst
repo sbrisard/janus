@@ -5,6 +5,85 @@ Claude's contributions to `Janus`
 As of august 2026, `Janus` is revived by the author with the help of `Claude Code`. This page will collect all interactions between the author and Claude.
 
 
+2026-09-15 • Planning the MPI-ectomy
+====================================
+
+I am ready to start working on the removal of the MPI dependency.
+
+I will work in a dedicated branch: show me how to proceed.
+
+Then, draft a plan for this task.
+
+Claude's report
+---------------
+
+Should a branch be created?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Yes, for three reasons.
+
+- The task spans several commits and introduces breaking changes to the public API (``offset0``, ``global_ishape``… disappear). ``master`` should remain usable in the meantime.
+- ``master`` is the published branch: GitHub Pages serves ``master:/docs``. On a branch, ``sphinx/`` can be modified freely.
+- The repository has no tags at all. Before deleting anything, the last commit that includes MPI should be tagged, so that it remains available as a reference (this is also part of milestone 0.2 of :doc:`roadmap`).
+
+Procedure
+~~~~~~~~~
+
+At the time of writing, ``master`` has no local changes and is up to date with ``origin/master``. From the root of the project:
+
+1. Tag the last commit with MPI (annotated tag), and push the tag::
+
+     git tag -a last-mpi -m "Last version with the MPI-enabled parallel FFT"
+     git push origin last-mpi
+
+   The name ``last-mpi`` is only a suggestion; a version number (e.g. ``v0.1``) would also do.
+
+2. Create the branch, switch to it, and (optionally) push it to GitHub, as a backup and to allow a pull request later::
+
+     git switch -c remove-mpi
+     git push -u origin remove-mpi
+
+3. Commit on the branch as the work progresses.
+
+4. Once the work is done, merge the branch into ``master``, either through a pull request on GitHub, or locally::
+
+     git switch master
+     git merge --no-ff remove-mpi
+
+   Regenerate ``docs/`` only after the merge.
+
+Draft plan
+~~~~~~~~~~
+
+The work proceeds from the outside in, so that the serial tests pass after each step. Before starting, record a baseline with ``python -m pytest tests`` (last recorded result: 3043 passed, 111 skipped). Each step could be one commit.
+
+1. **Delete the MPI code** (no change for the serial code).
+
+   - Delete ``janus/fft/parallel/``, ``tests/parallel/``, ``sphinx/parallel_fft_tutorial.py`` and ``examples/fftw_python_benchmark_mpi.py``.
+   - ``examples/square_inclusion.py`` uses MPI and PETSc: rewrite it for serial use, or delete it.
+   - ``setup.py``: remove ``mpicc_show()`` and ``extensions_and_packages_with_mpi()`` (lines 75–128), and the ``[fftw_mpi]`` configuration.
+   - ``pytest.ini``: remove ``parallel`` from ``norecursedirs``.
+   - ``sphinx/api.rst``: remove the ``janus.fft.parallel`` section (this also removes the two warnings of the documentation build).
+
+2. **Simplify the serial FFT** (breaking change). In ``janus/fft/serial/_serial_fft.pyx`` and ``_serial_fft.pxd``, remove ``n0_loc``, ``offset0``, ``idispl``, ``odispl``, ``global_ishape`` and ``global_oshape`` from ``_RealFFT2D`` and ``_RealFFT3D``.
+
+3. **Simplify** ``janus/green.pyx``. Remove ``global_shape0`` and ``offset0`` from the discrete Green operators, and use ``shape0`` instead (around lines 92–155, 199, 253–321, 371, 436–550, 616 and 738), together with the checks of ``transform.global_ishape``. ``tests/test_operators.py`` also contains a few matching names, to be checked (some may be unrelated uses of the word "parallel"). Recompile with ``python setup.py build_ext --inplace``. The reference data (``tests/data/*.npz``) must *not* be modified: they are precisely what detects a mistake in this step.
+
+4. **Update the documentation**: ``README.rst`` and ``sphinx/introduction.rst`` ("fully parallelized"), ``sphinx/installation.rst`` and ``sphinx/fft_tutorial.rst`` (both mention MPI extensively), ``CLAUDE.md``, and the comment on ``mpi4py`` in ``environment.yml``.
+
+What was checked
+~~~~~~~~~~~~~~~~
+
+The plan is based on a search for ``mpi``, ``parallel``, ``offset0``, ``global_`` and ``n0_loc`` in the sources (304 occurrences in 26 files, excluding ``docs/`` and the build artifacts), and on the current state of the repository (``git branch -a``, ``git tag``, ``git status``). No command of the procedure was run: no tag and no branch were created, and no code was modified.
+
+Follow-up: tag and branch created by the author
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The author then created the tag ``Farewell_MPI`` (on commit ``161dc75``) and the branch ``MPI-ectomy``, both pushed to GitHub, and added a corresponding entry to the *History of major changes* of ``README.rst``. At the author's request, Claude suggested language improvements to this entry (in the console only; ``README.rst`` was not modified by Claude).
+
+The author validated this report on 2026-09-15, and the task was marked as done.
+
+
 2026-09-11 • The road to v1.0
 =============================
 
