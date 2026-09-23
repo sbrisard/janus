@@ -11,19 +11,16 @@ At session start, read `sphinx/claude.rst` and process the `TODO` sections accor
 
 Janus is a Python/Cython library for discretizing the Lippmann–Schwinger equation with periodic
 boundary conditions (a matrix-free FFT-based method for homogenization of heterogeneous materials,
-following Moulinec & Suquet). Performance-critical code is written in Cython; MPI (via `mpi4py`) is
-used for the parallel (distributed FFT) variant. The library builds operators for iterative
-(matrix-free) linear solvers — it does not itself implement the solvers; those come from
-`scipy.sparse.linalg` or `petsc4py`.
+following Moulinec & Suquet). Performance-critical code is written in Cython. The library builds
+operators for iterative (matrix-free) linear solvers — it does not itself implement the solvers;
+those come from `scipy.sparse.linalg`.
 
 ## Build
 
 The project is built with `setuptools` + `Cython`, compiling `.pyx`/`.pxd` sources into extension
-modules (`.pyd`/`.so`). It links against FFTW3 (serial) and, optionally, an MPI-enabled FFTW3 build
-(parallel).
+modules (`.pyd`/`.so`). It links against FFTW3.
 
-Before building, `setup.cfg` must exist at the repo root with an `[fftw]` section (and `[fftw_mpi]`
-if building the MPI-enabled extensions), e.g.:
+Before building, `setup.cfg` must exist at the repo root with an `[fftw]` section, e.g.:
 
 ```ini
 [fftw]
@@ -67,16 +64,9 @@ otherwise `setup.cfg` is deleted too):
 git clean -Xfd janus/
 ```
 
-The MPI/parallel extension (`janus.fft.parallel._parallel_fft`) is only attempted if `mpi4py` is
-importable (`setup.py` parses the output of `mpicc -show`, sorting the tokens into
-`include_dirs`/`library_dirs`/`extra_link_args`); if `mpi4py` is missing, `setup.py` silently skips
-the parallel package. Only `ImportError` is caught, so with `mpi4py` installed but no `mpicc` (the
-usual situation on Windows) the build most likely fails — do not install `mpi4py` in the Windows
-environment.
-
 ## Tests
 
-Serial tests:
+All tests:
 
 ```
 python -m pytest tests
@@ -89,16 +79,8 @@ python -m pytest tests/test_operators.py
 python -m pytest tests/test_operators.py::TestAbstractOperator::test_init_sizes
 ```
 
-Parallel tests (require the MPI-enabled build) must be run through `mpiexec`, and are excluded from
-plain `pytest` runs — `pytest.ini` sets `norecursedirs = parallel data` so `tests/parallel` and
-`tests/data` (reference `.npz` fixtures) are skipped by default:
-
-```
-mpiexec -np 3 pytest tests/parallel
-```
-
-Use an odd process count for parallel runs — it's more likely to reveal bugs in the data
-distribution logic than an even count.
+`pytest.ini` sets `norecursedirs = data` so `tests/data` (reference `.npz` fixtures) is not
+collected.
 
 ## Architecture
 
@@ -136,17 +118,14 @@ from the discrete grid index `b` and in whether the tensor is filtered:
 - `FiniteDifferences2D/3D` (`willot2015`) — Green operator evaluated using a finite-difference
   discretization of the gradient instead of the exact Fourier symbol.
 
-When an FFT `transform` is supplied and it exposes an `offset0`/local shape smaller than the global
-shape, these classes operate on the local slab of a domain-decomposed grid (this is what enables the
-parallel/MPI variant — see `janus/fft/parallel/`).
+These classes still carry an `offset0`/`global_shape0` pair, inherited from the (now removed)
+distributed-memory variant, where they located the local slab within a domain-decomposed grid.
+`offset0` is now always 0 and `global_shape0 == shape0`; removing them is a pending simplification.
 
 **FFT layer** (`janus/fft/`): `janus/fft/serial/_serial_fft.pyx` wraps FFTW3 real-to-complex/
-complex-to-real transforms (`_RealFFT2D`/`3D`), exposing `ishape`/`oshape` (local) vs
-`global_ishape`/`global_oshape` and an `offset0` for the local slab's position in the global array.
-`janus/fft/parallel/_parallel_fft.pyx` is the MPI-enabled counterpart (`fftw3-mpi`), sharing the
-same shape/offset attribute naming so `DiscreteGreenOperator*` code is agnostic to serial vs.
-parallel transforms. `janus/fft/__init__.py` exposes the FFTW planner flag constants
-(`FFTW_ESTIMATE`, `FFTW_MEASURE`, etc.).
+complex-to-real transforms (`_RealFFT2D`/`3D`), exposing `ishape`/`oshape` alongside the vestigial
+`global_ishape`/`global_oshape` and `offset0`. `janus/fft/__init__.py` exposes the FFTW planner flag
+constants (`FFTW_ESTIMATE`, `FFTW_MEASURE`, etc.).
 
 **Materials** (`janus/material/`) mirror the mechanical constitutive-law hierarchy; currently only
 `janus/material/elastic/linear/isotropic.pyx` is implemented, producing a Green operator via

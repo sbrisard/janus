@@ -1,3 +1,37 @@
+# TODO This example does not run any more: it depends on mpi4py and petsc4py,
+#      and support for MPI (hence for PETSc, which pulls MPI in) was removed
+#      from Janus -- see the "MPI-ectomy" of sept. 2026 and section E1 of the
+#      roadmap. It is kept because it is the only example of the *symmetric*
+#      formulation of the Lippmann-Schwinger equation, and must be rewritten
+#      in serial.
+#
+#      What this example does, and why square_inclusion_scipy.py is not a
+#      replacement for it:
+#
+#        - the unknown here is the polarization tau, solution of
+#          (C_delta^-1 + Gamma_0) : tau = E, whose operator is symmetric, and
+#          is therefore solved with CG. square_inclusion_scipy.py solves the
+#          strain formulation (I + Gamma_0 : C_delta) : eps = E, which is not
+#          symmetric, with GMRES;
+#        - the local operator is built from the *inverse* stiffness contrast,
+#          1/(2*(k_i - k_0)), instead of the direct one, (k_i - k_0)/2;
+#        - the Green operator is the truncated one, not the filtered one.
+#
+#      Rewriting it amounts to:
+#
+#        - dropping the petsc4py and mpi4py imports, and the stale
+#          sys.path.append("..") (Janus is installed in editable mode);
+#        - replacing janus.fft.parallel.create_real(shape, comm) with
+#          janus.fft.serial.create_real(shape), and dropping transform.offset0
+#          along with the final Gatherv of tau and eps, which become plain
+#          local arrays;
+#        - exposing matvec() and wrapping the class in
+#          scipy.sparse.linalg.LinearOperator, then solving with
+#          scipy.sparse.linalg.cg instead of PETSc.KSP;
+#        - timing with time.perf_counter() instead of PETSc.Log.getTime().
+#
+#      Note that scipy is not currently listed in environment.yml.
+
 import sys
 
 import numpy as np

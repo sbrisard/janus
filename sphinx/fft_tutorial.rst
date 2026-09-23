@@ -6,7 +6,7 @@
 Computing discrete Fourier transforms
 *************************************
 
-Discrete Fourier transforms are computed through the Fast Fourier Transform method (FFT) implemented in the `FFTW <http://www.fftw.org/>`_ library. Module :mod:`janus.fft` provides a Python wrapper to this C library. This module exposes both serial and parallel (MPI) implementations through a unified interface.
+Discrete Fourier transforms are computed through the Fast Fourier Transform method (FFT) implemented in the `FFTW <http://www.fftw.org/>`_ library. Module :mod:`janus.fft` provides a Python wrapper to this C library.
 
 Before the main methods and functions of the :mod:`janus.fft` module are introduced, an important design issue should be mentioned. In the present implementation of the module, input data (to be transformed) is not passed directly to FFTW. Rather, a local copy is first made, and FFTW then operates on this local copy. This allows reusing the same plan to perform many transforms (which is advantageous in the context of iterative solvers). This certainly induces a performance hit, which is deemed negligible for transforms of large 2D or 3D arrays.
 
@@ -96,85 +96,4 @@ and ``transform.c2r()``
 Parallel computations
 =====================
 
-The module :mod:`janus.fft.parallel` is a wrapper around the ``fftw3-mpi`` library (refer to `Distributed-memory FFTW with MPI <http://www.fftw.org/fftw3_doc/Distributed_002dmemory-FFTW-with-MPI.html#Distributed_002dmemory-FFTW-with-MPI>`_ in the FFTW manual for the inner workings of this library). This module must be used along with the `mpi4py <https://bitbucket.org/mpi4py/mpi4py>`_ module to handle MPI communications.
-
-The Python API is very similar to the API for serial transforms. However, computing a parallel FFT is slightly more involved than computing a serial FFT, because the data must be distributed across the processes. The computation must go through the following steps
-
-  1. create input data (root process),
-  2. create a transform object (all processes),
-  3. gather local shapes (root process),
-  4. scatter the input data according to the previouly gathered local sizes (root process),
-  5. compute the transform (all processes),
-  6. gather the results (root process).
-
-This is illustrated in the step-by-step tutorial below. This tutorial aims again at computing a ``32x64`` real Fourier transform. The full source can be :download:`downloaded here <./parallel_fft_tutorial.py>`, it must be run through the following command line::
-
-    $ mpiexec -np 2 python3 parallel_fft_tutorial.py
-
-where the number of processes can be adjusted (all output produced below was obtained with two parallel processes).
-
-Before we proceed with the description of the program, it should be noted that communication will be carried out with the uppercase versions `MPI.Comm.Gather` and `MPI.Comm.Scatter`. The lowercase versions of `MPI.Comm.scatter` and `MPI.Comm.gather` are slightly easier to use, but communicate objects through pickling. This approach fails with very large objects (the size limit is much lower than the intrinsic MPI size limit). With `MPI.Comm.Gather` and `MPI.Comm.Scatter`, the intrinsic MPI size limit is restored. The FFT objects defined in the module :mod:`janus.fft.parallel` provide attributes to help call these methods.
-
-A few modules must first be imported
-
-.. literalinclude:: parallel_fft_tutorial.py
-  :start-after: Imports
-  :end-before: Init
-
-Then, some useful variables are created
-
-.. literalinclude:: parallel_fft_tutorial.py
-  :start-after: Init
-  :end-before: Create
-
-Then, the transform objects (one for each process) are created (step 2), and their various shapes are printed out.
-
-.. literalinclude:: parallel_fft_tutorial.py
-  :start-after: Create
-  :end-before: Prepare
-
-This code snippet outputs the following messages
-
-.. code-block:: none
-
-    global_ishape  = (32, 64)
-    global_oshape  = (32, 66)
-    ishape = (16, 64)
-    oshape = (16, 66)
-
-The ``transform.shape`` attribute refers to the *global* (logical) shape of the transform. Since the data is distributed across all processes, the *local* size in memory of the input and output data differ from ``transform.shape``. Accordingly, the ``transform.rshape`` (resp. ``transform.cshape``) attribute refers to the local shape of the real, input (resp. complex, output) data, for the current process. As expected with FFTW, it is observed that the data is distributed with respect to the first dimension. Indeed, the global, first dimension is 64, and the above example is run with 2 processes; therefore, the local first dimension is ``64 / 2 = 32``.
-
-In order to figure out how to scatter the input data, the root process then gathers all local sizes and displacements, and the parameters to be passed to ``mpi4py.MPI.Scatterv()`` and ``mpi4py.MPI.Gatherv()`` are prepared
-
-.. literalinclude:: parallel_fft_tutorial.py
-  :start-after: Prepare
-  :end-before: Scatter
-
-Then the input data ``x`` is scattered across all processes
-
-.. literalinclude:: parallel_fft_tutorial.py
-  :start-after: Scatter
-  :end-before: Execute
-
-Each process then executes its transform
-
-.. literalinclude:: parallel_fft_tutorial.py
-  :start-after: Execute
-  :end-before: Gather
-
-and the root process finally gathers the results
-
-.. literalinclude:: parallel_fft_tutorial.py
-  :start-after: Gather
-  :end-before: Validate
-
-To check that the computation is correct, the same transform is finally computed locally by the root process
-
-.. literalinclude:: parallel_fft_tutorial.py
-  :start-after: Validate
-
-
-The complete program
---------------------
-
-.. literalinclude:: parallel_fft_tutorial.py
+As of sept. 2026, distributed-memory FFTW with MPI is no longer supported by ``Janus``.

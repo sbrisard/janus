@@ -5,6 +5,67 @@ Claude's contributions to `Janus`
 As of august 2026, `Janus` is revived by the author with the help of `Claude Code`. This page will collect all interactions between the author and Claude.
 
 
+TODO • Removal of the vestiges of distributed memory
+====================================================
+
+Now that the parallel code has been removed (see the branch ``MPI-ectomy``), the classes of ``janus/fft/serial/`` and ``janus/green.pyx`` still carry the attributes that used to locate a local slab within a domain-decomposed grid. They are now redundant: ``offset0`` is always 0, ``idispl`` and ``odispl`` are always 0, ``global_shape0 == shape0``, and ``global_ishape``/``global_oshape`` are equal to ``ishape``/``oshape``. Remove them, as announced in section *E1* of the :doc:`roadmap`.
+
+Proceed one attribute at a time, in the order below, so that each step is a separate commit. Each step leaves the library in a working state: rebuild the extension modules (``python setup.py build_ext --inplace``) and run the tests before moving on. The order is not arbitrary — steps 2 and 4 remove the *readers* of the attributes that steps 3 and 5 delete.
+
+Report on each step in its own sub-paragraph of `Claude's report`, and wait for validation before starting the next one.
+
+TODO • Step 1 — ``idispl`` and ``odispl``
+-----------------------------------------
+
+``janus/fft/serial/_serial_fft.pxd``, ``_serial_fft.pyx``.
+
+Dead code: both are computed in ``__cinit__`` from ``offset0``, and read nowhere else in the code base. Pure deletion, no other file affected.
+
+TODO • Step 2 — ``offset0`` of the discrete Green operators
+-----------------------------------------------------------
+
+``janus/green.pyx``.
+
+Remove the ``offset0`` attribute of ``DiscreteGreenOperator2D`` and ``3D``, which is read from ``transform.offset0`` (or set to 0 when there is no transform). Three consequences:
+
+- in ``set_frequency``, the bounds check on ``b0`` becomes ``0 <= b0 < shape0``, like the checks on ``b1`` and ``b2``; the error message becomes the same as theirs, which leaves the text produced unchanged, since ``offset0`` was interpolated as the lower bound and was 0;
+- in the ``c_apply`` of ``DiscreteGreenOperator2D``/``3D``, ``b[0] = i0 + self.offset0`` becomes ``b[0] = i0``;
+- in the ``c_apply`` of ``TruncatedGreenOperator2D``/``3D``, ``b0 = i0 + self.offset0`` becomes ``b0 = i0``.
+
+This step must come before step 3, which removes the attribute that is read here.
+
+TODO • Step 3 — ``offset0`` of the FFT objects
+----------------------------------------------
+
+``janus/fft/serial/_serial_fft.pxd``, ``_serial_fft.pyx``, ``examples/square_inclusion.py``.
+
+Once step 2 is done, the attribute is read nowhere in the library. Remove it, together with the ``offset0`` parameter of the constructors of ``_RealFFT2D`` and ``_RealFFT3D``. These constructors are called only by ``create_real_2D``/``create_real_3D``, which are ``cdef`` functions: the public entry point ``janus.fft.serial.create_real(shape, flags)`` is unaffected.
+
+``examples/square_inclusion.py`` reads ``transform.offset0``. The example is already broken (it depends on ``mpi4py`` and ``petsc4py``) and carries a ``TODO`` header describing its repair: state there that the attribute no longer exists, but do not attempt the repair, which is a separate task.
+
+TODO • Step 4 — ``global_shape0``
+---------------------------------
+
+``janus/green.pyx``, ``CLAUDE.md``.
+
+``global_shape0`` is equal to ``shape0``, which ``init_shapes`` sets just above its last use. Replace it with ``self.shape0`` in the computation of ``s0`` (``DiscreteGreenOperator2D``/``3D``) and in the wave-vectors of ``TruncatedGreenOperator2D``/``3D`` and ``FilteredGreenOperator2D``/``3D``, then remove the attribute. ``FiniteDifferences2D``/``3D`` does not use it.
+
+The constructors also read ``transform.global_ishape``, to check the shape of the transform: switch that check to ``transform.ishape``. Step 5 removes the attribute, so this step must come first.
+
+In ``CLAUDE.md``, delete the paragraph that presents ``offset0``/``global_shape0`` as a pending simplification.
+
+TODO • Step 5 — ``global_ishape``, ``global_oshape`` and ``n0_loc``
+-------------------------------------------------------------------
+
+``janus/fft/serial/_serial_fft.pxd``, ``_serial_fft.pyx``, ``sphinx/fft_tutorial.rst``, ``CLAUDE.md``.
+
+Once step 4 is done, these are read only by the documentation. Remove the two attributes and the ``n0_loc`` parameter of the constructors (which then take the shape alone), and drop the word *global* from the docstring of ``create_real``.
+
+In ``sphinx/fft_tutorial.rst``, the four attributes documented for a serial transform are reduced to ``ishape`` and ``oshape``: remove the two doctests on ``global_ishape``/``global_oshape``, and the two sentences explaining that local and global shapes coincide in the serial case. In ``CLAUDE.md``, the description of the FFT layer no longer mentions the vestigial attributes.
+
+Whatever the step, the behaviour of the library must not change: the tests (3043 passed, 111 skipped) are the acceptance criterion, and no reference data in ``tests/data`` is to be regenerated.
+
+
 2026-09-15 • Planning the MPI-ectomy
 ====================================
 
