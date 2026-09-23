@@ -92,6 +92,15 @@ What was checked:
 
 The author's own ``janus`` environment was not modified: it still comes from the ``defaults`` channel, and should be recreated as explained above.
 
+After the push by the author, both jobs of the workflow are green on GitHub. This also validates the two points that could not be checked on this machine: the Windows branch of ``fftw_config()`` (step 1), and the detection of the MSVC compiler of the runner by ``setuptools``.
+
+Step 3 — Badge
+~~~~~~~~~~~~~~
+
+``README.rst``: the status badge of the workflow is placed before the documentation badge, on the same line. Both are now written as substitutions (``|tests| |docs|``), since two consecutive ``image`` directives would be rendered one below the other. The rendering was checked with ``docutils`` (no warning, both images in a single paragraph).
+
+The badge reports the status of ``master`` (``?branch=master``), which is the reference for a visitor, not the status of the working branches. It will show *no status* until ``continuous_integration`` is merged into ``master``; the weekly run will also start then.
+
 
 2026-09-23 • Removal of the vestiges of distributed memory
 ==========================================================
