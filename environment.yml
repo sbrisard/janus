@@ -11,14 +11,15 @@
 # needed).
 name: janus
 channels:
-  - defaults
+  - conda-forge
 dependencies:
   - python=3.14
   - pip
   # Build
   - setuptools
   - cython
-  - fftw
+  # The nompi builds avoid pulling an MPI implementation from conda-forge.
+  - fftw=*=nompi_*
   # Run
   - numpy
   # Tests

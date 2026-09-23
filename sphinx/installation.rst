@@ -77,6 +77,8 @@ This procedure was tested with Miniconda, Python 3.14 and Visual Studio Build To
 
    To synchronize an existing environment with ``environment.yml``, use ``conda env update -n janus -f environment.yml`` instead.
 
+   All packages come from the ``conda-forge`` channel, which works with both Miniconda and `Miniforge`_. An environment created before ``environment.yml`` switched from the ``defaults`` channel to ``conda-forge`` should be recreated (``conda env remove -n janus``, then ``conda env create -f environment.yml``) rather than updated, so as not to mix packages from both channels.
+
 3. There is no need to create ``setup.cfg``: FFTW is installed in the ``Library`` subdirectory of the environment, which ``setup.py`` uses by default. Should the paths need to be set explicitly, note that environment variables are not expanded in ``setup.cfg``: the path printed by ``echo %CONDA_PREFIX%`` must be written in full::
 
      [fftw]
@@ -95,6 +97,7 @@ This procedure was tested with Miniconda, Python 3.14 and Visual Studio Build To
    After modifying a ``*.pyx`` or ``*.pxd`` file, recompile the extension modules in place with ``python setup.py build_ext --inplace``.
 
 .. _Visual Studio Build Tools: https://visualstudio.microsoft.com/visual-cpp-build-tools/
+.. _Miniforge: https://github.com/conda-forge/miniforge
 
 Compilation with MinGW/MSYS
 ---------------------------
