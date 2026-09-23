@@ -5,8 +5,8 @@ Claude's contributions to `Janus`
 As of august 2026, `Janus` is revived by the author with the help of `Claude Code`. This page will collect all interactions between the author and Claude.
 
 
-TODO • Continuous integration
-=============================
+2026-09-23 • Continuous integration
+===================================
 
 Set up continuous integration on GitHub Actions, with the current Cython code, as announced in section *E11* and in milestone 0.2 of the :doc:`roadmap`. Its purpose is to build Janus from a clean clone, on Linux and Windows, at each push and once a week, so that the Cython implementation remains a reliable reference during the rewrite of milestone 0.3.
 
@@ -14,8 +14,8 @@ Proceed in the order below, one step at a time. Each step is a separate commit, 
 
 Out of scope: building and deploying the documentation to GitHub Pages, packaging and publication on PyPI (milestone 0.4), macOS.
 
-TODO • Step 1 — Make ``setup.cfg`` optional
--------------------------------------------
+2026-09-23 • Step 1 — Make ``setup.cfg`` optional
+-------------------------------------------------
 
 ``setup.py``, ``environment.yml``, ``sphinx/installation.rst``, ``CLAUDE.md``.
 
@@ -25,8 +25,8 @@ Update the instructions accordingly: the header comment of ``environment.yml``, 
 
 Check on Linux: move ``setup.cfg`` aside, remove the compiled artifacts (``git clean -Xfd janus/``), then ``pip install --no-build-isolation -e .`` and run the tests. Windows cannot be checked by Claude on this machine: the author checks it, or step 2 does.
 
-TODO • Step 2 — GitHub Actions workflow
----------------------------------------
+2026-09-23 • Step 2 — GitHub Actions workflow
+---------------------------------------------
 
 ``.github/workflows/tests.yml`` (new file).
 
@@ -41,8 +41,8 @@ The workflow only runs once pushed to GitHub, which the author does. Two difficu
 
 Acceptance criterion: both jobs are green, with the same test count as locally (3043 passed, 111 skipped on Linux), and no failing doctest.
 
-TODO • Step 3 — Badge
----------------------
+2026-09-23 • Step 3 — Badge
+---------------------------
 
 ``README.rst``.
 
