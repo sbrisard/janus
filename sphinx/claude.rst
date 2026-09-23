@@ -5,8 +5,8 @@ Claude's contributions to `Janus`
 As of august 2026, `Janus` is revived by the author with the help of `Claude Code`. This page will collect all interactions between the author and Claude.
 
 
-TODO • Removal of the vestiges of distributed memory
-====================================================
+2026-09-23 • Removal of the vestiges of distributed memory
+==========================================================
 
 Now that the parallel code has been removed (see the branch ``MPI-ectomy``), the classes of ``janus/fft/serial/`` and ``janus/green.pyx`` still carry the attributes that used to locate a local slab within a domain-decomposed grid. They are now redundant: ``offset0`` is always 0, ``idispl`` and ``odispl`` are always 0, ``global_shape0 == shape0``, and ``global_ishape``/``global_oshape`` are equal to ``ishape``/``oshape``. Remove them, as announced in section *E1* of the :doc:`roadmap`.
 
@@ -43,8 +43,8 @@ Once step 2 is done, the attribute is read nowhere in the library. Remove it, to
 
 ``examples/square_inclusion.py`` reads ``transform.offset0``. The example is already broken (it depends on ``mpi4py`` and ``petsc4py``) and carries a ``TODO`` header describing its repair: state there that the attribute no longer exists, but do not attempt the repair, which is a separate task.
 
-TODO • Step 4 — ``global_shape0``
----------------------------------
+2026-09-23 • Step 4 — ``global_shape0``
+---------------------------------------
 
 ``janus/green.pyx``, ``CLAUDE.md``.
 
@@ -54,8 +54,8 @@ The constructors also read ``transform.global_ishape``, to check the shape of th
 
 In ``CLAUDE.md``, delete the paragraph that presents ``offset0``/``global_shape0`` as a pending simplification.
 
-TODO • Step 5 — ``global_ishape``, ``global_oshape`` and ``n0_loc``
--------------------------------------------------------------------
+2026-09-23 • Step 5 — ``global_ishape``, ``global_oshape`` and ``n0_loc``
+-------------------------------------------------------------------------
 
 ``janus/fft/serial/_serial_fft.pxd``, ``_serial_fft.pyx``, ``sphinx/fft_tutorial.rst``, ``CLAUDE.md``.
 
@@ -148,6 +148,21 @@ Two mentions were deliberately left alone.
 - ``sphinx/roadmap.rst`` lists these attributes twice, as *friction point 6* and in the description of milestone 0.2, i.e. as the work to be done. They now *are* done; the roadmap will have to be updated when the milestone is closed, which is beyond the scope of this task.
 
 Unrelated observation, found while running the doctests: ``sphinx/operators.rst`` (line 81) has one failing doctest, ``np.sqrt(np.sum((yy - y)**2))``, which expects ``0.0`` but gets ``np.float64(0.0)``. This is the NumPy 2 scalar representation, has nothing to do with the present task, and does not affect the HTML build (the ``doctest`` builder is not run by ``make ghpages``).
+
+Suggestions
+-----------
+
+On the interactions:
+
+- the form of this task is worth reusing for the rest of the roadmap. Splitting it into numbered steps, each with the list of files it touches, the consequences to expect, the reason for its rank in the order, and a global acceptance criterion (the test count), left no room for interpretation: each step was a mechanical edit followed by a check. The validation between steps also kept the reviewing effort proportionate to what had just changed;
+- one thing the steps could state explicitly: whether Claude should commit. The introduction says "so that each step is a separate commit", while the standing rule of *How to update this page* is never to commit. The commits were made by the author, which is consistent, but a word in the task would remove the ambiguity.
+
+Follow-ups for the code base, in decreasing order of usefulness:
+
+- ``sphinx/roadmap.rst`` still lists ``offset0``, ``global_shape0``, ``global_ishape``, ``global_oshape`` and ``n0_loc`` as work to be done, in *friction point 6* and in milestone 0.2. Both passages could now be written in the past tense, when the milestone is closed;
+- ``examples/square_inclusion.py`` is the only example of the symmetric formulation, and it no longer runs. Its ``TODO`` header now describes its repair completely, including the two dead references to ``offset0``: the rewrite in serial form would make a well-defined task;
+- the failing doctest of ``sphinx/operators.rst`` (see above) could be fixed, either by expecting ``np.float64(0.0)``, or by wrapping the result in ``float(...)``, which keeps the output stable across NumPy versions;
+- the out-of-bounds branch of ``set_frequency`` in the discrete Green operators is not covered by any test (this was found in step 2, and checked by hand). A short test on the three indices would protect the bounds checks, which are the only remaining place where the shape of the grid is interpreted.
 
 
 2026-09-15 • Planning the MPI-ectomy
