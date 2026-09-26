@@ -5,8 +5,8 @@ Claude's contributions to `Janus`
 As of august 2026, `Janus` is revived by the author with the help of `Claude Code`. This page will collect all interactions between the author and Claude.
 
 
-TODO • Deployment of the documentation by GitHub Actions
-========================================================
+2026-09-26 • Deployment of the documentation by GitHub Actions
+==============================================================
 
 Build the HTML documentation in continuous integration, and deploy it to GitHub Pages from GitHub Actions, instead of versioning the generated HTML in ``docs/``. This is the third suggestion of the task *Updating the online docs* (below), and part of *E11* in the :doc:`roadmap`; it was left out of scope of the task *Continuous integration*.
 
@@ -25,8 +25,8 @@ In both cases, the documentation is *built* at each push and pull request, on al
 
 **Decision** (2026-09-26): option a, the documentation is deployed at each push to ``master``.
 
-TODO • Step 1 — Workflow
-------------------------
+2026-09-26 • Step 1 — Workflow
+------------------------------
 
 ``.github/workflows/docs.yml`` (new file), or new jobs in ``.github/workflows/tests.yml``: Claude proposes one option in its report, with its reasons.
 
@@ -37,13 +37,13 @@ TODO • Step 1 — Workflow
 
 The workflow only runs once pushed to GitHub, which the author does. Before that, run its commands by hand on a fresh clone. Until step 2 is done, the ``deploy`` job fails (GitHub Pages still expects a branch): report whether it should be disabled until then.
 
-TODO • Step 2 — Switch the source of GitHub Pages
--------------------------------------------------
+2026-09-26 • Step 2 — Switch the source of GitHub Pages
+-------------------------------------------------------
 
 Made by the author, in *Settings → Pages*: *Source* switches from *Deploy from a branch* (``master``, ``/docs``) to *GitHub Actions*. Claude gives the exact procedure in its report of step 1, and how to check the result: the online site is identical to the build of the workflow (e.g. the date of the last update of the present page), and the *pages build and deployment* workflow of GitHub no longer runs.
 
-TODO • Step 3 — Remove ``docs/`` from the repository
-----------------------------------------------------
+2026-09-26 • Step 3 — Remove ``docs/`` from the repository
+----------------------------------------------------------
 
 Only once the site deployed by the workflow has been checked online.
 
