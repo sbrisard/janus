@@ -39,10 +39,17 @@ release = '0.0'
 
 exclude_patterns = ['_build']
 
-pygments_style = 'sphinx'
-
 numfig = True
 
+html_theme = 'sphinx_book_theme'
+html_theme_options = {
+    'repository_url': 'https://github.com/sbrisard/janus',
+    'repository_branch': 'master',
+    'path_to_docs': 'sphinx',
+    'use_repository_button': True,
+    'use_issues_button': True,
+    'use_source_button': True,
+}
 html_logo = './logo_janus-200x200.png'
 htmlhelp_basename = 'janusdoc'
 

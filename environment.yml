@@ -26,3 +26,4 @@ dependencies:
   - pytest
   # Documentation
   - sphinx
+  - sphinx-book-theme
