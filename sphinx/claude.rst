@@ -93,6 +93,33 @@ The switch is reversible: if the site disappears and the first deployment fails,
 
 Procedure of step 2 (made by the author): *Settings → Pages → Build and deployment → Source*: choose *GitHub Actions* instead of *Deploy from a branch*. GitHub then creates the ``github-pages`` environment if it does not exist yet, restricted by default to deployments from the default branch (``master``). Check: after the deployment of point 2, the *Deployments* section of the repository shows ``github-pages`` deployed by the ``docs`` workflow; the online site contains the present task (it is absent from the current ``docs/``); a push to ``master`` no longer triggers the *pages build and deployment* workflow of GitHub.
 
+The author switched the source of GitHub Pages, then pushed the commit of step 1 to ``master``: the site was deployed by the ``docs`` workflow (2026-09-26). This completes step 2.
+
+Step 3 — Remove ``docs/`` from the repository
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- ``.gitignore``: ``docs/.buildinfo`` is removed. Nothing is added: the workflow builds into ``sphinx/_build/html``, already ignored (see step 1).
+- ``scripts/empty_docs.py`` is deleted.
+- ``sphinx/Makefile`` and ``sphinx/make.bat``: the ``ghpages`` target is removed, together with the ``GHPAGESDIR`` and ``PYTHON`` variables, which were only used by this target, and with the *Janus-specific target* part of ``help``. Both files are again the templates of ``sphinx-quickstart``; ``make.bat`` keeps LF line endings in git.
+- ``sphinx/installation.rst``, section *Build the documentation*: the documentation is deployed by the ``docs`` workflow at each push to ``master``, and built without deployment on the other branches and for pull requests; local build with ``python -m sphinx -b html -E sphinx sphinx/_build/html`` (``-W --keep-going`` to check the absence of warnings), or ``make html``.
+- ``CLAUDE.md``, *Repository layout notes*: same update. The rule "only regenerate ``docs/`` when asked" is replaced by a warning: pushing to ``master`` publishes the documentation, including the present page and the roadmap.
+
+Not done by Claude, as agreed: ``git rm -r docs``. Since ``docs/.buildinfo`` is no longer ignored, it now shows up as untracked; ``git rm`` does not remove it, so ``docs/`` should then be deleted altogether (``rm -rf docs``, or ``git clean -fd docs``).
+
+What was checked: ``git grep`` finds no reference to ``docs/``, ``empty_docs``, ``ghpages``, ``.nojekyll`` or ``.buildinfo`` outside ``docs/`` and the present page; the documentation builds without warning (``-W --keep-going``), and ``make html`` builds into ``sphinx/_build/html``. ``make.bat`` was not run (no Windows on this machine).
+
+Suggestion (*applied, see below*): section *E11* of the :doc:`roadmap` still mentions "possibly the deployment of the documentation to GitHub Pages" as a proposal, and the introduction lists what is done; both could state that this part is now done.
+
+Follow-up: roadmap updated
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+At the author's request, the suggestion was applied to the :doc:`roadmap`:
+
+- introduction: the list of what is done now includes the deployment of the documentation by continuous integration (E11);
+- *E11*, *Proposal*: "possibly the deployment of the documentation" becomes "build and deployment of the documentation to GitHub Pages";
+- *E11*, *Recommendation*: the part marked as done now describes the ``docs`` workflow (build at each push, failing on any warning; deployment at each push to ``master``; HTML no longer versioned);
+- milestone 0.2 (*Milestones*), for consistency: a sentence states that the deployment of the documentation was added afterwards. It is not presented as part of the milestone, which was defined without it.
+
 
 2026-09-26 • Make the roadmap consistent with the decisions of 2026-09-25
 =========================================================================

@@ -6,7 +6,7 @@
 Roadmap to v1.0
 ***************
 
-This chapter was written by Claude at the request of the author (see :doc:`claude`, task *The road to v1.0*). It analyses the evolutions that would turn Janus into a flexible, easily maintainable and extensible library, and proposes an ordered sequence of releases leading to version 1.0. It was revised on 2026-09-25 and 2026-09-26, after the decision to keep Cython (see :doc:`claude`, sections *The continuum Green operator in the new architecture* and *Automatic differentiation with JAX*); the revised sections carry a note. It is a working document: milestone 0.2 (E1, and the continuous integration part of E11) is done; the other evolutions have not been implemented yet.
+This chapter was written by Claude at the request of the author (see :doc:`claude`, task *The road to v1.0*). It analyses the evolutions that would turn Janus into a flexible, easily maintainable and extensible library, and proposes an ordered sequence of releases leading to version 1.0. It was revised on 2026-09-25 and 2026-09-26, after the decision to keep Cython (see :doc:`claude`, sections *The continuum Green operator in the new architecture* and *Automatic differentiation with JAX*); the revised sections carry a note. It is a working document: milestone 0.2 (E1, and the continuous integration part of E11) is done, and so is the deployment of the documentation by continuous integration (E11); the other evolutions have not been implemented yet.
 
 Goals
 =====
@@ -271,7 +271,7 @@ E11. Packaging, continuous integration and distribution
 
 .. note:: This section was revised on 2026-09-26, for consistency with the decision to keep Cython (see E3, and :doc:`claude`, section *The continuum Green operator in the new architecture*). It initially assumed that Janus would become a pure Python package, distributed as a universal wheel.
 
-**Proposal.** Janus remains a compiled package (Cython extensions), but no longer links to FFTW after the switch (E2). Configuration in ``pyproject.toml`` as far as possible (``setup.cfg`` disappears with the link to FFTW); precompiled wheels for Linux, Windows and macOS, and for each supported version of Python, built with ``cibuildwheel``, together with a source distribution; publication on PyPI (and conda-forge); continuous integration on GitHub Actions (tests, doctests, execution of the examples, see E12, possibly the deployment of the documentation to GitHub Pages).
+**Proposal.** Janus remains a compiled package (Cython extensions), but no longer links to FFTW after the switch (E2). Configuration in ``pyproject.toml`` as far as possible (``setup.cfg`` disappears with the link to FFTW); precompiled wheels for Linux, Windows and macOS, and for each supported version of Python, built with ``cibuildwheel``, together with a source distribution; publication on PyPI (and conda-forge); continuous integration on GitHub Actions (tests, doctests, execution of the examples, see E12, build and deployment of the documentation to GitHub Pages).
 
 **Gains.** ``pip install`` in seconds, without compiler, on the platforms for which wheels are provided; the fragile steps identified in :doc:`claude` (locating FFTW, ``setup.cfg``) disappear.
 
@@ -284,7 +284,7 @@ E11. Packaging, continuous integration and distribution
 - ``pyproject.toml`` does not declare the runtime dependencies yet (NumPy, and SciPy after E2).
 - The extensions use typed memoryviews, not the C API of NumPy: the wheels therefore do not depend on the version of NumPy they are built against.
 
-**Recommendation.** Continuous integration as early as milestone 0.2 (done: tests and doctests on Linux and Windows, at each push and once a week, with the current code); macOS, wheels and publication in milestone 0.4, once the link to FFTW is removed.
+**Recommendation.** Continuous integration as early as milestone 0.2 (done: tests and doctests on Linux and Windows, at each push and once a week, with the current code; the documentation is built at each push, any Sphinx warning failing the build, and deployed to GitHub Pages at each push to ``master``, the generated HTML being no longer versioned); macOS, wheels and publication in milestone 0.4, once the link to FFTW is removed.
 
 E12. Testing strategy for the rewrite
 -------------------------------------
@@ -351,7 +351,7 @@ Milestones
 
 The evolutions above are ordered as follows. Each milestone leaves the library in a usable, tested state.
 
-**0.2 — Clean-up (done).** MPI was removed (E1), and the last commit with MPI was tagged ``Farewell_MPI``. Continuous integration runs on Linux and Windows with the current Cython code, at each push and once a week (E11).
+**0.2 — Clean-up (done).** MPI was removed (E1), and the last commit with MPI was tagged ``Farewell_MPI``. Continuous integration runs on Linux and Windows with the current Cython code, at each push and once a week (E11). Afterwards, the documentation was also built and deployed to GitHub Pages by continuous integration (E11).
 
 **0.3 — New core, in Cython.** New implementation, developed *alongside* the current code (e.g. in a new subpackage), so that the current code remains an executable reference throughout the rewrite:
 
