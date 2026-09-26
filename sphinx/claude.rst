@@ -5,6 +5,143 @@ Claude's contributions to `Janus`
 As of august 2026, `Janus` is revived by the author with the help of `Claude Code`. This page will collect all interactions between the author and Claude.
 
 
+TODO • Make the roadmap consistent with the decisions of 2026-09-25
+===================================================================
+
+Priority task. The decisions recorded in *The continuum Green operator in the new architecture* (below) were applied to sections *E3*, *E4*, *E7* and *Milestones* of the :doc:`roadmap` only. Update the other parts of the roadmap, which still assume that Cython is replaced by NumPy/JAX. The list established at the end of that section is the starting point:
+
+- *Goals*: new physics implementable without compilation, GPU not to be ruled out;
+- friction point 2, which presents the per-frequency design as a problem;
+- *E2*: its recommendation contradicts milestone 0.3 (it refers to the array namespace of *E7*, and does not state that the link to FFTW disappears with ``scipy.fft``);
+- *E5*, *E8*, *E10*, *E11*, *E12*;
+- *E8* and milestones 0.4 and 0.5 must also reflect the decision on local operators (see *Follow-up: local operators*): functions of fields, reference implementation in pure NumPy (phase map, loop over the phases), Numba as an optional dependency, removal of ``BlockDiagonalOperator2D/3D`` at milestone 0.4;
+- the scope of the constitutive laws (see *Follow-up: scope of the constitutive laws*): linear laws, and hyperelasticity at finite strain, without internal variables. Remove or qualify the mentions of general nonlinear laws (*Goals*, *E8*: "extensible to nonlinear laws", tangent operators by automatic differentiation; *E10*);
+- *Decisions required from the author*: *Default backend* and *Acceptable slowdown* are obsolete;
+- the introduction (see *TO DISCUSS • Status of the roadmap*);
+- the mentions of JAX and of automatic differentiation (*Goals*, *E1*, *E5*, *E8*, *E10*, *E12*), to be aligned with *E13* (see *Automatic differentiation with JAX*): JAX is no longer a backend, but a use case shown by an example.
+
+Start with *E2*. Report the proposed changes before applying the ones that go beyond consistency (i.e. that would express a new decision).
+
+
+2026-09-26 • Automatic differentiation with JAX
+===============================================
+
+Not a task: record of a discussion held in the console. The author asked whether, Cython being kept, automatic differentiation with JAX could be recovered by implementing the missing derivatives of the Green operators by hand, JAX then applying the chain rule.
+
+Discussion
+----------
+
+Claude answered that it can: JAX cannot differentiate code it does not see, but ``jax.pure_callback`` makes the Cython code callable from JAX (also under ``jit``), and ``jax.custom_vjp`` provides its derivative, which JAX combines with the rest of the computation by the chain rule. With respect to the polarization, the discrete Green operator is linear, so that its vector-Jacobian product is its transpose; Claude checked numerically that the six current discrete Green operators (truncated, filtered, ``willot2015``, in 2D and 3D) are symmetric, to within about :math:`10^{-16}` (relative), including on grids of odd sizes. The derivative to be provided is therefore the operator itself: no new Cython code is needed. Only the derivatives with respect to the reference medium (:math:`\mu_0`, :math:`\nu_0`) would require new kernels, but they are rarely needed.
+
+Claude listed the limits: reverse mode only (JAX cannot transpose a ``pure_callback``), execution on the host CPU, no fusion by XLA across the call, sequential ``vmap``, ``jax_enable_x64`` required; the solver should be differentiated implicitly (a ``custom_vjp`` around the whole solve, the backward pass solving the adjoint problem), not through its iterations. Claude also objected that the rest of the chain, in particular the local operators, would have to be visible by JAX, whereas the decision of 2026-09-25 is to write them in NumPy.
+
+The author answered that this is not a problem: the library will only provide the Green operator, the local operators written in Cython disappearing; the local operators will be written in complete *examples*, in NumPy or Numba, and nothing prevents an example based on JAX, precisely to show that it is possible. Claude agreed: in such an example, the local operators are written with ``jax.numpy``, and the discrete Green operator is the only opaque function. The remaining points belong to the example, not to the architecture:
+
+- the adapter (a dozen lines) is written in the example, and may move to an optional module of the library later; JAX is not a dependency of the library;
+- the solver is differentiated implicitly, in the example; whether the solvers of ``jax.scipy.sparse.linalg`` can be differentiated directly when their operator contains the adapter is to be checked by a prototype;
+- the example relies on the symmetry of the discrete Green operator, which must therefore become a property of its interface, guaranteed by a test for each scheme and preserved by the new core.
+
+JAX thus becomes a use case, shown by an example, and not a backend; this is consistent with the abandonment of *E7*.
+
+Claude's report
+---------------
+
+At the author's request, the discussion was integrated into the :doc:`roadmap`:
+
+- new evolution *E13. Automatic differentiation through an adapter* (added at the end, so that the numbering does not change): context, adapter code, limits, consequence on the library (symmetry of the discrete Green operator as a property of the interface, with the check made on the current code), implementation problems (implicit differentiation of the solver, derivatives with respect to the reference medium), and recommendation: an example with JAX in milestone 0.5, once local operators are described as fields (*E8*), and the symmetry test from milestone 0.3 on;
+- *E3*: the last paragraph no longer states that automatic differentiation is out of reach with Cython, and refers to *E13*;
+- *E12*: symmetry is marked as a property of the interface, on which *E13* relies;
+- milestone 0.5: the JAX example is added. Its placement in 0.5 is a proposal of Claude;
+- the introduction of *Analysis of the proposed evolutions* mentions *E13*.
+
+The other mentions of JAX and of automatic differentiation in the :doc:`roadmap` (*Goals*, *E1*, *E5*, *E8*, *E10*) were not modified: they were added to the list of the task *Make the roadmap consistent with the decisions of 2026-09-25* (above). Note that the *Goals* ("GPU execution and automatic differentiation are not required, but the architecture should not rule them out") are now consistent with the decisions as far as automatic differentiation is concerned; only GPU execution is ruled out.
+
+
+2026-09-25 • The continuum Green operator in the new architecture
+=================================================================
+
+Not a task: record of a discussion held in the console, started by the author with the question "what are the inputs and outputs of the function ``symbol(k)``?" (see *E4* of the :doc:`roadmap`). The discussion led to the decisions below, in this order; the last one reverses the recommendation of *E3*.
+
+Decisions
+---------
+
+1. **Zero frequency.** :math:`\hat\Gamma_0(\mathbf 0) = \mathbf 0` is part of the *definition* of the Green operator, which acts on fields with zero mean. It is not a convenience value, and it does not depend on the loading. The macroscopic loading (imposed mean strain, mean stress, or mixed conditions) is handled by adapting the *equation*, not the Green operator. Claude had first argued that, under an imposed mean stress, the zero mode of the operator should be :math:`\mathbf C_0^{-1}`; the author objected that the corresponding term, :math:`\mathbf C_0^{-1} : (\boldsymbol\Sigma - \langle\boldsymbol\tau\rangle)`, belongs to the equation, which Claude agreed with.
+
+2. **Apply, do not form the matrix.** The primitive of a continuum Green operator is the application :math:`\hat{\boldsymbol\eta} = \hat\Gamma(\mathbf k) \cdot \hat{\boldsymbol\tau}`, computed in closed form, not a function ``symbol(k)`` that returns a matrix: the matrix is not needed in general, and forming it costs time and memory. The matrix can be recovered by applying the operator to the vectors of the canonical basis, which is enough for the tests. A notation such as ``symbol(k) @ tau`` would require an intermediate object (a matrix, or a matrix-free linear operator), and was not retained.
+
+3. **One frequency at a time.** Within a vectorized (NumPy) design, ``apply(k, tau)`` must receive the wave-vectors of the whole grid. Storing them costs about a quarter of a field in 3D elasticity (1.6 GB for a 512³ grid, against 6.4 GB for the Fourier coefficients of the polarization), and half of a field in 2D conductivity, whereas the current Cython code computes each wave-vector on the fly and stores nothing. Claude proposed workarounds (wave-vectors passed as a tuple of broadcastable components, evaluation by blocks), which the author found unconvincing: they are symptoms of the ban on loops over frequencies that comes with abandoning compiled code. The physics is therefore written for *one* wave-vector at a time, as in the mathematics and in the current code.
+
+4. **Cython is kept.** The author will write new physics mainly by themselves, within the library, and GPU execution is not a priority. Under these conditions, compiling new physics is not an obstacle, and Cython remains a good choice: the existing code works and serves as a reference, it is fast and allocates nothing, and most friction points of the :doc:`roadmap` (stateful operators, Python subclasses silently ignored, restricted data model, and, to a large extent, the fragile build) are *design* problems, which can be fixed without changing the tool. This departs from the context of the task *The road to v1.0* below, which asked that new physics be implementable without compiling.
+
+Open points
+-----------
+
+- Modified wave-vectors that vanish at a nonzero discrete frequency (e.g. at the Nyquist frequencies, for some schemes): with decision 1, the Green operator is zero there. Check that this is the intended behaviour for each scheme, and not a side effect.
+- Representation of the local tensors (flattened Mandel–Voigt vectors, or full tensors), which fixes the sizes seen by ``apply``.
+- Signature of the ``cdef`` method: raw pointers or memoryviews (slicing a memoryview at each frequency has a non-negligible cost in an inner loop); real or complex wave-vectors.
+- Dimension-generic code in Cython (*E5*): this is where Cython helps least.
+- A Numba prototype (generic kernel, truncated scheme, 2D conductivity, timed against the Cython code) was considered, then postponed: it may be done later, if the choice of Cython is to be confirmed by measurements.
+
+Claude's report
+---------------
+
+At the author's request, sections *E3*, *E4* and *E7* of the :doc:`roadmap` were rewritten according to the above decisions.
+
+- *E3*: the analysis of the three options (NumPy, Numba, JAX) is kept, shortened, and completed with the reasons why the vectorized design was rejected; the recommendation is reversed: Cython is kept, and its friction points are fixed by design.
+- *E4*, renamed *Stateless operators*: the continuum Green operator exposes a stateless ``cdef`` method that applies its symbol at one wave-vector, without forming the matrix; :math:`\hat\Gamma(\mathbf 0) = \mathbf 0` by definition; the discrete operators compute the wave-vectors on the fly. The NumPy example was replaced by a Cython sketch for conductivity, whose signature is explicitly left open.
+- *E7* is marked as not adopted: the array API and the functional interface lose their purpose once Cython is kept and JAX is no longer a goal; the in-place semantics of ``apply(x, y)`` is kept. The section is kept, so that the numbering of the evolutions does not change.
+
+The other parts of the roadmap were *not* modified, and are now inconsistent with these decisions:
+
+- *Goals*: "new physics … implementable in pure Python, without compilation" and "the architecture should not rule [GPU] out";
+- friction point 2, which presents the per-frequency design as a problem;
+- *E2*: the recommendation of ``scipy.fft`` goes "through the array namespace, see E7"; with Cython kept, the choice between the current FFTW wrapper, pyFFTW and ``scipy.fft`` must be reconsidered;
+- *E5* (NumPy/JAX arguments), *E8* (vectorized constitutive functions, ``vmap``), *E10* (JAX solvers), *E11* ("once Cython is gone", pure Python package) and *E12* (independence from the backend);
+- the milestones 0.3 (pure NumPy/SciPy core), 0.4 (removal of Cython and FFTW) and 0.6 (JAX backend), and two of the *Decisions required from the author* (default backend, acceptable slowdown of the pure Python implementation);
+- the introduction, already discussed in *TO DISCUSS • Status of the roadmap*.
+
+The documentation builds without warning; ``docs/`` was not modified.
+
+Follow-up: milestones
+~~~~~~~~~~~~~~~~~~~~~
+
+The milestones of the :doc:`roadmap` were then discussed. The author approved Claude's three recommendations:
+
+- the new core is developed *alongside* the current code (e.g. in a new subpackage), rather than by refactoring it in place, so that the current code remains an executable reference until the switch;
+- the FFT moves to ``scipy.fft`` as early as milestone 0.3: it is called from Python once per field, the loop over frequencies remaining in Cython, which removes the link to FFTW (hence ``setup.cfg``) and eases the production of wheels; the loss of the fine tuning of FFTW (``FFTW_MEASURE``, wisdom) is to be measured by the benchmark;
+- the dimension-generic code (*E5*) is postponed after the switch; the ``apply`` method of the physics takes the dimension as a parameter from the start, so that *E5* does not change it.
+
+The *Milestones* section was rewritten accordingly: 0.2 is marked as done; 0.3 is the new core in Cython (*E4*, *E6*, ``scipy.fft``, elasticity with the three existing schemes, benchmark with no regression as acceptance criterion); 0.4 is the switch (deletion of the current API and of the link to FFTW, wheels built with ``cibuildwheel``, publication on PyPI); 0.5 is the second physics, in Cython, together with *E5*, *E8* and the reference schemes; 0.6 becomes a finite strain prototype, with hand-written tangent operators, the JAX backend being dropped; 1.0 is unchanged. The closing paragraph now explains the three ordering choices above.
+
+Follow-up: local operators
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The author then raised the question of the *local* part of the linear operator, e.g. :math:`(\mathbf C - \mathbf C_0)^{-1} \cdot \boldsymbol\tau`. In the current code, it is what makes Janus particularly heavy: ``BlockDiagonalOperator2D/3D`` takes an array of local operators (``AbstractOperator[:, :]``), i.e. one Cython object per cell, with one indirect call per cell, and a microstructure described cell by cell rather than by its phases.
+
+The situation differs from that of the Green operator. For the latter, vectorization required data to be *created* (the grid of wave-vectors, temporaries), which led to keeping Cython. For the local operator, the data already exist as fields (phase map, polarization), so that this objection does not apply. Moreover, the interface between both parts only consists of fields: the operator passed to the Krylov solver combines them in Python, with one call per field for each part, so that both parts need not be written with the same tool.
+
+The author approved the following proposal:
+
+- a local operator is a *function of fields*, ``tau ↦ eta``, acting on arrays of shape ``(*grid_shape, n)`` (*E8*);
+- the reference implementation is written in pure NumPy, for linear laws with few phases: a phase map and one (precomputed) matrix per phase, with a Python loop over the *phases*, not over the cells. No Cython, no object per cell, and temporaries limited to the size of each phase;
+- Numba is an *optional* dependency, not a foundation, for the cases where NumPy is not suitable: many phases (e.g. polycrystals with thousands of grains, where storing one matrix per cell costs :math:`n^2` reals per cell, i.e. six times a field in 3D), and hyperelastic laws at finite strain (milestone 0.6), whose stress and tangent operator are naturally evaluated cell by cell. A ``@njit`` loop over the cells, reading the matrix of each cell from a table indexed by the phase, creates no temporary;
+- Cython is thus kept for the Green operator only, where it is required; for local operators, the goal of the task *The road to v1.0* (prototyping without compiling) is recovered;
+- ``BlockDiagonalOperator2D/3D`` would disappear at milestone 0.4; the representation of hyperelastic laws is to be decided in milestone 0.6.
+
+The :doc:`roadmap` was *not* modified: *E8* and milestones 0.4 and 0.5 are to be updated as part of the task *Make the roadmap consistent with the decisions of 2026-09-25* (above).
+
+Follow-up: scope of the constitutive laws
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Claude had mentioned nonlinear constitutive laws several times during the discussion, including laws with internal variables. The author stated that such laws are not among the goals of Janus. Finite strain is of interest, but only for **hyperelasticity**: the stress and the tangent operator derive from a strain energy density, and depend on the current deformation gradient only. There are no internal variables, hence no history to store and no local integration of evolution laws (plasticity, damage, viscosity… are out of scope).
+
+The problem remains nonlinear (material and geometric nonlinearities), and still calls for a Newton–Krylov loop, with hand-written tangent operators.
+
+Milestone 0.6, which had been rewritten earlier in the day, was corrected accordingly: "nonlinear constitutive laws" became "hyperelastic constitutive laws (no internal variables)". The other mentions of nonlinear laws in the :doc:`roadmap` (*Goals*, *E8*, *E10*) are left to the task *Make the roadmap consistent with the decisions of 2026-09-25* (above).
+
+Still inconsistent with the decisions: the *Goals*, friction point 2, the recommendation of *E2* (which now contradicts the milestones: it refers to the array namespace of *E7*, and does not mention that the link to FFTW disappears), *E5*, *E8*, *E10*, *E11*, *E12*, the two decisions *Default backend* and *Acceptable slowdown* of *Decisions required from the author*, and the introduction. The documentation builds without warning; ``docs/`` was not modified.
+
+
 TO DISCUSS • Status of the roadmap
 ==================================
 
