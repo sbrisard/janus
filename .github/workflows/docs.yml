@@ -1,0 +1,75 @@
+# Build the HTML documentation, and deploy it to GitHub Pages.
+#
+# The documentation is built at each push and pull request, so that a broken
+# build (including any Sphinx warning) is detected on every branch. It is
+# deployed at each push to master only (and on request, from master), never
+# from a pull request or another branch.
+name: docs
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-build-${{ github.ref }}
+      cancel-in-progress: true
+    defaults:
+      run:
+        # Login shell, so that the janus environment is activated.
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          # Miniforge only uses conda-forge: no terms of service to accept,
+          # unlike the defaults channel of Anaconda.
+          miniforge-version: latest
+          conda-remove-defaults: true
+          environment-file: environment.yml
+          activate-environment: janus
+          auto-activate-base: false
+
+      - name: Show environment
+        run: conda list
+
+      # autodoc imports the compiled modules.
+      - name: Build Janus
+        run: pip install --no-build-isolation -e .
+
+      # -W: any warning fails the build; --keep-going: all warnings are
+      # reported, not only the first one.
+      - name: Build the documentation
+        run: >-
+          python -m sphinx -b html -E -W --keep-going
+          -d sphinx/_build/doctrees sphinx sphinx/_build/html
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: sphinx/_build/html
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/master' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    # Deployments run one at a time, and a deployment in progress is never
+    # cancelled.
+    concurrency:
+      group: ${{ github.workflow }}-deploy
+      cancel-in-progress: false
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
