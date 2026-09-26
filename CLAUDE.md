@@ -146,14 +146,14 @@ etc.).
 
 ## Repository layout notes
 
-- `docs/` is generated Sphinx HTML output (published at http://sbrisard.github.io/janus/ by GitHub
-  Pages, from `master:/docs`); the actual documentation sources live in `sphinx/` (`.rst` files,
-  `conf.py`). Edit `sphinx/`, not `docs/`. `docs/` is regenerated (from the repo root) with
-  `python scripts/empty_docs.py` (empties `docs/`, keeping `.nojekyll`) followed by
-  `python -m sphinx -b html -E -d sphinx/_build/doctrees sphinx docs` — this is the documented
-  procedure; `make ghpages` / `make.bat ghpages` (from `sphinx/`) do the same. Only regenerate
-  `docs/` when asked: it is the published site. Other Sphinx targets (`make html`,
-  `make latexpdf`…) build into `sphinx/_build/` (git-ignored).
+- The documentation sources live in `sphinx/` (`.rst` files, `conf.py`). The HTML docs are not
+  versioned: the `docs` workflow (`.github/workflows/docs.yml`) builds them with
+  `sphinx -W --keep-going` (any warning fails the build) at each push and pull request, and
+  deploys them to GitHub Pages (http://sbrisard.github.io/janus/) at each push to `master`. So
+  pushing to `master` publishes the docs, including `sphinx/claude.rst` and the roadmap. Local
+  build (from the repo root): `python -m sphinx -b html -E sphinx sphinx/_build/html`, or
+  `make html` / `make.bat html` from `sphinx/`; all targets build into `sphinx/_build/`
+  (git-ignored).
 - `tests/data/*.npz` are reference/golden arrays used by the Green operator tests — don't regenerate
   these casually; `scripts/npy2npz.py`/`raw2npz.py`/`convert.py` are the conversion utilities that
   originally produced them.

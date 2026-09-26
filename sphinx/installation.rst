@@ -123,12 +123,13 @@ Build the documentation
 
 The documentation is written with `Sphinx`_, and its sources are located in the ``sphinx/`` directory. Since the API reference is extracted from the docstrings of the compiled modules, Janus must be compiled and installed first.
 
-The HTML version of the documentation is published on `GitHub Pages <https://sbrisard.github.io/janus/>`_, from the ``docs/`` directory of the ``master`` branch. To update it, issue the following commands at the root of the project::
+The HTML version of the documentation is published on `GitHub Pages <https://sbrisard.github.io/janus/>`_. It is built and deployed by the ``docs`` workflow of GitHub Actions (``.github/workflows/docs.yml``) at each push to the ``master`` branch; there is nothing to do by hand. The same workflow builds the documentation at each push to another branch, and for each pull request, without deploying it. The build fails on any Sphinx warning.
 
-  python scripts/empty_docs.py
-  python -m sphinx -b html -E -d sphinx/_build/doctrees sphinx docs
+To build the HTML documentation locally, issue the following command at the root of the project::
 
-The first command empties the ``docs/`` directory, except the ``docs/.nojekyll`` file (which tells GitHub Pages not to process the site with Jekyll), so that the files that Sphinx no longer produces are removed. The second command builds the HTML documentation from scratch into ``docs/``. Check the result (open ``docs/index.html`` in a browser), then commit the ``docs/`` directory and push it to the ``master`` branch: GitHub Pages then redeploys the site automatically.
+  python -m sphinx -b html -E sphinx sphinx/_build/html
+
+then open ``sphinx/_build/html/index.html`` in a browser. Add ``-W --keep-going`` to check, as the workflow does, that the build produces no warning. Alternatively, ``make html`` (``make.bat html`` under Windows), from the ``sphinx/`` directory, builds into the same directory; the other targets of these files (``make latexpdf``…) also build into ``sphinx/_build/``.
 
 .. _FFTW: http://www.fftw.org/
 .. _pytest: http://pytest.org/
