@@ -39,21 +39,14 @@
 <p>The sources can be retrieved from Github, <a class="reference external" href="https://github.com/sbrisard/janus.git">https://github.com/sbrisard/janus.git</a>.</p>
 <section id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">¶</a></h2>
-<p>Janus requires Python 3k. The serial version depends on <a class="reference external" href="http://www.fftw.org/">FFTW</a> (version 3) only, while the parallel (MPI-based) version also requires <a class="reference external" href="https://bitbucket.org/mpi4py/mpi4py/">mpi4py</a>.</p>
-<div class="admonition-todo admonition" id="id1">
-<p class="admonition-title">Todo</p>
-<p>The present version of <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> tries to install the parallel version of the code if it detects that <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> is installed. In other words, if <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> is installed, the MPI-enabled version of <code class="docutils literal notranslate"><span class="pre">FFTW</span></code> <em>must</em> be installed.</p>
-</div>
+<p>Janus requires Python 3k, and depends on <a class="reference external" href="http://www.fftw.org/">FFTW</a> (version 3) only.</p>
 </section>
 <section id="configuration-all-platforms">
 <h2>Configuration (all platforms)<a class="headerlink" href="#configuration-all-platforms" title="Link to this heading">¶</a></h2>
-<p>Compilation and installation is configured through the <code class="docutils literal notranslate"><span class="pre">setup.cfg</span></code> file, which must be created in the root directory of the project if necessary (this file must reside in the same directory as <code class="docutils literal notranslate"><span class="pre">setup.py</span></code>).</p>
-<p>Two sections of this file must be filed: <code class="docutils literal notranslate"><span class="pre">[fftw]</span></code> and <code class="docutils literal notranslate"><span class="pre">[fftw_mpi]</span></code> (if you are compiling the MPI-enabled version of Janus):</p>
+<p>Compilation and installation is configured through the optional <code class="docutils literal notranslate"><span class="pre">setup.cfg</span></code> file, which must be created in the root directory of the project if necessary (this file must reside in the same directory as <code class="docutils literal notranslate"><span class="pre">setup.py</span></code>).</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">setup.cfg</span></code> does not exist, or provides no entry in its <code class="docutils literal notranslate"><span class="pre">[fftw]</span></code> section, defaults suitable for a conda environment are used: <code class="docutils literal notranslate"><span class="pre">libraries</span> <span class="pre">=</span> <span class="pre">fftw3</span></code> on all platforms and, on Windows, the <code class="docutils literal notranslate"><span class="pre">Library\include</span></code> and <code class="docutils literal notranslate"><span class="pre">Library\lib</span></code> subdirectories of the environment, where conda installs FFTW. Within the <code class="docutils literal notranslate"><span class="pre">janus</span></code> conda environment (see <code class="docutils literal notranslate"><span class="pre">environment.yml</span></code>), <code class="docutils literal notranslate"><span class="pre">setup.cfg</span></code> is therefore not needed. It must be created in all other cases (e.g. FFTW installed by the system package manager in a non-standard location, or precompiled binaries downloaded from fftw.org).</p>
+<p>The FFTW settings are given in the <code class="docutils literal notranslate"><span class="pre">[fftw]</span></code> section:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[fftw]
-include_dirs = …
-library_dirs = …
-libraries = …
-[fftw_mpi]
 include_dirs = …
 library_dirs = …
 libraries = …
@@ -81,15 +74,13 @@ libraries = …
 </section>
 <section id="compilation-and-installation-under-linux">
 <h2>Compilation and installation under Linux<a class="headerlink" href="#compilation-and-installation-under-linux" title="Link to this heading">¶</a></h2>
-<p>Make sure that the MPI and FFTW packages are properly installed, including the <code class="docutils literal notranslate"><span class="pre">dev</span></code> packages (that include header files). On Ubuntu platforms, the following packages must be installed:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">libopenmpi</span><span class="o">-</span><span class="n">dev</span> <span class="n">openmpi</span><span class="o">-</span><span class="nb">bin</span> <span class="n">libfftw3</span><span class="o">-</span><span class="nb">bin</span> <span class="n">libfftw3</span><span class="o">-</span><span class="n">dev</span> <span class="n">libfftw3</span><span class="o">-</span><span class="n">mpi</span><span class="o">-</span><span class="n">dev</span> <span class="n">libfftw3</span><span class="o">-</span><span class="n">mpi3</span> <span class="n">petsc</span><span class="o">-</span><span class="n">dev</span> <span class="n">cython3</span> <span class="n">python3</span><span class="o">-</span><span class="n">numpy</span> <span class="n">python3</span><span class="o">-</span><span class="n">h5py</span> <span class="n">python3</span><span class="o">-</span><span class="n">mpi4py</span> <span class="n">python3</span><span class="o">-</span><span class="n">petsc4py</span> <span class="n">python3</span><span class="o">-</span><span class="n">pytest</span> <span class="n">python3</span><span class="o">-</span><span class="n">scipy</span> <span class="n">python3</span><span class="o">-</span><span class="n">sphinx</span>
+<p>Make sure that the FFTW packages are properly installed, including the <code class="docutils literal notranslate"><span class="pre">dev</span></code> packages (that include header files). On Ubuntu platforms, the following packages must be installed:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">libfftw3</span><span class="o">-</span><span class="nb">bin</span> <span class="n">libfftw3</span><span class="o">-</span><span class="n">dev</span> <span class="n">cython3</span> <span class="n">python3</span><span class="o">-</span><span class="n">numpy</span> <span class="n">python3</span><span class="o">-</span><span class="n">h5py</span> <span class="n">python3</span><span class="o">-</span><span class="n">pytest</span> <span class="n">python3</span><span class="o">-</span><span class="n">scipy</span> <span class="n">python3</span><span class="o">-</span><span class="n">sphinx</span>
 </pre></div>
 </div>
 <p>Usually, for linux platforms, it is not necessary to set the <code class="docutils literal notranslate"><span class="pre">include_dirs</span></code> and <code class="docutils literal notranslate"><span class="pre">library_dirs</span></code> values. Also, the library names must be stripped of the <code class="docutils literal notranslate"><span class="pre">lib</span></code> prefix (<code class="docutils literal notranslate"><span class="pre">libfftw3.so.3.5.7</span></code> → <code class="docutils literal notranslate"><span class="pre">fftw3</span></code>). On Ubuntu platforms, the <code class="docutils literal notranslate"><span class="pre">setup.cfg</span></code> file can be as simple as:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">fftw</span><span class="p">]</span>
 <span class="n">libraries</span> <span class="o">=</span> <span class="n">fftw3</span>
-<span class="p">[</span><span class="n">fftw_mpi</span><span class="p">]</span>
-<span class="n">libraries</span> <span class="o">=</span> <span class="n">fftw3_mpi</span>
 </pre></div>
 </div>
 <p>Then, issue the standard commands in a console:</p>
@@ -102,7 +93,6 @@ libraries = …
 </section>
 <section id="compilation-and-installation-under-windows">
 <h2>Compilation and installation under Windows<a class="headerlink" href="#compilation-and-installation-under-windows" title="Link to this heading">¶</a></h2>
-<p>The parallel version of this code is not tested under Windows.</p>
 <section id="compilation-with-miniconda-and-visual-studio-recommended">
 <h3>Compilation with Miniconda and Visual Studio (recommended)<a class="headerlink" href="#compilation-with-miniconda-and-visual-studio-recommended" title="Link to this heading">¶</a></h3>
 <p>This procedure was tested with Miniconda, Python 3.14 and Visual Studio Build Tools 2026.</p>
@@ -114,8 +104,9 @@ libraries = …
 </pre></div>
 </div>
 <p>To synchronize an existing environment with <code class="docutils literal notranslate"><span class="pre">environment.yml</span></code>, use <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">update</span> <span class="pre">-n</span> <span class="pre">janus</span> <span class="pre">-f</span> <span class="pre">environment.yml</span></code> instead.</p>
+<p>All packages come from the <code class="docutils literal notranslate"><span class="pre">conda-forge</span></code> channel, which works with both Miniconda and <a class="reference external" href="https://github.com/conda-forge/miniforge">Miniforge</a>. An environment created before <code class="docutils literal notranslate"><span class="pre">environment.yml</span></code> switched from the <code class="docutils literal notranslate"><span class="pre">defaults</span></code> channel to <code class="docutils literal notranslate"><span class="pre">conda-forge</span></code> should be recreated (<code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">remove</span> <span class="pre">-n</span> <span class="pre">janus</span></code>, then <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span> <span class="pre">-f</span> <span class="pre">environment.yml</span></code>) rather than updated, so as not to mix packages from both channels.</p>
 </li>
-<li><p>Create the <code class="docutils literal notranslate"><span class="pre">setup.cfg</span></code> file. FFTW is installed in the <code class="docutils literal notranslate"><span class="pre">Library</span></code> subdirectory of the environment, whose path is printed by <code class="docutils literal notranslate"><span class="pre">echo</span> <span class="pre">%CONDA_PREFIX%</span></code>. Environment variables are not expanded in <code class="docutils literal notranslate"><span class="pre">setup.cfg</span></code>: this path must be written in full:</p>
+<li><p>There is no need to create <code class="docutils literal notranslate"><span class="pre">setup.cfg</span></code>: FFTW is installed in the <code class="docutils literal notranslate"><span class="pre">Library</span></code> subdirectory of the environment, which <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> uses by default. Should the paths need to be set explicitly, note that environment variables are not expanded in <code class="docutils literal notranslate"><span class="pre">setup.cfg</span></code>: the path printed by <code class="docutils literal notranslate"><span class="pre">echo</span> <span class="pre">%CONDA_PREFIX%</span></code> must be written in full:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">fftw</span><span class="p">]</span>
 <span class="n">include_dirs</span> <span class="o">=</span> <span class="n">C</span><span class="p">:</span>\<span class="n">path</span>\<span class="n">to</span>\<span class="n">miniconda3</span>\<span class="n">envs</span>\<span class="n">janus</span>\<span class="n">Library</span>\<span class="n">include</span>
 <span class="n">library_dirs</span> <span class="o">=</span> <span class="n">C</span><span class="p">:</span>\<span class="n">path</span>\<span class="n">to</span>\<span class="n">miniconda3</span>\<span class="n">envs</span>\<span class="n">janus</span>\<span class="n">Library</span>\<span class="n">lib</span>
@@ -132,10 +123,6 @@ libraries = …
 <p>After modifying a <code class="docutils literal notranslate"><span class="pre">*.pyx</span></code> or <code class="docutils literal notranslate"><span class="pre">*.pxd</span></code> file, recompile the extension modules in place with <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">build_ext</span> <span class="pre">--inplace</span></code>.</p>
 </li>
 </ol>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>Do not install <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> in this environment: <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> would then try to build the parallel version of Janus, which is not tested under Windows, and requires <code class="docutils literal notranslate"><span class="pre">mpicc</span></code>.</p>
-</div>
 </section>
 <section id="compilation-with-mingw-msys">
 <h3>Compilation with MinGW/MSYS<a class="headerlink" href="#compilation-with-mingw-msys" title="Link to this heading">¶</a></h3>
@@ -146,7 +133,7 @@ libraries = …
 <span class="n">libraries</span> <span class="o">=</span> <span class="n">fftw3</span><span class="o">-</span><span class="mi">3</span>
 </pre></div>
 </div>
-<div class="admonition-todo admonition" id="id2">
+<div class="admonition-todo admonition" id="id1">
 <p class="admonition-title">Todo</p>
 <p>Complete installation procedure with MinGW.</p>
 </div>
@@ -154,18 +141,9 @@ libraries = …
 </section>
 <section id="test-your-installation">
 <h2>Test your installation<a class="headerlink" href="#test-your-installation" title="Link to this heading">¶</a></h2>
-<p>Testing the installation of Janus requires <a class="reference external" href="http://pytest.org/">pytest</a>. To run all serial tests, issue the following command at the root of the project:</p>
+<p>Testing the installation of Janus requires <a class="reference external" href="http://pytest.org/">pytest</a>. To run all tests, issue the following command at the root of the project:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pytest</span> <span class="n">tests</span>
 </pre></div>
-</div>
-<p>To run all parallel tests (assuming you compiled the MPI-enabled version of Janus), issue the following command at the root of the project:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mpiexec</span> <span class="o">-</span><span class="n">np</span> <span class="mi">3</span> <span class="n">pytest</span> <span class="n">tests</span><span class="o">/</span><span class="n">parallel</span>
-</pre></div>
-</div>
-<p>where the total number of processes can be adjusted (an odd number should preferably be used, as it is more likely to reveal bugs).</p>
-<div class="admonition-todo admonition" id="id3">
-<p class="admonition-title">Todo</p>
-<p>How to print only messages from root process with pytest?</p>
 </div>
 </section>
 <section id="build-the-documentation">

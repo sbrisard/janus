@@ -46,8 +46,8 @@
 </ul>
 </div></blockquote>
 <p>see also <a class="reference internal" href="bibliography.html#moul2014"><span class="std std-ref">Moulinec &amp; Silva (2014)</span></a> for a comparison of some of these iterative schemes.</p>
-<p>The library provides tools to define the linear operator associated to the discretized Lippmann–Schwinger equation, and to compute the necessary matrix-vector products. Third-party iterative linear solvers (<a class="reference external" href="http://docs.scipy.org/doc/scipy-0.15.1/reference/sparse.linalg.html#solving-linear-problems">Scipy</a>, <a class="reference external" href="https://bitbucket.org/petsc/petsc4py">petsc4py</a>) can then be invoked to compute the solution.</p>
-<p>The library is designed with performance in mind. It is fully parallelized (using MPI and <a class="reference external" href="https://bitbucket.org/mpi4py/mpi4py">mpi4py</a>), and the critical parts of the code are written in <a class="reference external" href="http://cython.org/">Cython</a>.</p>
+<p>The library provides tools to define the linear operator associated to the discretized Lippmann–Schwinger equation, and to compute the necessary matrix-vector products. Third-party iterative linear solvers (<a class="reference external" href="http://docs.scipy.org/doc/scipy-0.15.1/reference/sparse.linalg.html#solving-linear-problems">Scipy</a>) can then be invoked to compute the solution.</p>
+<p>The library is designed with performance in mind: the critical parts of the code are written in <a class="reference external" href="http://cython.org/">Cython</a>.</p>
 </section>
 
 

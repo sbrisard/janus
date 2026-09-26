@@ -5,8 +5,609 @@ Claude's contributions to `Janus`
 As of august 2026, `Janus` is revived by the author with the help of `Claude Code`. This page will collect all interactions between the author and Claude.
 
 
-TODO • The road to v1.0
-=======================
+2026-09-26 • Make the roadmap consistent with the decisions of 2026-09-25
+=========================================================================
+
+Priority task. The decisions recorded in *The continuum Green operator in the new architecture* (below) were applied to sections *E3*, *E4*, *E7* and *Milestones* of the :doc:`roadmap` only. Update the other parts of the roadmap, which still assume that Cython is replaced by NumPy/JAX. The list established at the end of that section is the starting point:
+
+- *Goals*: new physics implementable without compilation, GPU not to be ruled out;
+- friction point 2, which presents the per-frequency design as a problem;
+- *E2*: its recommendation contradicts milestone 0.3 (it refers to the array namespace of *E7*, and does not state that the link to FFTW disappears with ``scipy.fft``);
+- *E5*, *E6* (new schemes "in a few lines of Python"), *E8*, *E10*, *E11*, *E12*;
+- *E8* and milestones 0.4 and 0.5 must also reflect the decision on local operators (see *Follow-up: local operators*): functions of fields, reference implementation in pure NumPy (phase map, loop over the phases), Numba as an optional dependency, removal of ``BlockDiagonalOperator2D/3D`` at milestone 0.4;
+- the scope of the constitutive laws (see *Follow-up: scope of the constitutive laws*): linear laws, and hyperelasticity at finite strain, without internal variables. Remove or qualify the mentions of general nonlinear laws (*Goals*, *E8*: "extensible to nonlinear laws", tangent operators by automatic differentiation; *E10*);
+- *Decisions required from the author*: *Default backend* and *Acceptable slowdown* are obsolete;
+- the introduction (see *Status of the roadmap*);
+- the mentions of JAX and of automatic differentiation (*Goals*, *E1*, *E5*, *E8*, *E10*, *E12*), to be aligned with *E13* (see *Automatic differentiation with JAX*): JAX is no longer a backend, but a use case shown by an example.
+
+Start with *E2*. Report the proposed changes before applying the ones that go beyond consistency (i.e. that would express a new decision).
+
+Claude's report
+---------------
+
+**E2** (2026-09-26). Changes applied, for consistency only:
+
+- a note states that the section was revised, and why;
+- *Gains* of ``scipy.fft``: "no additional dependency (SciPy is needed anyway for iterative solvers)" was inaccurate: NumPy is currently the only runtime dependency of Janus (see ``environment.yml``; SciPy is not even installed in the ``janus`` environment). The text now says that SciPy becomes a runtime dependency, distributed as wheels, and needed anyway by the users for the solvers;
+- *Losses* of ``scipy.fft``: the loss of the fine tuning of FFTW is measured by the benchmark of milestone 0.3;
+- new paragraph *Keeping the current wrapper*: with Cython kept, this option had to be discussed; it records the reasons of *Follow-up: milestones* (negligible cost of a call from Python once per field, link to FFTW required by ``setup.cfg`` and awkward for wheels);
+- *Recommendation*: the reference to the array namespace of *E7* was removed; the FFT is called from Python, the loop over frequencies remaining in Cython; ``scipy.fft`` from milestone 0.3 on, deletion of the wrapper, of the link to FFTW and of ``setup.cfg`` at milestone 0.4.
+
+Point going beyond consistency, submitted to the author, approved and applied: ``scipy.fft`` has no ``out`` argument, so that each transform allocates its result, whereas the current discrete Green operators preallocate two Fourier buffers (``dft_x``, ``dft_y``, i.e. two complex fields) and the in-place semantics of ``apply(x, y)`` is kept (*E7*). Claude proposed to add to the *Implementation problems* of *E2* (now done): transform the whole field at once (``rfftn`` over the grid axes), apply the Green operator *in place* on the Fourier coefficients (with a small temporary vector per frequency, which removes the second buffer), and write the inverse transform component by component into ``y``, so that the temporaries are one complex field and one real component; the layout of the output of ``rfftn`` (contiguity, strides) seen by the Cython loop is to be checked.
+
+**Goals** (2026-09-26). Changes applied, for consistency only; a note records the initial wording:
+
+- installation: "without compiler" now relies on precompiled wheels;
+- new discretizations and new physics are written in Cython, within the library, mainly by the author (decision 4); the local operators are written without compilation, in NumPy, or in Numba where NumPy is not suitable (*Follow-up: local operators*);
+- new item on the scope of the constitutive laws: linear laws and hyperelasticity at finite strain; laws with internal variables are out of scope (*Follow-up: scope of the constitutive laws*); "finite strain solid mechanics" became "finite strain hyperelasticity";
+- GPU execution: the requirement that the architecture should not rule it out was dropped, GPU execution being "not a priority" (decision 4); automatic differentiation remains possible through *E13*.
+
+Found along the way, not in the initial list: the *Gains* of *E6* state that "new schemes can be added in a few lines of Python", whereas, with *E4* as revised, the modified wave-vectors are computed on the fly in the Cython loop, so that a new scheme is written in Cython. To be corrected at the same time as the other evolutions.
+
+**Friction point 2** (2026-09-26). Changes applied, for consistency only; a note records the initial wording. The title "Operators are scalar and stateful" became "Operators are stateful": evaluating the physics one wave-vector at a time is the design retained by decision 3, and is no longer presented as a problem. The problem is the hidden state shared by ``set_frequency`` and ``apply`` (no sharing between threads, hence no parallel loop over frequencies; result depending on a previous call); this is also how *E3* already refers to this friction point. The local operators, already mentioned by the initial wording ("cells"), are described as in *Follow-up: local operators* (one Cython object per cell, indirect call per cell, microstructure described cell by cell). The remaining consequence of the per-frequency design (a physics must be compiled to be fast) is kept, with a reference to *E3*.
+
+**E5** (2026-09-26). Changes applied; a note records that the section initially assumed a core written in NumPy or JAX:
+
+- *Proposal*: the dimension is a run-time value; E5 concerns the Cython part only (discrete Green operators and physics), the local operators written in NumPy (*E8*) being dimension-generic at no cost;
+- *Losses*: the argument on NumPy and JAX was replaced by its Cython counterpart (loops with run-time bounds, which the C compiler cannot unroll; slowdown to be measured);
+- *Consequences*: the ``apply`` method of the physics takes the dimension as a parameter from milestone 0.3 on (*Follow-up: milestones*);
+- *Recommendation*: "Adopt together with E4" contradicted the milestones; it became "milestone 0.5, after the switch", with the reasons of *Follow-up: milestones*.
+
+New paragraph *Implementation problems*, which develops the approach already stated in *E3* (loop over a flattened frequency index) without deciding anything: the number of dimensions of a memoryview is fixed at compile time, hence a view of shape ``(N, n)`` of the Fourier coefficients (which depends on the layout of the output of ``rfftn``, see *E2*), and the wave-vector recovered from the flattened index by integer divisions or by an incremented multi-index, whose costs are to be measured.
+
+**E6** (2026-09-26). Changes applied; a note records the initial wording:
+
+- *Proposal*: new paragraph stating that a scheme, like the physics, is written in Cython and is stateless (wave-vectors and weights computed on the fly for each discrete frequency, in buffers provided by the caller), the loop over frequencies, the calls to the physics and the weighted sum being generic; this transposes *E4* to the schemes;
+- *Gains*: "a few lines of Python" became "a few lines of Cython";
+- *Losses*: the initial argument ("instead of combining precomputed matrices; this is also the case in the current code") did not describe the current code accurately: ``FilteredGreenOperator2D/3D`` forms the matrix of the symbol at the 4 or 8 wave-vectors, combines these matrices, then applies the result. With *E4*, the symbol is applied 4 or 8 times and the results are summed, which should cost about the same. Claude added that the calls from the generic loop to the scheme and to the physics are indirect (``cdef`` methods), hence not inlined; both points are to be checked by the benchmark of milestone 0.3;
+- *Implementation problems*: complex wave-vectors are presented as one of the open points of the signature of the physics (*E4*), rather than as a requirement ("should" became "may have to").
+
+The *Recommendation* (milestone 0.3) was already consistent with the milestones.
+
+**E8, milestones 0.4, 0.5 and 0.6** (2026-09-26). Changes applied, for consistency; a note records the initial wording of *E8*:
+
+- *E8* rewritten according to *Follow-up: local operators*: local operators are functions of fields, on arrays of shape ``(*grid_shape, n)``; pure NumPy for linear laws with few phases (phase map, one matrix per phase, loop over the phases); Numba where NumPy is not suitable (many phases, hyperelasticity); the interface with the Green operator only consists of fields. The mentions of general nonlinear laws, of ``vmap`` and of tangent operators obtained by automatic differentiation were removed; tangent operators are written by hand, and JAX is mentioned through *E13* only;
+- following the author's statement of 2026-09-26 (*Automatic differentiation with JAX*), local operators are written in complete examples, *not* in the library; Numba is therefore a dependency of some examples, not of the library. The *Follow-up: local operators* of 2026-09-25 spoke of a "reference implementation in pure NumPy", without saying where it would live; *E8* now follows the later statement;
+- *Recommendation* of *E8*: milestone 0.4 instead of 0.5, since the deletion of ``BlockDiagonalOperator2D/3D`` at the switch requires the tutorials to be ported to local operators written in NumPy;
+- milestone 0.4: ``BlockDiagonalOperator2D/3D`` and the fourth-rank tensor classes are listed among the deleted API; local operators become functions of fields, and the tutorials are ported accordingly;
+- milestone 0.5: "Local operators described as fields, e.g. phase maps (E8)" was removed (moved to 0.4), and "reference iterative schemes (E10)" became a sentence of its own;
+- milestone 0.6: the representation of hyperelastic laws is decided there, and their local operators are written with Numba.
+
+Points going beyond consistency, *not* applied, submitted to the author:
+
+- an example with many phases (e.g. a polycrystal), whose local operator is written with Numba, in milestone 0.5. The decisions say *why* Numba is needed, not *when* such an example is written. (Claude had first applied it, then reverted it, since the task asks for such changes to be proposed first);
+- the fourth-rank tensor classes (``FourthRankIsotropicTensor2D/3D``, ``FourthRankCubicTensor2D``) are deleted at 0.4 with the rest of the local operators written in Cython, as stated by the author on 2026-09-26 (this is applied). The initial *E8* proposed to turn them into small functions returning Mandel–Voigt matrices, i.e. to keep helpers in the library; whether the library should provide such helpers (e.g. in ``janus/mandelvoigt.py``), or leave them to the examples, is not decided.
+
+The author validated these changes on 2026-09-26, and decided both points: the example with many phases, written with Numba, is planned in milestone 0.5; the library provides helper functions returning the Mandel–Voigt matrices of usual fourth-rank tensors. Both decisions were applied to *E8* (*Proposal*, *Consequences*, *Recommendation*) and to milestones 0.4 (helper functions replacing the fourth-rank tensor classes) and 0.5 (example with Numba).
+
+**E10** (2026-09-26). Changes applied, for consistency; a note records the initial wording:
+
+- the adapters to the JAX solvers were removed: JAX is no longer a backend, and the example with JAX handles its own solver, differentiated implicitly (*E13*);
+- "a Newton–Krylov loop for nonlinear problems" became "for hyperelastic problems at finite strain, with tangent operators written by hand" (*Follow-up: scope of the constitutive laws*);
+- *Recommendation*: "reference schemes in 0.5" was split: basic scheme in 0.5, Newton–Krylov loop in 0.6, since the latter needs the finite strain prototype; milestones 0.4 ("adapter"), 0.5 (basic scheme) and 0.6 (reference to *E10*) were aligned.
+
+Point *not* applied, submitted to the author: on 2026-09-26, the author stated that "the rest of the chain" (everything but the Green operator) will no longer be developed in the library, but in complete examples. Taken literally, this also applies to the reference schemes (basic scheme, Newton–Krylov loop), which *E10* still places in the library, and possibly to the adapter to ``scipy.sparse.linalg.LinearOperator``. Claude proposes: the adapter stays in the library, since it only wraps the discrete Green operator; the reference schemes are written in the examples.
+
+The author validated these changes on 2026-09-26, and approved the proposal, which was applied to *E10* (*Proposal*, *Gains*, *Losses*, *Recommendation*) and to milestone 0.5 (example with the basic scheme).
+
+**E11** (2026-09-26). Changes applied, for consistency; a note records the initial wording ("once Cython is gone", pure Python package, universal wheel):
+
+- *Proposal*: Janus remains a compiled package, without link to FFTW after the switch; precompiled wheels for Linux, Windows and macOS and for each supported version of Python (``cibuildwheel``), and a source distribution, as decided in *Follow-up: milestones*;
+- *Gains*: ``pip install`` without compiler holds on the platforms for which wheels are provided;
+- new *Losses*: build matrix to be maintained; a C compiler (but no longer FFTW) is still needed to install from the source distribution;
+- *Recommendation*: continuous integration is marked as done at 0.2, as it actually runs (``.github/workflows/tests.yml``: tests and doctests on Linux and Windows, at each push and once a week); macOS, wheels and publication at 0.4, in line with the milestones.
+
+Two facts found while checking the code, added to the *Implementation problems*: ``pyproject.toml`` does not declare any runtime dependency yet (NumPy, and SciPy after *E2*); the extensions use typed memoryviews and not the C API of NumPy, so that the wheels do not depend on the version of NumPy they are built against.
+
+**E12** (2026-09-26). Changes applied; a note records the initial wording:
+
+- "the results do not depend on the backend" was removed (there is no backend any more); it is replaced by the comparison of the new core with the current code on the same grids until the switch, as stated in milestone 0.3, the tagged release of 0.4 taking over afterwards;
+- factual correction: the initial text stated that the discrete Green operator is a projector (:math:`\Gamma_0 \mathbf C_0 \Gamma_0 = \Gamma_0`). Claude checked it on the current code (isotropic elasticity, grids of even and odd sizes, 2D and 3D): it holds for ``willot2015`` on all grids and for the truncated scheme on grids of odd sizes, but fails for the truncated scheme on grids of even sizes (relative error of order :math:`10^{-1}`, presumably because of the Nyquist frequencies) and for the filtered scheme on all grids. Symmetry and annihilation of uniform fields hold for all six operators. The list of properties is now a bulleted list, the projector property being restricted to the schemes for which it holds; each scheme must state which properties it satisfies.
+
+Points *not* applied, submitted to the author:
+
+- the failure of the truncated scheme on grids of even sizes is directly related to the open point of *E4* on the Nyquist frequencies; Claude proposes to add a reference to this observation in the *Implementation problems* of *E4*;
+- since local operators and reference schemes now live in the examples (*E8*, *E10*), the examples should be run by continuous integration, so that they do not silently break; Claude proposes to add this to *E12* (and to the continuous integration of *E11*).
+
+The author validated these changes on 2026-09-26, and approved both proposals, which were applied: *E4* (Nyquist frequencies) refers to the observation of *E12*; *E12* states that the examples are run by continuous integration, and *E11* lists their execution among the jobs of continuous integration.
+
+**Decisions required from the author** (2026-09-26). Changes applied, for consistency; a note records the removed items:
+
+- *Default backend* and *Acceptable slowdown* (of a pure Python implementation) were removed, as obsolete;
+- *Precision*: "relevant on GPU" became "which halves the memory footprint of large grids; Cython's fused types allow it", GPU execution being no longer a priority;
+- *Minimum supported versions*: SciPy was added, since it becomes a runtime dependency (*E2*, *E11*).
+
+Point *not* applied, submitted to the author: the acceptance criterion of milestone 0.3 is the absence of regression with respect to the current code. However, the genericity introduced in 0.3 (*E6*: indirect calls to the scheme and to the physics, not inlined) and in 0.5 (*E5*: loops with run-time bounds) may cost some performance, which *E5* and *E6* leave "to be measured". Claude proposes to add a decision: *Tolerance of the benchmark*: strict absence of regression, or an accepted margin (to be set by the author) in exchange for genericity?
+
+The author validated these changes on 2026-09-26, and approved the proposal: the decision *Tolerance of the benchmark* was added to the list.
+
+**Introduction, E1 and E7** (2026-09-26). The last sentence of the introduction was replaced, as decided by the author (see *Status of the roadmap*, formerly *TO DISCUSS*). In *E1*, the last mentions of JAX were removed ("JAX on GPU" became "``prange`` loops in Cython or Numba"; "JAX sharding" was dropped). In *E7*, the reasons why the evolution was not adopted no longer state that automatic differentiation is not a priority, but that it remains possible without *E7* (*E13*).
+
+Summary
+~~~~~~~
+
+All the items of the task were processed, in this order: *E2*, *Goals*, friction point 2, *E5*, *E6* (added to the list on the way), *E8* with milestones 0.4, 0.5 and 0.6, *E10*, *E11*, *E12*, *Decisions required from the author*, and the introduction, together with the last mentions of JAX in *E1* and *E7*. Each revised section carries a note that records its initial wording. A final search of the :doc:`roadmap` for "JAX", "backend", "nonlinear", "vmap", "pure Python", "array namespace" and "GPU" only finds the historical analysis of *E3*, the non-adopted *E7*, *E13*, and the notes.
+
+Besides consistency, the author took the following decisions during the task, all applied:
+
+- *E2*: handling of the temporaries of ``scipy.fft`` (whole field transformed at once, Green operator applied in place, inverse transform component by component);
+- *E8*: an example with many phases, written with Numba, in milestone 0.5; helper functions returning the Mandel–Voigt matrices of usual fourth-rank tensors are provided by the library;
+- *E10*: only the adapter to ``scipy.sparse.linalg.LinearOperator`` is in the library; the reference schemes are written in the examples;
+- *E4*/*E12*: reference to the Nyquist observation; the examples are run by continuous integration (*E11*);
+- new decision to be taken: *Tolerance of the benchmark*.
+
+Two checks were made on the current code, with results recorded in the :doc:`roadmap`: the six discrete Green operators are symmetric and annihilate uniform fields (*E12*, *E13*); the projector property holds for ``willot2015``, and for the truncated scheme on grids of odd sizes only, never for the filtered scheme (*E12*). Two facts were found in the configuration: SciPy is not a dependency yet (*E2*), and ``pyproject.toml`` declares no runtime dependency (*E11*).
+
+Open points left to later milestones (not part of this task): signature of the ``cdef`` methods and representation of the local tensors (*E4*, *E9*), behaviour at the Nyquist frequencies (*E4*), layout of the output of ``rfftn`` (*E2*, *E5*), representation of hyperelastic laws (*E8*, milestone 0.6), and whether the solvers of ``jax.scipy.sparse.linalg`` can be differentiated through the adapter (*E13*).
+
+The documentation builds without warning; ``docs/`` was not regenerated, and nothing was committed. The author validated this summary on 2026-09-26, and the task was marked as done.
+
+
+2026-09-26 • Automatic differentiation with JAX
+===============================================
+
+Not a task: record of a discussion held in the console. The author asked whether, Cython being kept, automatic differentiation with JAX could be recovered by implementing the missing derivatives of the Green operators by hand, JAX then applying the chain rule.
+
+Discussion
+----------
+
+Claude answered that it can: JAX cannot differentiate code it does not see, but ``jax.pure_callback`` makes the Cython code callable from JAX (also under ``jit``), and ``jax.custom_vjp`` provides its derivative, which JAX combines with the rest of the computation by the chain rule. With respect to the polarization, the discrete Green operator is linear, so that its vector-Jacobian product is its transpose; Claude checked numerically that the six current discrete Green operators (truncated, filtered, ``willot2015``, in 2D and 3D) are symmetric, to within about :math:`10^{-16}` (relative), including on grids of odd sizes. The derivative to be provided is therefore the operator itself: no new Cython code is needed. Only the derivatives with respect to the reference medium (:math:`\mu_0`, :math:`\nu_0`) would require new kernels, but they are rarely needed.
+
+Claude listed the limits: reverse mode only (JAX cannot transpose a ``pure_callback``), execution on the host CPU, no fusion by XLA across the call, sequential ``vmap``, ``jax_enable_x64`` required; the solver should be differentiated implicitly (a ``custom_vjp`` around the whole solve, the backward pass solving the adjoint problem), not through its iterations. Claude also objected that the rest of the chain, in particular the local operators, would have to be visible by JAX, whereas the decision of 2026-09-25 is to write them in NumPy.
+
+The author answered that this is not a problem: the library will only provide the Green operator, the local operators written in Cython disappearing; the local operators will be written in complete *examples*, in NumPy or Numba, and nothing prevents an example based on JAX, precisely to show that it is possible. Claude agreed: in such an example, the local operators are written with ``jax.numpy``, and the discrete Green operator is the only opaque function. The remaining points belong to the example, not to the architecture:
+
+- the adapter (a dozen lines) is written in the example, and may move to an optional module of the library later; JAX is not a dependency of the library;
+- the solver is differentiated implicitly, in the example; whether the solvers of ``jax.scipy.sparse.linalg`` can be differentiated directly when their operator contains the adapter is to be checked by a prototype;
+- the example relies on the symmetry of the discrete Green operator, which must therefore become a property of its interface, guaranteed by a test for each scheme and preserved by the new core.
+
+JAX thus becomes a use case, shown by an example, and not a backend; this is consistent with the abandonment of *E7*.
+
+Claude's report
+---------------
+
+At the author's request, the discussion was integrated into the :doc:`roadmap`:
+
+- new evolution *E13. Automatic differentiation through an adapter* (added at the end, so that the numbering does not change): context, adapter code, limits, consequence on the library (symmetry of the discrete Green operator as a property of the interface, with the check made on the current code), implementation problems (implicit differentiation of the solver, derivatives with respect to the reference medium), and recommendation: an example with JAX in milestone 0.5, once local operators are described as fields (*E8*), and the symmetry test from milestone 0.3 on;
+- *E3*: the last paragraph no longer states that automatic differentiation is out of reach with Cython, and refers to *E13*;
+- *E12*: symmetry is marked as a property of the interface, on which *E13* relies;
+- milestone 0.5: the JAX example is added. Its placement in 0.5 is a proposal of Claude;
+- the introduction of *Analysis of the proposed evolutions* mentions *E13*.
+
+The other mentions of JAX and of automatic differentiation in the :doc:`roadmap` (*Goals*, *E1*, *E5*, *E8*, *E10*) were not modified: they were added to the list of the task *Make the roadmap consistent with the decisions of 2026-09-25* (above). Note that the *Goals* ("GPU execution and automatic differentiation are not required, but the architecture should not rule them out") are now consistent with the decisions as far as automatic differentiation is concerned; only GPU execution is ruled out.
+
+
+2026-09-25 • The continuum Green operator in the new architecture
+=================================================================
+
+Not a task: record of a discussion held in the console, started by the author with the question "what are the inputs and outputs of the function ``symbol(k)``?" (see *E4* of the :doc:`roadmap`). The discussion led to the decisions below, in this order; the last one reverses the recommendation of *E3*.
+
+Decisions
+---------
+
+1. **Zero frequency.** :math:`\hat\Gamma_0(\mathbf 0) = \mathbf 0` is part of the *definition* of the Green operator, which acts on fields with zero mean. It is not a convenience value, and it does not depend on the loading. The macroscopic loading (imposed mean strain, mean stress, or mixed conditions) is handled by adapting the *equation*, not the Green operator. Claude had first argued that, under an imposed mean stress, the zero mode of the operator should be :math:`\mathbf C_0^{-1}`; the author objected that the corresponding term, :math:`\mathbf C_0^{-1} : (\boldsymbol\Sigma - \langle\boldsymbol\tau\rangle)`, belongs to the equation, which Claude agreed with.
+
+2. **Apply, do not form the matrix.** The primitive of a continuum Green operator is the application :math:`\hat{\boldsymbol\eta} = \hat\Gamma(\mathbf k) \cdot \hat{\boldsymbol\tau}`, computed in closed form, not a function ``symbol(k)`` that returns a matrix: the matrix is not needed in general, and forming it costs time and memory. The matrix can be recovered by applying the operator to the vectors of the canonical basis, which is enough for the tests. A notation such as ``symbol(k) @ tau`` would require an intermediate object (a matrix, or a matrix-free linear operator), and was not retained.
+
+3. **One frequency at a time.** Within a vectorized (NumPy) design, ``apply(k, tau)`` must receive the wave-vectors of the whole grid. Storing them costs about a quarter of a field in 3D elasticity (1.6 GB for a 512³ grid, against 6.4 GB for the Fourier coefficients of the polarization), and half of a field in 2D conductivity, whereas the current Cython code computes each wave-vector on the fly and stores nothing. Claude proposed workarounds (wave-vectors passed as a tuple of broadcastable components, evaluation by blocks), which the author found unconvincing: they are symptoms of the ban on loops over frequencies that comes with abandoning compiled code. The physics is therefore written for *one* wave-vector at a time, as in the mathematics and in the current code.
+
+4. **Cython is kept.** The author will write new physics mainly by themselves, within the library, and GPU execution is not a priority. Under these conditions, compiling new physics is not an obstacle, and Cython remains a good choice: the existing code works and serves as a reference, it is fast and allocates nothing, and most friction points of the :doc:`roadmap` (stateful operators, Python subclasses silently ignored, restricted data model, and, to a large extent, the fragile build) are *design* problems, which can be fixed without changing the tool. This departs from the context of the task *The road to v1.0* below, which asked that new physics be implementable without compiling.
+
+Open points
+-----------
+
+- Modified wave-vectors that vanish at a nonzero discrete frequency (e.g. at the Nyquist frequencies, for some schemes): with decision 1, the Green operator is zero there. Check that this is the intended behaviour for each scheme, and not a side effect.
+- Representation of the local tensors (flattened Mandel–Voigt vectors, or full tensors), which fixes the sizes seen by ``apply``.
+- Signature of the ``cdef`` method: raw pointers or memoryviews (slicing a memoryview at each frequency has a non-negligible cost in an inner loop); real or complex wave-vectors.
+- Dimension-generic code in Cython (*E5*): this is where Cython helps least.
+- A Numba prototype (generic kernel, truncated scheme, 2D conductivity, timed against the Cython code) was considered, then postponed: it may be done later, if the choice of Cython is to be confirmed by measurements.
+
+Claude's report
+---------------
+
+At the author's request, sections *E3*, *E4* and *E7* of the :doc:`roadmap` were rewritten according to the above decisions.
+
+- *E3*: the analysis of the three options (NumPy, Numba, JAX) is kept, shortened, and completed with the reasons why the vectorized design was rejected; the recommendation is reversed: Cython is kept, and its friction points are fixed by design.
+- *E4*, renamed *Stateless operators*: the continuum Green operator exposes a stateless ``cdef`` method that applies its symbol at one wave-vector, without forming the matrix; :math:`\hat\Gamma(\mathbf 0) = \mathbf 0` by definition; the discrete operators compute the wave-vectors on the fly. The NumPy example was replaced by a Cython sketch for conductivity, whose signature is explicitly left open.
+- *E7* is marked as not adopted: the array API and the functional interface lose their purpose once Cython is kept and JAX is no longer a goal; the in-place semantics of ``apply(x, y)`` is kept. The section is kept, so that the numbering of the evolutions does not change.
+
+The other parts of the roadmap were *not* modified, and are now inconsistent with these decisions:
+
+- *Goals*: "new physics … implementable in pure Python, without compilation" and "the architecture should not rule [GPU] out";
+- friction point 2, which presents the per-frequency design as a problem;
+- *E2*: the recommendation of ``scipy.fft`` goes "through the array namespace, see E7"; with Cython kept, the choice between the current FFTW wrapper, pyFFTW and ``scipy.fft`` must be reconsidered;
+- *E5* (NumPy/JAX arguments), *E8* (vectorized constitutive functions, ``vmap``), *E10* (JAX solvers), *E11* ("once Cython is gone", pure Python package) and *E12* (independence from the backend);
+- the milestones 0.3 (pure NumPy/SciPy core), 0.4 (removal of Cython and FFTW) and 0.6 (JAX backend), and two of the *Decisions required from the author* (default backend, acceptable slowdown of the pure Python implementation);
+- the introduction, already discussed in *TO DISCUSS • Status of the roadmap*.
+
+The documentation builds without warning; ``docs/`` was not modified.
+
+Follow-up: milestones
+~~~~~~~~~~~~~~~~~~~~~
+
+The milestones of the :doc:`roadmap` were then discussed. The author approved Claude's three recommendations:
+
+- the new core is developed *alongside* the current code (e.g. in a new subpackage), rather than by refactoring it in place, so that the current code remains an executable reference until the switch;
+- the FFT moves to ``scipy.fft`` as early as milestone 0.3: it is called from Python once per field, the loop over frequencies remaining in Cython, which removes the link to FFTW (hence ``setup.cfg``) and eases the production of wheels; the loss of the fine tuning of FFTW (``FFTW_MEASURE``, wisdom) is to be measured by the benchmark;
+- the dimension-generic code (*E5*) is postponed after the switch; the ``apply`` method of the physics takes the dimension as a parameter from the start, so that *E5* does not change it.
+
+The *Milestones* section was rewritten accordingly: 0.2 is marked as done; 0.3 is the new core in Cython (*E4*, *E6*, ``scipy.fft``, elasticity with the three existing schemes, benchmark with no regression as acceptance criterion); 0.4 is the switch (deletion of the current API and of the link to FFTW, wheels built with ``cibuildwheel``, publication on PyPI); 0.5 is the second physics, in Cython, together with *E5*, *E8* and the reference schemes; 0.6 becomes a finite strain prototype, with hand-written tangent operators, the JAX backend being dropped; 1.0 is unchanged. The closing paragraph now explains the three ordering choices above.
+
+Follow-up: local operators
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The author then raised the question of the *local* part of the linear operator, e.g. :math:`(\mathbf C - \mathbf C_0)^{-1} \cdot \boldsymbol\tau`. In the current code, it is what makes Janus particularly heavy: ``BlockDiagonalOperator2D/3D`` takes an array of local operators (``AbstractOperator[:, :]``), i.e. one Cython object per cell, with one indirect call per cell, and a microstructure described cell by cell rather than by its phases.
+
+The situation differs from that of the Green operator. For the latter, vectorization required data to be *created* (the grid of wave-vectors, temporaries), which led to keeping Cython. For the local operator, the data already exist as fields (phase map, polarization), so that this objection does not apply. Moreover, the interface between both parts only consists of fields: the operator passed to the Krylov solver combines them in Python, with one call per field for each part, so that both parts need not be written with the same tool.
+
+The author approved the following proposal:
+
+- a local operator is a *function of fields*, ``tau ↦ eta``, acting on arrays of shape ``(*grid_shape, n)`` (*E8*);
+- the reference implementation is written in pure NumPy, for linear laws with few phases: a phase map and one (precomputed) matrix per phase, with a Python loop over the *phases*, not over the cells. No Cython, no object per cell, and temporaries limited to the size of each phase;
+- Numba is an *optional* dependency, not a foundation, for the cases where NumPy is not suitable: many phases (e.g. polycrystals with thousands of grains, where storing one matrix per cell costs :math:`n^2` reals per cell, i.e. six times a field in 3D), and hyperelastic laws at finite strain (milestone 0.6), whose stress and tangent operator are naturally evaluated cell by cell. A ``@njit`` loop over the cells, reading the matrix of each cell from a table indexed by the phase, creates no temporary;
+- Cython is thus kept for the Green operator only, where it is required; for local operators, the goal of the task *The road to v1.0* (prototyping without compiling) is recovered;
+- ``BlockDiagonalOperator2D/3D`` would disappear at milestone 0.4; the representation of hyperelastic laws is to be decided in milestone 0.6.
+
+The :doc:`roadmap` was *not* modified: *E8* and milestones 0.4 and 0.5 are to be updated as part of the task *Make the roadmap consistent with the decisions of 2026-09-25* (above).
+
+Follow-up: scope of the constitutive laws
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Claude had mentioned nonlinear constitutive laws several times during the discussion, including laws with internal variables. The author stated that such laws are not among the goals of Janus. Finite strain is of interest, but only for **hyperelasticity**: the stress and the tangent operator derive from a strain energy density, and depend on the current deformation gradient only. There are no internal variables, hence no history to store and no local integration of evolution laws (plasticity, damage, viscosity… are out of scope).
+
+The problem remains nonlinear (material and geometric nonlinearities), and still calls for a Newton–Krylov loop, with hand-written tangent operators.
+
+Milestone 0.6, which had been rewritten earlier in the day, was corrected accordingly: "nonlinear constitutive laws" became "hyperelastic constitutive laws (no internal variables)". The other mentions of nonlinear laws in the :doc:`roadmap` (*Goals*, *E8*, *E10*) are left to the task *Make the roadmap consistent with the decisions of 2026-09-25* (above).
+
+Still inconsistent with the decisions: the *Goals*, friction point 2, the recommendation of *E2* (which now contradicts the milestones: it refers to the array namespace of *E7*, and does not mention that the link to FFTW disappears), *E5*, *E8*, *E10*, *E11*, *E12*, the two decisions *Default backend* and *Acceptable slowdown* of *Decisions required from the author*, and the introduction. The documentation builds without warning; ``docs/`` was not modified.
+
+
+2026-09-26 • Status of the roadmap
+==================================
+
+The introduction of :doc:`roadmap` (``sphinx/roadmap.rst``, line 9) stated that "none of the evolutions described below has been implemented yet", which was no longer true: E1 is done, and so is the continuous integration part of E11. The author sees no point in rewriting the roadmap in the past tense, since the history is kept in the present page, in ``README.rst`` and in git. Claude suggested correcting only this sentence.
+
+**Decision** (2026-09-26, as part of the task *Make the roadmap consistent with the decisions of 2026-09-25*). Only the last sentence of the introduction is replaced: it now states that the roadmap was revised on 2026-09-25 and 2026-09-26 after the decision to keep Cython, that the revised sections carry a note, and that milestone 0.2 (E1, and the continuous integration part of E11) is done, the other evolutions having not been implemented yet. ``docs/`` was not regenerated.
+
+
+2026-09-23 • Continuous integration
+===================================
+
+Set up continuous integration on GitHub Actions, with the current Cython code, as announced in section *E11* and in milestone 0.2 of the :doc:`roadmap`. Its purpose is to build Janus from a clean clone, on Linux and Windows, at each push and once a week, so that the Cython implementation remains a reliable reference during the rewrite of milestone 0.3.
+
+Proceed in the order below, one step at a time. Each step is a separate commit, made by the author: Claude does not commit, nor push. Report on each step in its own sub-paragraph of `Claude's report`, and wait for validation before starting the next one.
+
+Out of scope: building and deploying the documentation to GitHub Pages, packaging and publication on PyPI (milestone 0.4), macOS.
+
+2026-09-23 • Step 1 — Make ``setup.cfg`` optional
+-------------------------------------------------
+
+``setup.py``, ``environment.yml``, ``sphinx/installation.rst``, ``CLAUDE.md``.
+
+When ``setup.cfg`` has no ``[fftw]`` section, ``setup.py`` falls back to defaults: ``libraries = fftw3`` on all platforms and, on Windows within a conda environment, ``include_dirs``/``library_dirs`` set to ``sys.prefix\Library\include``/``sys.prefix\Library\lib``. An existing ``[fftw]`` section keeps precedence over these defaults, so that the precompiled DLLs from fftw.org remain usable. The workflow of step 2 then reduces to ``pip install``, with no configuration file to generate.
+
+Update the instructions accordingly: the header comment of ``environment.yml``, ``sphinx/installation.rst`` and the *Build* section of ``CLAUDE.md`` state that ``setup.cfg`` is only needed outside conda, or to override the defaults.
+
+Check on Linux: move ``setup.cfg`` aside, remove the compiled artifacts (``git clean -Xfd janus/``), then ``pip install --no-build-isolation -e .`` and run the tests. Windows cannot be checked by Claude on this machine: the author checks it, or step 2 does.
+
+2026-09-23 • Step 2 — GitHub Actions workflow
+---------------------------------------------
+
+``.github/workflows/tests.yml`` (new file).
+
+- Triggers: ``push``, ``pull_request``, a weekly ``schedule`` (to catch breakage caused by new versions of the dependencies, which ``environment.yml`` does not pin), and ``workflow_dispatch``.
+- Matrix: ``ubuntu-latest`` and ``windows-latest``.
+- Steps: ``actions/checkout``; ``conda-incubator/setup-miniconda`` with ``environment.yml`` and the ``janus`` environment activated (``shell: bash -el {0}``); ``pip install --no-build-isolation -e .``; ``python -m pytest tests``; ``python -m sphinx -b doctest sphinx sphinx/_build/doctest``.
+
+The workflow only runs once pushed to GitHub, which the author does. Two difficulties are expected, to be reported rather than worked around silently:
+
+- the ``defaults`` channel of Anaconda may require the acceptance of its terms of service, which blocks non-interactive runs. If so, propose switching ``environment.yml`` to ``conda-forge`` (after checking that Python 3.14 and ``fftw`` are available there for both platforms), as a separate commit;
+- on Windows, ``setuptools`` must find the MSVC compiler of the runner.
+
+Acceptance criterion: both jobs are green, with the same test count as locally (3043 passed, 111 skipped on Linux), and no failing doctest.
+
+2026-09-23 • Step 3 — Badge
+---------------------------
+
+``README.rst``.
+
+Add the status badge of the workflow at the top of ``README.rst``, next to the documentation badge.
+
+Claude's report
+---------------
+
+Step 1 — Make ``setup.cfg`` optional
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- ``setup.py``: new function ``fftw_config()``, which replaces the direct call to ``update_from_config({}, "fftw")`` in ``extensions_and_packages()``. If ``setup.cfg`` provides at least one entry in its ``[fftw]`` section, these entries are used as before, and the defaults are ignored altogether (they are not merged, so that a hand-written configuration behaves exactly as it did). Otherwise, ``libraries = fftw3`` and, on Windows within a conda environment (detected by the ``conda-meta`` directory of ``sys.prefix``), ``include_dirs``/``library_dirs`` are set to ``sys.prefix\Library\include``/``lib``. The message printed by ``python setup.py clean`` no longer says that ``setup.cfg`` is required.
+- Why nothing more is needed on Linux: the Python interpreter of the ``janus`` environment compiles with ``-isystem $PREFIX/include`` and links with ``-L$PREFIX/lib`` and ``-rpath $PREFIX/lib`` (checked with ``sysconfig``), and the compiled ``_serial_fft`` module does load the ``libfftw3.so.3`` of the environment, not the one of the system (checked with ``ldd``). The same holds for macOS in principle, but was not checked.
+- ``environment.yml`` (header comment), ``sphinx/installation.rst`` (sections *Configuration* and *Compilation with Miniconda and Visual Studio*, step 3) and ``CLAUDE.md`` (*Build*) now state that ``setup.cfg`` is not needed within the ``janus`` environment, and when it must still be written.
+
+Check on Linux: with ``setup.cfg`` moved aside and the compiled artifacts removed (``git clean -Xfd janus/``), ``pip install --no-build-isolation -e .`` succeeds, and the tests give 3043 passed, 111 skipped; the doctests (``python -m sphinx -b doctest sphinx sphinx/_build/doctest``) give 0 failures. ``setup.cfg`` was then put back. The Windows branch of ``fftw_config()`` was not run: it will be checked by the author, or by the Windows job of step 2.
+
+Step 2 — GitHub Actions workflow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+New file ``.github/workflows/tests.yml``, as specified. A few choices beyond the specification:
+
+- ``fail-fast: false``: a failure on one platform does not cancel the job on the other, so that each run tells whether the problem is specific to one platform;
+- ``concurrency`` with ``cancel-in-progress``: a new push to a branch cancels the run still in progress on that branch;
+- ``permissions: contents: read``: the workflow only needs to read the repository;
+- a *Show environment* step (``conda list``), so that the versions of the dependencies are recorded in the log of each run. This is what makes a failure of the weekly run diagnosable: comparing with the log of the last successful run shows which package changed;
+- no ``setup.cfg`` is written: the build relies on the defaults of step 1.
+
+The weekly run (Mondays, 04:00 UTC) only starts once the workflow is on ``master``: GitHub runs scheduled workflows on the default branch only.
+
+What was checked: the file is valid YAML, and the commands of the workflow were run by hand on a fresh clone of the branch (``git clone``, no ``setup.cfg``, no compiled artifacts), in the ``janus`` environment: build OK, 3043 passed, 111 skipped, 0 failing doctest. The workflow itself could not be run: it will run when the author pushes the branch. The two expected difficulties (terms of service of the ``defaults`` channel, MSVC on Windows) can only be observed there.
+
+Step 2 (continued) — Switch to ``conda-forge``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+At the author's request, the first of the two difficulties was removed before the first run, rather than waited for.
+
+- ``environment.yml``: the only channel is now ``conda-forge``. ``fftw`` is pinned to its ``nompi_*`` builds: conda-forge also publishes builds of FFTW linked against MPI (OpenMPI, MPICH), which Janus no longer needs.
+- ``.github/workflows/tests.yml``: ``setup-miniconda`` installs Miniforge (``miniforge-version: latest``), whose only channel is ``conda-forge``, and ``conda-remove-defaults: true`` makes sure that the ``defaults`` channel is never queried. There are no terms of service to accept.
+- ``sphinx/installation.rst``: a note states that the packages come from ``conda-forge`` (which works with Miniconda as well as Miniforge), and that an environment created from the former ``environment.yml`` should be recreated rather than updated, so as not to mix channels.
+
+What was checked:
+
+- both platforms resolve on ``conda-forge`` (``conda create --dry-run`` with ``CONDA_SUBDIR`` set to ``linux-64`` and ``win-64``): Python 3.14.7 (the regular build, not the free-threaded one), Cython 3.3.0, NumPy 2.5.3, FFTW 3.3.11 ``nompi``;
+- the Windows package of FFTW on ``conda-forge`` provides ``Library/include/fftw3.h`` and ``Library/lib/fftw3.lib`` (checked by downloading the package): the defaults of ``fftw_config()`` (step 1) apply unchanged;
+- on Linux, end to end: a fresh environment created from the new ``environment.yml`` (in a temporary prefix), a fresh clone without ``setup.cfg``, ``python setup.py build_ext --inplace``, then 3043 passed, 111 skipped, and 0 failing doctest. The compiled module loads the FFTW of the new environment (``ldd``). The temporary environment and clone were deleted.
+
+The author's own ``janus`` environment was not modified: it still comes from the ``defaults`` channel, and should be recreated as explained above.
+
+After the push by the author, both jobs of the workflow are green on GitHub. This also validates the two points that could not be checked on this machine: the Windows branch of ``fftw_config()`` (step 1), and the detection of the MSVC compiler of the runner by ``setuptools``.
+
+Step 3 — Badge
+~~~~~~~~~~~~~~
+
+``README.rst``: the status badge of the workflow is placed before the documentation badge, on the same line. Both are now written as substitutions (``|tests| |docs|``), since two consecutive ``image`` directives would be rendered one below the other. The rendering was checked with ``docutils`` (no warning, both images in a single paragraph).
+
+The badge reports the status of ``master`` (``?branch=master``), which is the reference for a visitor, not the status of the working branches. It will show *no status* until ``continuous_integration`` is merged into ``master``; the weekly run will also start then.
+
+
+2026-09-23 • Removal of the vestiges of distributed memory
+==========================================================
+
+Now that the parallel code has been removed (see the branch ``MPI-ectomy``), the classes of ``janus/fft/serial/`` and ``janus/green.pyx`` still carry the attributes that used to locate a local slab within a domain-decomposed grid. They are now redundant: ``offset0`` is always 0, ``idispl`` and ``odispl`` are always 0, ``global_shape0 == shape0``, and ``global_ishape``/``global_oshape`` are equal to ``ishape``/``oshape``. Remove them, as announced in section *E1* of the :doc:`roadmap`.
+
+Proceed one attribute at a time, in the order below, so that each step is a separate commit. Each step leaves the library in a working state: rebuild the extension modules (``python setup.py build_ext --inplace``) and run the tests before moving on. The order is not arbitrary — steps 2 and 4 remove the *readers* of the attributes that steps 3 and 5 delete.
+
+Report on each step in its own sub-paragraph of `Claude's report`, and wait for validation before starting the next one.
+
+2026-09-23 • Step 1 — ``idispl`` and ``odispl``
+-----------------------------------------------
+
+``janus/fft/serial/_serial_fft.pxd``, ``_serial_fft.pyx``.
+
+Dead code: both are computed in ``__cinit__`` from ``offset0``, and read nowhere else in the code base. Pure deletion, no other file affected.
+
+2026-09-23 • Step 2 — ``offset0`` of the discrete Green operators
+-----------------------------------------------------------------
+
+``janus/green.pyx``.
+
+Remove the ``offset0`` attribute of ``DiscreteGreenOperator2D`` and ``3D``, which is read from ``transform.offset0`` (or set to 0 when there is no transform). Three consequences:
+
+- in ``set_frequency``, the bounds check on ``b0`` becomes ``0 <= b0 < shape0``, like the checks on ``b1`` and ``b2``; the error message becomes the same as theirs, which leaves the text produced unchanged, since ``offset0`` was interpolated as the lower bound and was 0;
+- in the ``c_apply`` of ``DiscreteGreenOperator2D``/``3D``, ``b[0] = i0 + self.offset0`` becomes ``b[0] = i0``;
+- in the ``c_apply`` of ``TruncatedGreenOperator2D``/``3D``, ``b0 = i0 + self.offset0`` becomes ``b0 = i0``.
+
+This step must come before step 3, which removes the attribute that is read here.
+
+2026-09-23 • Step 3 — ``offset0`` of the FFT objects
+----------------------------------------------------
+
+``janus/fft/serial/_serial_fft.pxd``, ``_serial_fft.pyx``, ``examples/square_inclusion.py``.
+
+Once step 2 is done, the attribute is read nowhere in the library. Remove it, together with the ``offset0`` parameter of the constructors of ``_RealFFT2D`` and ``_RealFFT3D``. These constructors are called only by ``create_real_2D``/``create_real_3D``, which are ``cdef`` functions: the public entry point ``janus.fft.serial.create_real(shape, flags)`` is unaffected.
+
+``examples/square_inclusion.py`` reads ``transform.offset0``. The example is already broken (it depends on ``mpi4py`` and ``petsc4py``) and carries a ``TODO`` header describing its repair: state there that the attribute no longer exists, but do not attempt the repair, which is a separate task.
+
+2026-09-23 • Step 4 — ``global_shape0``
+---------------------------------------
+
+``janus/green.pyx``, ``CLAUDE.md``.
+
+``global_shape0`` is equal to ``shape0``, which ``init_shapes`` sets just above its last use. Replace it with ``self.shape0`` in the computation of ``s0`` (``DiscreteGreenOperator2D``/``3D``) and in the wave-vectors of ``TruncatedGreenOperator2D``/``3D`` and ``FilteredGreenOperator2D``/``3D``, then remove the attribute. ``FiniteDifferences2D``/``3D`` does not use it.
+
+The constructors also read ``transform.global_ishape``, to check the shape of the transform: switch that check to ``transform.ishape``. Step 5 removes the attribute, so this step must come first.
+
+In ``CLAUDE.md``, delete the paragraph that presents ``offset0``/``global_shape0`` as a pending simplification.
+
+2026-09-23 • Step 5 — ``global_ishape``, ``global_oshape`` and ``n0_loc``
+-------------------------------------------------------------------------
+
+``janus/fft/serial/_serial_fft.pxd``, ``_serial_fft.pyx``, ``sphinx/fft_tutorial.rst``, ``CLAUDE.md``.
+
+Once step 4 is done, these are read only by the documentation. Remove the two attributes and the ``n0_loc`` parameter of the constructors (which then take the shape alone), and drop the word *global* from the docstring of ``create_real``.
+
+In ``sphinx/fft_tutorial.rst``, the four attributes documented for a serial transform are reduced to ``ishape`` and ``oshape``: remove the two doctests on ``global_ishape``/``global_oshape``, and the two sentences explaining that local and global shapes coincide in the serial case. In ``CLAUDE.md``, the description of the FFT layer no longer mentions the vestigial attributes.
+
+Whatever the step, the behaviour of the library must not change: the tests (3043 passed, 111 skipped) are the acceptance criterion, and no reference data in ``tests/data`` is to be regenerated.
+
+Claude's report
+---------------
+
+Step 1 — ``idispl`` and ``odispl``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Both attributes were removed, as a pure deletion. Two files were modified.
+
+- ``janus/fft/serial/_serial_fft.pxd``: in the declarations of ``_RealFFT2D`` and ``_RealFFT3D``, the ``readonly ptrdiff_t`` line becomes ``isize, osize, offset0``.
+- ``janus/fft/serial/_serial_fft.pyx``: the two assignments of ``__cinit__`` were deleted in each class (``self.idispl``/``self.odispl``, computed from ``self.offset0``).
+
+Before deleting, a search for ``idispl`` and ``odispl`` over the whole repository (excluding ``docs/`` and the build artifacts) confirmed that the only remaining occurrences were these four lines and the description of the task in the present file: the attributes were written in ``__cinit__`` and read nowhere — neither in ``janus/``, nor in ``tests/``, ``examples/`` or ``sphinx/``. No other file was affected.
+
+The extension modules were rebuilt (``python setup.py build_ext --inplace``; all five ``.pyx`` files were re-cythonized, not only the modified one — the ``.c`` files present in the checkout were stale) and the tests were run: **3043 passed, 111 skipped**, i.e. the expected baseline. No reference data was touched.
+
+The changes are not committed, as usual.
+
+Step 2 — ``offset0`` of the discrete Green operators
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The attribute was removed from ``DiscreteGreenOperator2D`` and ``DiscreteGreenOperator3D``; only ``janus/green.pyx`` was modified. The three announced consequences were applied, in both classes:
+
+- the declaration ``cdef int offset0`` and its two assignments in ``__cinit__`` (``transform.offset0`` when a transform is given, ``0`` otherwise) are gone. The attribute was declared ``cdef``, not ``cdef readonly``: it was never visible from Python, so this is not a breaking change for the public API;
+- in ``set_frequency``, the bounds check on ``b0`` is now ``if (b0 < 0) or (b0 >= self.shape0)``, and raises the same message as the checks on ``b1`` and ``b2``;
+- in ``c_apply``, ``b[0] = i0 + self.offset0`` becomes ``b[0] = i0`` (``DiscreteGreenOperator2D``/``3D``), and ``b0 = i0 + self.offset0`` becomes ``b0 = i0`` (``TruncatedGreenOperator2D``/``3D``).
+
+``global_shape0`` was left untouched, as it belongs to step 4; so was the check on ``transform.global_ishape``.
+
+After rebuilding, the tests give the expected baseline: **3043 passed, 111 skipped**, with the reference data unchanged.
+
+The out-of-bounds branch of ``set_frequency`` turned out *not* to be covered by the test suite (``tests/test_greenop.py`` only exercises the continuum operators), so the invariance of the error message was checked by hand, on a ``TruncatedGreenOperator2D`` of shape ``(8, 8)``, built both with and without a transform. In both cases, ``set_frequency`` raises ``index must be >= 0 and < 8 (was -1)`` (resp. ``(was 8)``) for an out-of-range ``b0``, which is the text produced before the change, and the message is now identical to the one raised for an out-of-range ``b1``. A valid index is still accepted.
+
+The changes are not committed.
+
+Step 3 — ``offset0`` of the FFT objects
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Three files were modified.
+
+- ``janus/fft/serial/_serial_fft.pxd``: in ``_RealFFT2D`` and ``_RealFFT3D``, the ``readonly ptrdiff_t`` line is reduced to ``isize, osize``. Unlike the ``offset0`` of the Green operators (step 2), this one *was* ``readonly``, hence visible from Python: its removal is a breaking change for any code that read ``transform.offset0``. This is the intended outcome, announced in section *E1* of the :doc:`roadmap`.
+- ``janus/fft/serial/_serial_fft.pyx``: the ``offset0`` parameter was dropped from the ``__cinit__`` of both classes, together with the assignment ``self.offset0 = offset0``. The two call sites were updated accordingly: ``_RealFFT2D(n0, n1, n0, 0)`` becomes ``_RealFFT2D(n0, n1, n0)``, and ``_RealFFT3D(n0, n1, n2, n0, 0)`` becomes ``_RealFFT3D(n0, n1, n2, n0)``. A search confirmed that these two lines, in the ``cdef`` functions ``create_real_2D``/``create_real_3D``, are the only places where the constructors are called; the public entry point ``janus.fft.serial.create_real(shape, flags)`` is unchanged, and so is the ``n0_loc`` parameter, which belongs to step 5.
+- ``examples/square_inclusion.py``: the ``TODO`` header now states that ``transform.offset0`` no longer exists at all, and that the two references to it in the body of the example (``self.offset0 = transform.offset0`` and the slice ``ops[:imax - self.offset0, :imax]``) are therefore dead. The repair itself was not attempted, as agreed: the example still imports ``mpi4py``, ``petsc4py`` and ``janus.fft.parallel``, and does not run.
+
+After ``offset0`` was removed, no occurrence of it remains anywhere under ``janus/``.
+
+The extension modules were rebuilt and the tests run: **3043 passed, 111 skipped**, the expected baseline, with the reference data unchanged. ``tests/test_fft.py`` builds its transforms through the public ``create_real`` and exercises ``r2c``/``c2r`` round trips, so the constructors are covered; the attribute itself was read by no test.
+
+Step 4 — ``global_shape0``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``global_shape0`` disappears from ``DiscreteGreenOperator2D`` and ``3D``. In ``janus/green.pyx``:
+
+- the declaration ``cdef int global_shape0`` and its two assignments in ``__cinit__`` (``transform.global_ishape[0]``, or ``shape[0]`` without a transform) were deleted;
+- the twelve readers now use ``self.shape0``: the computation of ``s0``, the wave-vector of ``TruncatedGreenOperator2D``/``3D`` (``if 2 * b0 > self.shape0`` and the corresponding ``self.k[0]``, in both ``c_set_frequency`` and ``c_apply``), and the first component of the wave-vectors of ``FilteredGreenOperator2D``/``3D``. ``FiniteDifferences2D``/``3D`` was indeed not concerned;
+- the check on the shape of the transform now reads ``transform.ishape``, in the condition and in the error message, which frees step 5;
+- the comment above ``s0`` in ``DiscreteGreenOperator2D`` described ``n[i]`` as the size of the *global* grid; it now reads like its 3D counterpart, which never mentioned the global grid.
+
+The substitution is legitimate because ``init_shapes``, called just above the computation of ``s0``, sets ``shape0`` to exactly the value that ``global_shape0`` received: ``transform.ishape0`` (equal to ``transform.global_ishape[0]`` in the serial case) or ``shape[0]``.
+
+Both replacements are covered by the test suite. The mismatched-transform branch is exercised by ``tests/test_discrete_green_operator.py``, whose parameters for ``test_init_invalid_params`` include a grid of shape ``(9, 9)`` with a transform of shape ``(8, 9)`` and ``(9, 8)``; and the wave-vectors are precisely what the reference data of ``tests/data`` check. Tests: **3043 passed, 111 skipped**, reference data unchanged.
+
+In ``CLAUDE.md``, the paragraph presenting the ``offset0``/``global_shape0`` pair as a pending simplification was deleted.
+
+One residue is left on purpose: in the *FFT layer* paragraph of ``CLAUDE.md``, the serial transforms are still described as exposing ``ishape``/``oshape`` "alongside the vestigial ``global_ishape``/``global_oshape`` and ``offset0``". Since step 3, ``offset0`` no longer exists; that sentence is rewritten by step 5, which removes the last two attributes as well.
+
+Step 5 — ``global_ishape``, ``global_oshape`` and ``n0_loc``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The last vestiges are gone. Four files were modified.
+
+- ``janus/fft/serial/_serial_fft.pxd``: in both classes, the ``readonly tuple`` line is reduced to ``ishape, oshape``.
+- ``janus/fft/serial/_serial_fft.pyx``: the four assignments of ``global_ishape``/``global_oshape`` were deleted, and the constructors now take the shape alone — ``__cinit__(self, n0, n1)`` and ``__cinit__(self, n0, n1, n2)``. Wherever ``n0_loc`` was used (``ishape0`` and ``oshape0``), ``n0`` is used instead; the call sites in ``create_real_2D``/``create_real_3D`` lose their repeated argument (``_RealFFT2D(n0, n1, n0)`` becomes ``_RealFFT2D(n0, n1)``). In the docstring of ``create_real``, ``shape`` is now "the shape of the input data".
+- ``sphinx/fft_tutorial.rst``: the list of attributes is reduced to ``ishape`` and ``oshape``, described without the *local*/*global* emphasis, which no longer opposes anything; the two doctests on ``global_ishape``/``global_oshape`` and the two sentences on the coincidence of local and global shapes were removed.
+- ``CLAUDE.md``: the *FFT layer* paragraph now says that the transforms expose ``ishape``/``oshape`` (and ``isize``/``osize``), with no mention of the vestigial attributes. This also settles the residue reported in step 4.
+
+After rebuilding, the tests give **3043 passed, 111 skipped**, with the reference data unchanged. The doctests of the documentation were run as well (``python -m sphinx -b doctest``, into a temporary directory): ``fft_tutorial`` passes its 30 tests, which covers the rewritten section.
+
+Two mentions were deliberately left alone.
+
+- ``README.rst`` documents the renaming of the FFT attributes in its *History of major changes*, under the date 2015-02-23 (``shape`` → ``global_ishape``, and the addition of ``global_oshape``). This is a historical record of what happened in 2015, not a description of the current API: rewriting it would falsify the history. The removal is already recorded in the same file, in the entry of 2026-09-15 on the MPI-ectomy.
+- ``sphinx/roadmap.rst`` lists these attributes twice, as *friction point 6* and in the description of milestone 0.2, i.e. as the work to be done. They now *are* done; the roadmap will have to be updated when the milestone is closed, which is beyond the scope of this task.
+
+Unrelated observation, found while running the doctests: ``sphinx/operators.rst`` (line 81) has one failing doctest, ``np.sqrt(np.sum((yy - y)**2))``, which expects ``0.0`` but gets ``np.float64(0.0)``. This is the NumPy 2 scalar representation, has nothing to do with the present task, and does not affect the HTML build (the ``doctest`` builder is not run by ``make ghpages``).
+
+Suggestions
+-----------
+
+On the interactions:
+
+- the form of this task is worth reusing for the rest of the roadmap. Splitting it into numbered steps, each with the list of files it touches, the consequences to expect, the reason for its rank in the order, and a global acceptance criterion (the test count), left no room for interpretation: each step was a mechanical edit followed by a check. The validation between steps also kept the reviewing effort proportionate to what had just changed;
+- one thing the steps could state explicitly: whether Claude should commit. The introduction says "so that each step is a separate commit", while the standing rule of *How to update this page* is never to commit. The commits were made by the author, which is consistent, but a word in the task would remove the ambiguity.
+
+Follow-ups for the code base, in decreasing order of usefulness:
+
+- ``sphinx/roadmap.rst`` still lists ``offset0``, ``global_shape0``, ``global_ishape``, ``global_oshape`` and ``n0_loc`` as work to be done, in *friction point 6* and in milestone 0.2. Both passages could now be written in the past tense, when the milestone is closed;
+- ``examples/square_inclusion.py`` is the only example of the symmetric formulation, and it no longer runs. Its ``TODO`` header now describes its repair completely, including the two dead references to ``offset0``: the rewrite in serial form would make a well-defined task;
+- the failing doctest of ``sphinx/operators.rst`` (see above) could be fixed, either by expecting ``np.float64(0.0)``, or by wrapping the result in ``float(...)``, which keeps the output stable across NumPy versions;
+- the out-of-bounds branch of ``set_frequency`` in the discrete Green operators is not covered by any test (this was found in step 2, and checked by hand). A short test on the three indices would protect the bounds checks, which are the only remaining place where the shape of the grid is interpreted.
+
+
+2026-09-15 • Planning the MPI-ectomy
+====================================
+
+I am ready to start working on the removal of the MPI dependency.
+
+I will work in a dedicated branch: show me how to proceed.
+
+Then, draft a plan for this task.
+
+Claude's report
+---------------
+
+Should a branch be created?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Yes, for three reasons.
+
+- The task spans several commits and introduces breaking changes to the public API (``offset0``, ``global_ishape``… disappear). ``master`` should remain usable in the meantime.
+- ``master`` is the published branch: GitHub Pages serves ``master:/docs``. On a branch, ``sphinx/`` can be modified freely.
+- The repository has no tags at all. Before deleting anything, the last commit that includes MPI should be tagged, so that it remains available as a reference (this is also part of milestone 0.2 of :doc:`roadmap`).
+
+Procedure
+~~~~~~~~~
+
+At the time of writing, ``master`` has no local changes and is up to date with ``origin/master``. From the root of the project:
+
+1. Tag the last commit with MPI (annotated tag), and push the tag::
+
+     git tag -a last-mpi -m "Last version with the MPI-enabled parallel FFT"
+     git push origin last-mpi
+
+   The name ``last-mpi`` is only a suggestion; a version number (e.g. ``v0.1``) would also do.
+
+2. Create the branch, switch to it, and (optionally) push it to GitHub, as a backup and to allow a pull request later::
+
+     git switch -c remove-mpi
+     git push -u origin remove-mpi
+
+3. Commit on the branch as the work progresses.
+
+4. Once the work is done, merge the branch into ``master``, either through a pull request on GitHub, or locally::
+
+     git switch master
+     git merge --no-ff remove-mpi
+
+   Regenerate ``docs/`` only after the merge.
+
+Draft plan
+~~~~~~~~~~
+
+The work proceeds from the outside in, so that the serial tests pass after each step. Before starting, record a baseline with ``python -m pytest tests`` (last recorded result: 3043 passed, 111 skipped). Each step could be one commit.
+
+1. **Delete the MPI code** (no change for the serial code).
+
+   - Delete ``janus/fft/parallel/``, ``tests/parallel/``, ``sphinx/parallel_fft_tutorial.py`` and ``examples/fftw_python_benchmark_mpi.py``.
+   - ``examples/square_inclusion.py`` uses MPI and PETSc: rewrite it for serial use, or delete it.
+   - ``setup.py``: remove ``mpicc_show()`` and ``extensions_and_packages_with_mpi()`` (lines 75–128), and the ``[fftw_mpi]`` configuration.
+   - ``pytest.ini``: remove ``parallel`` from ``norecursedirs``.
+   - ``sphinx/api.rst``: remove the ``janus.fft.parallel`` section (this also removes the two warnings of the documentation build).
+
+2. **Simplify the serial FFT** (breaking change). In ``janus/fft/serial/_serial_fft.pyx`` and ``_serial_fft.pxd``, remove ``n0_loc``, ``offset0``, ``idispl``, ``odispl``, ``global_ishape`` and ``global_oshape`` from ``_RealFFT2D`` and ``_RealFFT3D``.
+
+3. **Simplify** ``janus/green.pyx``. Remove ``global_shape0`` and ``offset0`` from the discrete Green operators, and use ``shape0`` instead (around lines 92–155, 199, 253–321, 371, 436–550, 616 and 738), together with the checks of ``transform.global_ishape``. ``tests/test_operators.py`` also contains a few matching names, to be checked (some may be unrelated uses of the word "parallel"). Recompile with ``python setup.py build_ext --inplace``. The reference data (``tests/data/*.npz``) must *not* be modified: they are precisely what detects a mistake in this step.
+
+4. **Update the documentation**: ``README.rst`` and ``sphinx/introduction.rst`` ("fully parallelized"), ``sphinx/installation.rst`` and ``sphinx/fft_tutorial.rst`` (both mention MPI extensively), ``CLAUDE.md``, and the comment on ``mpi4py`` in ``environment.yml``.
+
+What was checked
+~~~~~~~~~~~~~~~~
+
+The plan is based on a search for ``mpi``, ``parallel``, ``offset0``, ``global_`` and ``n0_loc`` in the sources (304 occurrences in 26 files, excluding ``docs/`` and the build artifacts), and on the current state of the repository (``git branch -a``, ``git tag``, ``git status``). No command of the procedure was run: no tag and no branch were created, and no code was modified.
+
+Follow-up: tag and branch created by the author
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The author then created the tag ``Farewell_MPI`` (on commit ``161dc75``) and the branch ``MPI-ectomy``, both pushed to GitHub, and added a corresponding entry to the *History of major changes* of ``README.rst``. At the author's request, Claude suggested language improvements to this entry (in the console only; ``README.rst`` was not modified by Claude).
+
+The author validated this report on 2026-09-15, and the task was marked as done.
+
+
+2026-09-11 • The road to v1.0
+=============================
 
 The goal of this task is to write a roadmap to v1.0 of `Janus`
 
@@ -397,6 +998,8 @@ These are your instructions for the current session: each paragraph is an elemen
 After completion of a task, report on what you did in a sub-paragraph called `Claude's report` of the `claude.rst` file.
 
 Once I have validated your changes, I will ask you to mark the task as done. This means you will replace the `TODO` flag with the date in yyyy-mm-dd format. You will then move to the next task. For tasks that cannot be completed in one session, use an `IN PROGRESS` flag, so that the state of the task is visible in the present file.
+
+Questions that are still open, on which I have not made a decision yet, are recorded in sections marked `TO DISCUSS`. These are not tasks: you will not act on them, but raise them with me when they become relevant. Once a decision is made, the section is either turned into a `TODO` task, or marked with the date of the decision, together with a short statement of that decision.
 
 Unless otherwise stated, you will never commit your changes.
 

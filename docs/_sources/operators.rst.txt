@@ -70,7 +70,7 @@ Block-diagonal linear operators are created with the function :func:`block_diago
 >>> x = np.arange(30., dtype=np.float64).reshape(2, 3, 5)
 >>> y = op.apply(x)
 >>> yy = np.sum(a * x[:, :, np.newaxis, :], axis=-1)
->>> np.sqrt(np.sum((yy - y)**2))
+>>> float(np.sqrt(np.sum((yy - y)**2)))
 0.0
 
 .. _in-place-operations:

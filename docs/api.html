@@ -38,8 +38,8 @@
 <section id="module-janus.fft">
 <span id="api-of-module-janus-fft"></span><h2>API of module <code class="docutils literal notranslate"><span class="pre">janus.fft</span></code><a class="headerlink" href="#module-janus.fft" title="Link to this heading">¶</a></h2>
 <p>This module is a Python wrapper around the FFTW library. The core of the
-wrapper is located in the two submodules <a class="reference internal" href="#module-janus.fft.serial" title="janus.fft.serial"><code class="xref py py-mod docutils literal notranslate"><span class="pre">janus.fft.serial</span></code></a> and
-<code class="xref py py-mod docutils literal notranslate"><span class="pre">janus.fft.parallel</span></code>, which should be imported explicitely.</p>
+wrapper is located in the submodule <a class="reference internal" href="#module-janus.fft.serial" title="janus.fft.serial"><code class="xref py py-mod docutils literal notranslate"><span class="pre">janus.fft.serial</span></code></a>, which should
+be imported explicitely.</p>
 <section id="planner-flags">
 <span id="id1"></span><h3>Planner flags<a class="headerlink" href="#planner-flags" title="Link to this heading">¶</a></h3>
 <p>From the FFTW manual (Sec. <a class="reference external" href="http://www.fftw.org/fftw3_doc/Planner-Flags.html#Planner-Flags">Planner Flags</a>)</p>
@@ -119,16 +119,13 @@ for the time being.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>shape</strong> (<em>tuple</em>) – the global shape of the input data.</p></li>
+<li><p><strong>shape</strong> (<em>tuple</em>) – the shape of the input data.</p></li>
 <li><p><strong>flags</strong> (<em>int</em>) – “or” combination of <a class="reference internal" href="#planner-flags"><span class="std std-ref">Planner flags</span></a>.</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
-</section>
-<section id="api-of-module-janus-fft-parallel">
-<h3>API of module <code class="docutils literal notranslate"><span class="pre">janus.fft.parallel</span></code><a class="headerlink" href="#api-of-module-janus-fft-parallel" title="Link to this heading">¶</a></h3>
 </section>
 </section>
 <section id="api-of-module-janus-material">

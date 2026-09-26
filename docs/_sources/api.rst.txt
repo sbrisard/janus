@@ -18,14 +18,6 @@ API of module ``janus.fft.serial``
    :undoc-members:
    :show-inheritance:
 
-API of module ``janus.fft.parallel``
-------------------------------------
-.. automodule:: janus.fft.parallel
-   :members:
-   :private-members:
-   :undoc-members:
-   :show-inheritance:
-
 API of module ``janus.material``
 ================================
 
